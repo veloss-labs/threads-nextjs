@@ -1,9 +1,11 @@
 import { NextResponse, NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  if (request.nextUrl.pathname === '/middleware-rewrite') {
+  console.info('Middleware: request', request);
+  // '/middleware-rewrite' or '/middleware-rewrite/'
+  if (request.nextUrl.pathname.match(/^\/middleware-rewrite(\/)?$/)) {
     const { nextUrl: url } = request;
-    console.log('Middleware: rewrite request', url);
+    console.info('Middleware: rewrite request', url);
     url.searchParams.set('rewritten', 'true');
     return NextResponse.rewrite(url);
   }
@@ -33,15 +35,16 @@ export async function middleware(request: NextRequest) {
   }
 
   if (request.nextUrl.pathname === '/middleware-fetch') {
-    console.log(
+    console.info(
       await fetch('https://webhook.site/facbcacc-08f2-4fb1-b67f-a26e3382b64e'),
     );
     return NextResponse.next();
   }
 
-  if (request.nextUrl.pathname === '/middleware-geolocation') {
+  // '/middleware-geolocation' or '/middleware-geolocation/'
+  if (request.nextUrl.pathname.match(/^\/middleware-geolocation(\/)?$/)) {
     const { nextUrl: url, geo } = request;
-    console.log('Middleware: geolocation request', url, geo);
+    console.info('Middleware: geolocation request', url, geo);
     const country = geo?.country || 'US';
     const city = geo?.city || 'San Francisco';
     const region = geo?.region || 'CA';
@@ -52,6 +55,8 @@ export async function middleware(request: NextRequest) {
 
     return NextResponse.rewrite(url);
   }
+
+  return NextResponse.next();
 }
 
 export const config = {
