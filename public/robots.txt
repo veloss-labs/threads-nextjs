@@ -1,0 +1,13 @@
+# *
+User-agent: *
+Allow: /
+
+# Baiduspider
+User-agent: Baiduspider
+Disallow: /
+
+# Host
+# Host:
+
+# Sitemaps
+# Sitemap:

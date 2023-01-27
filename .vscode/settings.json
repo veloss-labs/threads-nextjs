@@ -1,0 +1,4 @@
+{
+  "solidity.compileUsingRemoteVersion": "v0.5.16+commit.9c3226ce",
+  "typescript.tsdk": "node_modules/typescript/lib"
+}
