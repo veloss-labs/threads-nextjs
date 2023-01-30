@@ -65,6 +65,7 @@
     "@playwright/test": "^1.29.2",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
+    "@type-challenges/utils": "^0.1.1",
     "@types/body-scroll-lock": "^3.1.0",
     "@types/lodash-es": "^4.17.6",
     "@types/node": "^18.11.18",

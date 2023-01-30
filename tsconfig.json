@@ -14,6 +14,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "downlevelIteration": true, // es5 new Set 기능,
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"]
