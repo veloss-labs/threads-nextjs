@@ -17,6 +17,7 @@ declare global {
 
       NEXT_PUBLIC_SITE_URL: string;
       NEXT_PUBLIC_API_HOST: string;
+      NEXT_PUBLIC_GA_TRACKING_ID: string;
     }
   }
 }

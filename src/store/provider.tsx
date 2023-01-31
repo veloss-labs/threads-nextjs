@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import Client, { type ClientProps } from './client';
+import Metadata from '~/components/shared/Meta/Metadata';
 
 interface ProviderProps
   extends Pick<ClientProps, 'currentProfile' | 'isLoggedIn'> {
@@ -21,11 +22,14 @@ export default function Provider({
   const [queryClient] = useState(() => new QueryClient());
 
   return (
-    <Client {...otherProps}>
-      <QueryClientProvider client={queryClient}>
-        <Hydrate state={pageProps.dehydratedState}>{children}</Hydrate>
-        <ReactQueryDevtools />
-      </QueryClientProvider>
-    </Client>
+    <React.Fragment>
+      <Metadata />
+      <Client {...otherProps}>
+        <QueryClientProvider client={queryClient}>
+          <Hydrate state={pageProps.dehydratedState}>{children}</Hydrate>
+          <ReactQueryDevtools />
+        </QueryClientProvider>
+      </Client>
+    </React.Fragment>
   );
 }

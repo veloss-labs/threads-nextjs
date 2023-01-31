@@ -7,7 +7,6 @@
     "cli:dev": "node --experimental-modules ./scripts/run.mjs -e dev",
     "cli:prod": "node --experimental-modules ./scripts/run.mjs -e prod",
     "cli:staging": "node --experimental-modules ./scripts/run.mjs -e staging",
-    "cli:demo": "node --experimental-modules ./scripts/run.mjs -e demo",
     "dev": "run-s cli dev:*",
     "dev:start": "next",
     "build": "next build",
@@ -25,7 +24,8 @@
     "deploy:dev": "run-s cli:dev sst:deploy",
     "sst:deploy": "sst deploy",
     "sst:remove": "sst remove",
-    "sst:console": "sst console"
+    "sst:console": "sst console",
+    "partytown": "partytown copylib public/~partytown"
   },
   "keywords": [
     "nextjs",
@@ -38,6 +38,7 @@
     "extends @anansi/browserslist-config"
   ],
   "dependencies": {
+    "@builder.io/partytown": "^0.7.5",
     "@next/font": "^13.1.6",
     "@sentry/browser": "^7.8.1",
     "@sentry/tracing": "^7.8.1",
