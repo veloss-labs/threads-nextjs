@@ -1,5 +1,4 @@
 import React from 'react';
-import { SSRProvider } from 'react-aria';
 import AuthProvider, { type AuthStore } from './useAuthStore';
 
 export interface ClientProps
@@ -15,9 +14,5 @@ export default function Client({ children, ...otherProps }: ClientProps) {
     }),
   };
 
-  return (
-    <AuthProvider {...store}>
-      <SSRProvider>{children}</SSRProvider>
-    </AuthProvider>
-  );
+  return <AuthProvider {...store}>{children}</AuthProvider>;
 }
