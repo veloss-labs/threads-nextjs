@@ -47,6 +47,8 @@
     "classnames": "^2.3.2",
     "cross-env": "^7.0.3",
     "dayjs": "^1.11.7",
+    "ky": "^0.33.2",
+    "ky-universal": "^0.11.0",
     "lodash-es": "^4.17.21",
     "next": "^13.1.6",
     "next-seo": "^5.15.0",
@@ -55,6 +57,7 @@
     "react-dom": "^18.2.0",
     "react-use": "^17.4.0",
     "sass": "^1.57.1",
+    "web-streams-polyfill": "^3.2.1",
     "zod": "^3.20.2",
     "zustand": "^4.3.2"
   },
