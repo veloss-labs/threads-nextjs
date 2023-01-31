@@ -1,14 +1,15 @@
+/* eslint-disable @next/next/no-sync-scripts */
 import React from 'react';
-import Script from 'next/script';
 import { Partytown } from '@builder.io/partytown/react';
 import { gaTrackingID } from '~/constants/env';
+// NEXT_PUBLIC_GA_TRACKING_ID=G-VJVQ6GT7EG
 
 const Metadata = () => {
   return (
     <>
       <Partytown debug={true} forward={['dataLayer.push']} />
-      <Script
-        type='text/partytown'
+      <script
+        type="text/partytown"
         src={`https://www.googletagmanager.com/gtag/js?id=${gaTrackingID}`}
       />
       <script

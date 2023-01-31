@@ -2,6 +2,7 @@ import Head from 'next/head';
 import Image from 'next/image';
 import { Inter } from '@next/font/google';
 import styles from '~/assets/css/modules/Home.module.css';
+import Link from 'next/link';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -58,6 +59,10 @@ export default function Home() {
             />
           </div>
         </div>
+
+        <Link href="/ssr">
+        SSR
+        </Link>
 
         <div className={styles.grid}>
           <a
