@@ -16,33 +16,33 @@ export const apiClient = ky.create({
   },
 });
 
-class ApiService {
-  async get(pathname: ApiRoutes, options?: Options | undefined) {
+export class ApiService {
+  static async get(pathname: ApiRoutes, options?: Options | undefined) {
     const response = await apiClient.get(pathname, options);
     return response;
   }
 
-  async post(pathname: ApiRoutes, options?: Options | undefined) {
+  static async post(pathname: ApiRoutes, options?: Options | undefined) {
     const response = await apiClient.post(pathname, options);
     return response;
   }
 
-  async delete(pathname: ApiRoutes, options?: Options | undefined) {
+  static async delete(pathname: ApiRoutes, options?: Options | undefined) {
     const response = await apiClient.delete(pathname, options);
     return response;
   }
 
-  async put(pathname: ApiRoutes, options?: Options | undefined) {
+  static async put(pathname: ApiRoutes, options?: Options | undefined) {
     const response = await apiClient.put(pathname, options);
     return response;
   }
 
-  async patch(pathname: ApiRoutes, options?: Options | undefined) {
+  static async patch(pathname: ApiRoutes, options?: Options | undefined) {
     const response = await apiClient.patch(pathname, options);
     return response;
   }
 
-  async getJson<R = Record<string, any>>(
+  static async getJson<R = Record<string, any>>(
     pathname: ApiRoutes,
     options?: Options | undefined,
   ) {
@@ -55,7 +55,7 @@ class ApiService {
     return data;
   }
 
-  async postJson<R = Record<string, any>, Body = Record<string, any>>(
+  static async postJson<R = Record<string, any>, Body = Record<string, any>>(
     pathname: ApiRoutes,
     body: Body,
     options?: Options | undefined,
@@ -74,7 +74,7 @@ class ApiService {
     return data;
   }
 
-  async postFormData<R = Record<string, any>>(
+  static async postFormData<R = Record<string, any>>(
     pathname: ApiRoutes,
     formData: FormData | HTMLFormElement,
     options?: Options | undefined,
@@ -100,7 +100,7 @@ class ApiService {
     return data;
   }
 
-  async postFormUrlEncoded<R = Record<string, any>>(
+  static  async postFormUrlEncoded<R = Record<string, any>>(
     pathname: ApiRoutes,
     body: Record<string, any>,
     options?: Options | undefined,
@@ -123,7 +123,7 @@ class ApiService {
     return data;
   }
 
-  async deleteJson<R = Record<string, any>>(
+  static async deleteJson<R = Record<string, any>>(
     pathname: ApiRoutes,
     options?: Options | undefined,
   ) {
@@ -136,7 +136,7 @@ class ApiService {
     return data;
   }
 
-  async deleteBody<R = Record<string, any>, Body = Record<string, any>>(
+  static async deleteBody<R = Record<string, any>, Body = Record<string, any>>(
     pathname: ApiRoutes,
     body: Body,
     options?: Options | undefined,
@@ -155,7 +155,7 @@ class ApiService {
     return data;
   }
 
-  async putJson<R = Record<string, any>, Body = Record<string, any>>(
+  static async putJson<R = Record<string, any>, Body = Record<string, any>>(
     pathname: ApiRoutes,
     body: Body,
     options?: Options | undefined,
@@ -174,7 +174,7 @@ class ApiService {
     return data;
   }
 
-  async putFormData<R = Record<string, any>>(
+  static async putFormData<R = Record<string, any>>(
     pathname: ApiRoutes,
     formData: FormData | HTMLFormElement,
     options?: Options | undefined,
@@ -200,7 +200,7 @@ class ApiService {
     return data;
   }
 
-  async putFormUrlEncoded<R = Record<string, any>>(
+  static async putFormUrlEncoded<R = Record<string, any>>(
     pathname: ApiRoutes,
     body: Record<string, any>,
     options?: Options | undefined,
@@ -223,7 +223,7 @@ class ApiService {
     return data;
   }
 
-  async patchJson<R = Record<string, any>, Body = Record<string, any>>(
+  static async patchJson<R = Record<string, any>, Body = Record<string, any>>(
     pathname: ApiRoutes,
     body: Body,
     options?: Options | undefined,
@@ -242,5 +242,3 @@ class ApiService {
     return data;
   }
 }
-
-export const apiService = new ApiService();

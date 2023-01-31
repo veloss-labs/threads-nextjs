@@ -5,7 +5,6 @@ import { setApiEnv } from '~/api/env';
 // types
 import type { NextPage } from 'next';
 import type { AppContext, AppProps } from 'next/app';
-import { apiService } from '~/api/client';
 
 type NextPageWithLayout = NextPage & {
   getLayout?: (page: React.ReactElement) => React.ReactNode;
@@ -37,7 +36,7 @@ export default function App({
 }
 
 App.getInitialProps = async ({ Component, ctx }: AppContext) => {
-  setApiEnv(ctx);;
+  setApiEnv(ctx);
 
   let pageProps = {};
   // 하위 컴포넌트에 getInitialProps가 있다면 추가 (각 개별 컴포넌트에서 사용할 값 추가)

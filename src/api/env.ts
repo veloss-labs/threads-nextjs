@@ -2,8 +2,8 @@ import { apiHost } from '~/constants/env';
 import { isBrowser } from '~/libs/browser/dom';
 import type { NextPageContext } from 'next';
 
-const _NEXT_API_ROUTES = '/api';
-const _NEXT_COMMON_PATH = '/';
+const _NEXT_API_ROUTES_PATHNAME = '/api';
+const _NEXT_COMMON_PATHNAME = '/';
 
 export type ApiRoutesConstant = 'hello';
 
@@ -38,14 +38,14 @@ export class ApiEnvirontment {
         const host = headers.host;
         const protocol = headers['x-forwarded-proto'] || 'http';
         const pathname = this._nextApiRoutes
-          ? _NEXT_API_ROUTES
-          : _NEXT_COMMON_PATH;
+          ? _NEXT_API_ROUTES_PATHNAME
+          : _NEXT_COMMON_PATHNAME;
         this._url = new URL(pathname, `${protocol}://${host}`);
       }
     } else if (isBrowser) {
       const pathname = this._nextApiRoutes
-        ? _NEXT_API_ROUTES
-        : _NEXT_COMMON_PATH;
+        ? _NEXT_API_ROUTES_PATHNAME
+        : _NEXT_COMMON_PATHNAME;
       this._url = new URL(pathname, location.origin);
     }
   }
@@ -59,15 +59,15 @@ export class ApiEnvirontment {
     try {
       const baseUrl = this.url.toString();
       if (
-        baseUrl.endsWith(_NEXT_COMMON_PATH) &&
-        path.startsWith(_NEXT_COMMON_PATH)
+        baseUrl.endsWith(_NEXT_COMMON_PATHNAME) &&
+        path.startsWith(_NEXT_COMMON_PATHNAME)
       ) {
         return `${baseUrl}${path.slice(1)}`;
       } else if (
-        !baseUrl.endsWith(_NEXT_COMMON_PATH) &&
-        !path.startsWith(_NEXT_COMMON_PATH)
+        !baseUrl.endsWith(_NEXT_COMMON_PATHNAME) &&
+        !path.startsWith(_NEXT_COMMON_PATHNAME)
       ) {
-        return `${baseUrl}${_NEXT_COMMON_PATH}${path}`;
+        return `${baseUrl}${_NEXT_COMMON_PATHNAME}${path}`;
       }
       return `${baseUrl}${path}`;
     } catch (error) {
