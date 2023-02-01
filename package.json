@@ -38,7 +38,6 @@
     "extends @anansi/browserslist-config"
   ],
   "dependencies": {
-    "@builder.io/partytown": "^0.7.5",
     "@next/font": "^13.1.6",
     "@sentry/browser": "^7.8.1",
     "@sentry/tracing": "^7.8.1",
