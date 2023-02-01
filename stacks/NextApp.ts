@@ -13,7 +13,6 @@ export function NextApp({ stack }: StackContext) {
       bucket: {
         bucketName: S3_BUCKET_NAME,
       },
-      distribution: {},
     },
   });
 

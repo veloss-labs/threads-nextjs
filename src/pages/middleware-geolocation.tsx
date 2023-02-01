@@ -1,6 +1,6 @@
-import Layout from "~/components/Layout";
+import React from 'react';
+import Layout from '~/components/Layout';
 import { InferGetServerSidePropsType, GetServerSidePropsContext } from 'next';
-
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   return {
@@ -10,13 +10,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
-export default function Page({ qs }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Page({
+  qs,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
   return (
     <Layout>
       <article>
-        <h1>
-          Middleware - geolocation
-        </h1>
+        <h1>Middleware - geolocation</h1>
         <hr />
         <p>
           <b>Test 1:</b>

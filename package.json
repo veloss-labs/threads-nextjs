@@ -23,9 +23,9 @@
     "e2e:report": "playwright show-report",
     "deploy:dev": "run-s cli:dev sst:deploy",
     "sst:deploy": "sst deploy",
+    "sst:dev": "sst dev",
     "sst:remove": "sst remove",
-    "sst:console": "sst console",
-    "partytown": "partytown copylib public/~partytown"
+    "sst:console": "sst console"
   },
   "keywords": [
     "nextjs",

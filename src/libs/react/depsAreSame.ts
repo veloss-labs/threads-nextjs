@@ -1,8 +1,8 @@
-import type { DependencyList } from "react";
+import type { DependencyList } from 'react';
 
 export function depsAreSame(
   oldDeps: DependencyList,
-  deps: DependencyList
+  deps: DependencyList,
 ): boolean {
   if (oldDeps === deps) return true;
   for (let i = 0; i < oldDeps.length; i++) {

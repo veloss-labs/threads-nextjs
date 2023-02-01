@@ -1,3 +1,4 @@
+import React from 'react';
 import Image from 'next/image';
 import Layout from '~/components/Layout';
 import pic from '../../public/images/patrick.1200x1200.png';

@@ -100,7 +100,7 @@ export class ApiService {
     return data;
   }
 
-  static  async postFormUrlEncoded<R = Record<string, any>>(
+  static async postFormUrlEncoded<R = Record<string, any>>(
     pathname: ApiRoutes,
     body: Record<string, any>,
     options?: Options | undefined,
