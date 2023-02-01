@@ -5,6 +5,9 @@ declare global {
     interface ProcessEnv {
       NODE_ENV: 'development' | 'production';
       DEPLOY_GROUP: 'development' | 'production';
+
+      SENTRY_DSN: string;
+
       AWS_SST_NAME: string;
       AWS_SST_ID: string;
       AWS_SST_STAGE: string;
@@ -17,6 +20,8 @@ declare global {
 
       NEXT_PUBLIC_SITE_URL: string;
       NEXT_PUBLIC_API_HOST: string;
+      NEXT_PUBLIC_GA_TRACKING_ID: string;
+      NEXT_PUBLIC_SENTRY_DSN: string;
     }
   }
 }

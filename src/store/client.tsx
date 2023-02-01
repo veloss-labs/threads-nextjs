@@ -1,5 +1,5 @@
 import React from 'react';
-import { SSRProvider } from 'react-aria';
+import DefaultSeo from '~/components/shared/Seo/DefaultSeo';
 import AuthProvider, { type AuthStore } from './useAuthStore';
 
 export interface ClientProps
@@ -16,8 +16,9 @@ export default function Client({ children, ...otherProps }: ClientProps) {
   };
 
   return (
-    <AuthProvider {...store}>
-      <SSRProvider>{children}</SSRProvider>
-    </AuthProvider>
+    <>
+      <DefaultSeo />
+      <AuthProvider {...store}>{children}</AuthProvider>;
+    </>
   );
 }

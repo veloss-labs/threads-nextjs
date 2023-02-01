@@ -1,8 +1,8 @@
+import React from 'react';
 import Layout from '~/components/Layout';
 import { InferGetServerSidePropsType } from 'next';
 
 export async function getServerSideProps() {
-  console.log('SSR - Server Side Rendering - getServerSideProps()');
   return {
     notFound: true,
   };

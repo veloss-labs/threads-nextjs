@@ -1,4 +1,5 @@
-import Layout from "~/components/Layout";
+import React from 'react';
+import Layout from '~/components/Layout';
 
 export default function Page() {
   return (
@@ -6,10 +7,16 @@ export default function Page() {
       <article>
         <h1>Image using html image tag</h1>
         <hr />
-        <img src="/images/patrick.1200x1200.png" width={100} height={100} alt="test"/>
+        <img
+          src="/images/patrick.1200x1200.png"
+          width={100}
+          height={100}
+          alt="test"
+        />
         <p>
           <b>Test 1:</b>
-          Original image dimension: 1200 x 1200. Check the dimension of the displayed image is also 1200 x 1200.
+          Original image dimension: 1200 x 1200. Check the dimension of the
+          displayed image is also 1200 x 1200.
         </p>
       </article>
     </Layout>
