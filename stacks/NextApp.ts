@@ -7,12 +7,8 @@ export function NextApp({ stack }: StackContext) {
 
   const site = new NextjsSite(stack, AWS_SST_ID, {
     path: NEXT_APP_PATH,
-    defaults: {
-      function: {
-        timeout: 30,
-        memorySize: 1024,
-      },
-    },
+    memorySize: 1024,
+    timeout: 30,
     cdk: {
       bucket: {
         bucketName: S3_BUCKET_NAME,
@@ -22,7 +18,6 @@ export function NextApp({ stack }: StackContext) {
   });
 
   stack.addOutputs({
-    sstId: site.id,
     url: site.url ?? 'undefined',
     bucketName: site.cdk.bucket.bucketName,
     distributionId: site.cdk.distribution.distributionId,
