@@ -1,4 +1,5 @@
 import '~/assets/css/globals.css';
+import React from 'react';
 import Provider from '~/store/provider';
 import { setApiEnv } from '~/api/env';
 
