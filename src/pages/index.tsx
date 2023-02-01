@@ -8,7 +8,9 @@ export default function Home() {
       <div className={styles.description}>
         <p>
           Get started by editing&nbsp;
-          <code className={styles.code}>pages/index.tsx</code>
+          <code data-testid="code" className={styles.code}>
+            pages/index.tsx
+          </code>
         </p>
         <div>
           <a
@@ -45,6 +47,7 @@ export default function Home() {
 
       <div className={styles.grid}>
         <a
+          id="docs"
           href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
           className={styles.card}
           target="_blank"
@@ -57,6 +60,7 @@ export default function Home() {
         </a>
 
         <a
+          id="examples"
           href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
           className={styles.card}
           target="_blank"
@@ -69,6 +73,7 @@ export default function Home() {
         </a>
 
         <a
+          id="templates"
           href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
           className={styles.card}
           target="_blank"
@@ -81,6 +86,7 @@ export default function Home() {
         </a>
 
         <a
+          id="deploy"
           href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
           className={styles.card}
           target="_blank"

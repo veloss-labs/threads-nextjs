@@ -11,7 +11,7 @@ import { devices } from '@playwright/test';
  * See https://playwright.dev/docs/test-configuration.
  */
 const config: PlaywrightTestConfig = {
-  testDir: 'e2e',
+  testDir: 'playwright',
   testMatch: '*.test.ts',
   /* Maximum time one test can run for. */
   timeout: 30 * 1000,
@@ -72,7 +72,7 @@ const config: PlaywrightTestConfig = {
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'yarn dev:next',
+    command: 'npm run dev',
     port: 3000,
   },
 };
