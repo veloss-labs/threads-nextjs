@@ -1,5 +1,8 @@
 import '~/assets/css/globals.css';
 import React from 'react';
+
+import { Inter } from '@next/font/google';
+
 import Provider from '~/store/provider';
 import { setApiEnv } from '~/api/env';
 
@@ -19,6 +22,8 @@ interface AppPropsWithLayout
   currentProfile?: any;
 }
 
+const inter = Inter({ subsets: ['latin'], variable: '--inter-font' });
+
 export default function App({
   Component,
   pageProps,
@@ -26,13 +31,20 @@ export default function App({
   currentProfile,
 }: AppPropsWithLayout) {
   return (
-    <Provider
-      pageProps={pageProps}
-      isLoggedIn={isLoggedIn}
-      currentProfile={currentProfile}
-    >
-      <Component {...pageProps} />;
-    </Provider>
+    <>
+      <Provider
+        pageProps={pageProps}
+        isLoggedIn={isLoggedIn}
+        currentProfile={currentProfile}
+      >
+        <Component {...pageProps} />;
+      </Provider>
+      <style jsx global>{`
+        html {
+          font-family: ${inter.style.fontFamily};
+        }
+      `}</style>
+    </>
   );
 }
 

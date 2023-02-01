@@ -60,11 +60,13 @@
 }
 
 .card h2 {
+  font-family: var(--inter-font);
   font-weight: 600;
   margin-bottom: 0.7rem;
 }
 
 .card p {
+  font-family: var(--inter-font);
   margin: 0;
   opacity: 0.6;
   font-size: 0.9rem;
