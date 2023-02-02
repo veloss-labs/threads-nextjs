@@ -1,12 +1,11 @@
 import ky from 'ky-universal';
-import { getApiEnv, type ApiRoutes } from '~/api/env';
+import { _NEXT_APPLICATION_API, type ApiRoutes } from '~/api/env';
 import type { Options } from 'ky';
 import type { BaseResponse } from '~/api/ts/schema';
-
-const apiEnv = getApiEnv();
+import { apiHost } from '~/constants/env';
 
 export const apiClient = ky.create({
-  prefixUrl: apiEnv.url.toString(),
+  prefixUrl: apiHost,
   hooks: {
     beforeRequest: [
       (request) => {
@@ -17,7 +16,7 @@ export const apiClient = ky.create({
 });
 
 export class ApiService {
-  static readonly APPLICATION_API = apiEnv.applicationApi;
+  static readonly APPLICATION_API = _NEXT_APPLICATION_API;
 
   static async get(pathname: ApiRoutes, options?: Options | undefined) {
     const response = await apiClient.get(pathname, options);

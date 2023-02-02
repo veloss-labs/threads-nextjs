@@ -1,28 +1,28 @@
 import { apiHost } from '~/constants/env';
 import { isBrowser } from '~/libs/browser/dom';
-import { getNestedKeyOfValue } from '~/utils/utils';
+// import { getNestedKeyOfValue } from '~/utils/utils';
 import type { NextPageContext } from 'next';
 
 const _NEXT_API_ROUTES_PATHNAME = '/api';
 const _NEXT_COMMON_PATHNAME = '/';
-const _NEXT_APPLICATION_API = {
+export const _NEXT_APPLICATION_API = {
   hello: 'hello',
   csrf: 'csrf',
 } as const;
 
-const _T = {
-  hello: 'hello',
-  csrf: 'csrf',
-  auth: {
-    login: 'login',
-  },
-  post: {
-    detail: (id: string) => `post/${id}`,
-  },
-} as const;
+// const _T = {
+//   hello: 'hello',
+//   csrf: 'csrf',
+//   auth: {
+//     login: 'login',
+//   },
+//   post: {
+//     detail: (id: string) => `post/${id}`,
+//   },
+// } as const;
 
-const data = getNestedKeyOfValue('post.detail', _T);
-console.log(data);
+// const data = getNestedKeyOfValue('post.detail', _T);
+// console.log(data);
 
 export type ApiRoutesConstant =
   (typeof _NEXT_APPLICATION_API)[keyof typeof _NEXT_APPLICATION_API];
@@ -32,7 +32,7 @@ export type ApiRoutes = URL | Request | ApiRoutesConstant;
 export class ApiEnvirontment {
   private _url: URL | null = null;
 
-  private _nextApiRoutes = false;
+  private _nextApiRoutes = true;
 
   get url() {
     if (!this._url) {
@@ -51,7 +51,10 @@ export class ApiEnvirontment {
 
   constructor(ctx?: NextPageContext) {
     if (apiHost) {
-      this._url = new URL(apiHost);
+      const pathname = this._nextApiRoutes
+        ? _NEXT_API_ROUTES_PATHNAME
+        : _NEXT_COMMON_PATHNAME;
+      this._url = new URL(pathname, apiHost);
     } else if (ctx && !isBrowser) {
       if (ctx.req) {
         const { headers } = ctx.req;
