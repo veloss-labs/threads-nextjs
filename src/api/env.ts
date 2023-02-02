@@ -4,8 +4,13 @@ import type { NextPageContext } from 'next';
 
 const _NEXT_API_ROUTES_PATHNAME = '/api';
 const _NEXT_COMMON_PATHNAME = '/';
+const _NEXT_APPLICATION_API = {
+  hello: 'hello',
+  csrf: 'csrf',
+} as const;
 
-export type ApiRoutesConstant = 'hello';
+export type ApiRoutesConstant =
+  (typeof _NEXT_APPLICATION_API)[keyof typeof _NEXT_APPLICATION_API];
 
 export type ApiRoutes = URL | Request | ApiRoutesConstant;
 
@@ -25,9 +30,9 @@ export class ApiEnvirontment {
     return this._url;
   }
 
-  private readonly _hello = {
-    root: 'hello',
-  } as const;
+  set nextApiRoutes(value: boolean) {
+    this._nextApiRoutes = value;
+  }
 
   constructor(ctx?: NextPageContext) {
     if (apiHost) {
@@ -51,7 +56,11 @@ export class ApiEnvirontment {
   }
 
   get hello() {
-    return this._hello;
+    return _NEXT_APPLICATION_API.hello;
+  }
+
+  get applicationApi() {
+    return _NEXT_APPLICATION_API;
   }
 
   // typescript auto complete for api path "get hello()"

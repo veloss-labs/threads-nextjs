@@ -49,7 +49,8 @@ export default function App({
 }
 
 App.getInitialProps = async ({ Component, ctx }: AppContext) => {
-  setApiEnv(ctx);
+  const apiEnv = setApiEnv(ctx);
+  apiEnv.nextApiRoutes = true;
 
   let pageProps = {};
   // 하위 컴포넌트에 getInitialProps가 있다면 추가 (각 개별 컴포넌트에서 사용할 값 추가)

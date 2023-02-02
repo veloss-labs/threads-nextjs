@@ -17,6 +17,8 @@ export const apiClient = ky.create({
 });
 
 export class ApiService {
+  static APPLICATION_API = apiEnv.applicationApi;
+
   static async get(pathname: ApiRoutes, options?: Options | undefined) {
     const response = await apiClient.get(pathname, options);
     return response;

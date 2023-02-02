@@ -175,6 +175,15 @@ export default function Home() {
             &nbsp;and fallback
           </p>
         </Link>
+        <Link href="/web" id="web" className={styles.card}>
+          <h2>
+            Web API<span>-&gt;</span>
+          </h2>
+          <p>
+            Lambda@Edge & Lambda Function Web API&nbsp;
+            <code className={styles['code-sm']}>/api/web</code>
+          </p>
+        </Link>
       </div>
     </main>
   );
