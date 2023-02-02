@@ -1,5 +1,6 @@
 import { apiHost } from '~/constants/env';
 import { isBrowser } from '~/libs/browser/dom';
+import { getNestedKeyOfValue } from '~/utils/utils';
 import type { NextPageContext } from 'next';
 
 const _NEXT_API_ROUTES_PATHNAME = '/api';
@@ -8,6 +9,20 @@ const _NEXT_APPLICATION_API = {
   hello: 'hello',
   csrf: 'csrf',
 } as const;
+
+const _T = {
+  hello: 'hello',
+  csrf: 'csrf',
+  auth: {
+    login: 'login',
+  },
+  post: {
+    detail: (id: string) => `post/${id}`,
+  },
+} as const;
+
+const data = getNestedKeyOfValue('post.detail', _T);
+console.log(data);
 
 export type ApiRoutesConstant =
   (typeof _NEXT_APPLICATION_API)[keyof typeof _NEXT_APPLICATION_API];
