@@ -1,6 +1,6 @@
 import React from 'react';
 import Layout from '~/components/Layout';
-import { InferGetServerSidePropsType } from 'next';
+import type { InferGetServerSidePropsType } from 'next';
 
 export async function getServerSideProps() {
   return {

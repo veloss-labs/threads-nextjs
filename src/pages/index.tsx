@@ -1,6 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import styles from '~/assets/css/modules/Home.module.css';
+import Link from 'next/link';
 
 export default function Home() {
   return (
@@ -45,61 +46,135 @@ export default function Home() {
         </div>
       </div>
 
+      <div className={styles.gap}></div>
+
       <div className={styles.grid}>
-        <a
-          id="docs"
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <Link href="/ssr" id="ssr" className={styles.card}>
           <h2>
-            Docs <span>-&gt;</span>
+            SSR <span>-&gt;</span>
           </h2>
-          <p>Find in-depth information about Next.js features and&nbsp;API.</p>
-        </a>
-
-        <a
-          id="examples"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+          <p>Server Side Rendering Page</p>
+        </Link>
+        <Link href="/ssr-redirect" id="ssr redirect" className={styles.card}>
           <h2>
-            Learn <span>-&gt;</span>
+            SSR Redirect<span>-&gt;</span>
           </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          id="templates"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+          <p>Server Side Rendering Page with Redirect</p>
+        </Link>
+        <Link href="/ssr-not-found" id="ssr not found" className={styles.card}>
           <h2>
-            Templates <span>-&gt;</span>
+            SSR NotFound<span>-&gt;</span>
           </h2>
-          <p>Discover and deploy boilerplate example Next.js&nbsp;projects.</p>
-        </a>
-
-        <a
-          id="deploy"
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+          <p>Server Side Rendering Page with NotFound</p>
+        </Link>
+        <Link href="/image-html-tag" id="img html tag" className={styles.card}>
+          <h2>
+            Image Html Tag<span>-&gt;</span>
+          </h2>
+          <p>Image Html Tag</p>
+        </Link>
+        <Link
+          href="/image-optimization-imported"
+          id="image optimization imported"
           className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
         >
           <h2>
-            Deploy <span>-&gt;</span>
+            Image Optimization Imported<span>-&gt;</span>
           </h2>
           <p>
-            Instantly deploy your Next.js site to a shareable URL
-            with&nbsp;Vercel.
+            Image Optimization imported from&nbsp;
+            <code className={styles['code-sm']}>public/images</code>
           </p>
-        </a>
+        </Link>
+        <Link
+          href="/image-optimization-remote"
+          id="image optimization remote"
+          className={styles.card}
+        >
+          <h2>
+            Image Optimization Remote<span>-&gt;</span>
+          </h2>
+          <p>
+            Image Optimization remote from&nbsp;
+            <code className={styles['code-sm']}>
+              https://images.unsplash.com
+            </code>
+          </p>
+        </Link>
+        <Link
+          href="/middleware-redirect"
+          id="middleware redirect"
+          className={styles.card}
+        >
+          <h2>
+            Middleware Redirect<span>-&gt;</span>
+          </h2>
+          <p>
+            Middleware Redirect to&nbsp;
+            <code className={styles['code-sm']}>
+              /middleware-redirect-destination
+            </code>
+          </p>
+        </Link>
+        <Link
+          href="/middleware-set-header"
+          id="middleware set header"
+          className={styles.card}
+        >
+          <h2>
+            Middleware Set Header<span>-&gt;</span>
+          </h2>
+          <p>Middleware Set Header</p>
+        </Link>
+        <Link
+          href="/middleware-geolocation"
+          id="middleware geolocation"
+          className={styles.card}
+        >
+          <h2>
+            Middleware Geolocation<span>-&gt;</span>
+          </h2>
+          <p>Middleware Geolocation</p>
+        </Link>
+        <Link
+          href="/middleware-rewrite"
+          id="middleware rewrite"
+          className={styles.card}
+        >
+          <h2>
+            Middleware Rewrite<span>-&gt;</span>
+          </h2>
+          <p>Middleware Rewrite</p>
+        </Link>
+        <Link href="/ssg" id="ssg" className={styles.card}>
+          <h2>
+            SSG<span>-&gt;</span>
+          </h2>
+          <p>Static Site Generation Page</p>
+        </Link>
+        <Link href="/ssg-dynamic/1" id="ssg dynamic" className={styles.card}>
+          <h2>
+            SSG Dynamic<span>-&gt;</span>
+          </h2>
+          <p>
+            Static Site Generation Page with Dynamic Route&nbsp;
+            <code className={styles['code-sm']}>[id].tsx</code>
+          </p>
+        </Link>
+        <Link
+          href="/ssg-dynamic-fallback/1"
+          id="ssg dynamic fallback"
+          className={styles.card}
+        >
+          <h2>
+            SSG Dynamic Fallback<span>-&gt;</span>
+          </h2>
+          <p>
+            Static Site Generation Page with Dynamic Route&nbsp;
+            <code className={styles['code-sm']}>[id].tsx</code>
+            &nbsp;and fallback
+          </p>
+        </Link>
       </div>
     </main>
   );
