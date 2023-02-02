@@ -12,17 +12,11 @@ public
 # pc
 .DS_Store
 
-# serverless
-.serverless
-.serverless_nextjs
-
-# custom server
-server/
-
 #config
 next.config.js
 sst.config.js
 playwright.config.js
+scripts/run.mjs
 
 # sst
 .open-next
