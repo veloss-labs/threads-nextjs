@@ -1,29 +1,7 @@
 const path = require('path');
-// const { withSentryConfig } = require('@sentry/nextjs');
 const withPlugins = require('next-compose-plugins');
 
 const isProduction = process.env.NODE_ENV === 'production';
-
-// /**
-//  * Sentry Config Options
-//  * @type {import('@sentry/nextjs').SentryWebpackPluginOptions}
-//  */
-// const sentryOptions = {
-//   // Your existing module.exports
-//   sentry: {
-//     // Use `hidden-source-map` rather than `source-map` as the Webpack `devtool`
-//     // for client-side builds. (This will be the default starting in
-//     // `@sentry/nextjs` version 8.0.0.) See
-//     // https://webpack.js.org/configuration/devtool/ and
-//     // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/#use-hidden-source-map
-//     // for more information.
-//     hideSourceMaps: true,
-//   },
-// };
-
-// const SentryWebpackPluginOptions = {
-//   silent: true,
-// };
 
 /**
  * Next Config Options
@@ -41,7 +19,7 @@ const nextConfig = {
   compiler: {
     removeConsole: isProduction
       ? {
-          exclude: ['error', 'warn', 'info'],
+          exclude: ['error'],
         }
       : false,
   },
