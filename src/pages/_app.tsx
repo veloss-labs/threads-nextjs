@@ -37,7 +37,7 @@ export default function App({
         isLoggedIn={isLoggedIn}
         currentProfile={currentProfile}
       >
-        <Component {...pageProps} />;
+        <Component {...pageProps} />
       </Provider>
       <style jsx global>{`
         html {

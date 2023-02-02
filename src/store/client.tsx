@@ -18,7 +18,7 @@ export default function Client({ children, ...otherProps }: ClientProps) {
   return (
     <>
       <DefaultSeo />
-      <AuthProvider {...store}>{children}</AuthProvider>;
+      <AuthProvider {...store}>{children}</AuthProvider>
     </>
   );
 }

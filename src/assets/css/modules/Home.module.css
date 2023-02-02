@@ -7,6 +7,10 @@
   min-height: 100vh;
 }
 
+.gap {
+  height: 70px;
+}
+
 .description {
   display: inherit;
   justify-content: inherit;
@@ -35,6 +39,12 @@
 }
 
 .code {
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.code-sm {
+  font-size: 0.5rem;
   font-weight: 700;
   font-family: var(--font-mono);
 }
