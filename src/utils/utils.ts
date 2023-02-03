@@ -1,5 +1,5 @@
 import { isEmpty, isUndefined } from '~/utils/assertion';
-import { apiHost } from '~/constants/env';
+import { apiHost, apiPrefix } from '~/constants/env';
 import { isBrowser } from '~/libs/browser/dom';
 
 import type { NestedKeyOf, NestedObjectValueOf, Nullable } from '~/ts/common';
@@ -30,10 +30,10 @@ type GetUrlParams = {
 export const getUrl = ({ ctx, nextApiRoutes }: GetUrlParams) => {
   const _NEXT_API_ROUTES_PATHNAME = '/api';
   const _NEXT_COMMON_PATHNAME = '/';
-
-  const baseUrl = nextApiRoutes
-    ? _NEXT_API_ROUTES_PATHNAME
-    : _NEXT_COMMON_PATHNAME;
+  const baseUrl =
+    apiPrefix || nextApiRoutes
+      ? _NEXT_API_ROUTES_PATHNAME
+      : _NEXT_COMMON_PATHNAME;
 
   if (!apiHost) {
     if (ctx && ctx.req) {
@@ -45,5 +45,6 @@ export const getUrl = ({ ctx, nextApiRoutes }: GetUrlParams) => {
       return new URL(baseUrl, location.origin);
     }
   }
+
   return new URL(baseUrl, apiHost);
 };
