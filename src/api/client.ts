@@ -1,22 +1,19 @@
 import ky from 'ky-universal';
-import { _NEXT_APPLICATION_API, type ApiRoutes } from '~/api/env';
+import { apiHost } from '~/constants/env';
+
 import type { Options } from 'ky';
 import type { BaseResponse } from '~/api/ts/schema';
-import { apiHost } from '~/constants/env';
+import type { ApiRoutes } from '~/ts/common';
 
 export const apiClient = ky.create({
   prefixUrl: apiHost,
-  hooks: {
-    beforeRequest: [
-      (request) => {
-        request.headers.set('X-Requested-With', 'ky');
-      },
-    ],
-  },
 });
 
 export class ApiService {
-  static readonly APPLICATION_API = _NEXT_APPLICATION_API;
+  static readonly _API_ROUTES = {
+    csrf: 'csrf',
+    hello: 'hello',
+  };
 
   static async get(pathname: ApiRoutes, options?: Options | undefined) {
     const response = await apiClient.get(pathname, options);

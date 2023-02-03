@@ -1,14 +1,20 @@
 import React from 'react';
 import Layout from '~/components/Layout';
-import type { InferGetServerSidePropsType } from 'next';
-import { ApiService } from '~/api/client';
-import { useQuery } from '@tanstack/react-query';
+import type {
+  GetServerSidePropsContext,
+  InferGetServerSidePropsType,
+} from 'next';
 
-export async function getServerSideProps() {
-  const resp = await ApiService.getJson<{ csrfToken: string }>('csrf');
+import { getCsrfApi } from '~/api/services/app/mock';
+import { useCsrfQuery } from '~/api/services/hook/mock';
+
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
+  const csrfToken = await getCsrfApi({
+    ctx,
+  });
   return {
     props: {
-      csrfToken: resp.csrfToken,
+      csrfToken,
     },
   };
 }
@@ -16,11 +22,8 @@ export async function getServerSideProps() {
 export default function Page({
   csrfToken,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const { data } = useQuery([ApiService.APPLICATION_API.csrf], async (key) => {
-    const path = key.queryKey.at(0);
-    if (!path) return null;
-    const resp = await ApiService.getJson<{ csrfToken: string }>(path);
-    return resp.csrfToken;
+  const { data } = useCsrfQuery({
+    initialData: csrfToken,
   });
 
   return (
