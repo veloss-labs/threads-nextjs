@@ -52,3 +52,6 @@ scripts/env/.env.production
 # sst
 .open-next
 .sst
+# Sentry
+.sentryclirc
+sentry.properties

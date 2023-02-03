@@ -16,6 +16,9 @@ public
 next.config.js
 sst.config.js
 playwright.config.js
+sentry.server.config.js
+sentry.client.config.js
+sentry.edge.config.js
 scripts/run.mjs
 
 # sst

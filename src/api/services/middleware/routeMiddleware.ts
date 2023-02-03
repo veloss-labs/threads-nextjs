@@ -8,7 +8,7 @@ interface RoutesMiddlewareOptions extends BaseApiOptions {
 export const routesMiddleware = (options?: RoutesMiddlewareOptions) => {
   const url = getUrl({
     ctx: options?.ctx,
-    nextApiRoutes: true,
+    nextApiRoutes: false,
   });
 
   const opts = {
