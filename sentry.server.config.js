@@ -11,7 +11,7 @@ const DEPLOY_GROUP =
 Sentry.init({
   dsn: SENTRY_DSN,
   // Adjust this value in production, or use tracesSampler for greater control
-  tracesSampleRate: 1.0,
+  tracesSampleRate: 0.5,
   enabled: DEPLOY_GROUP === 'production',
   ignoreErrors: ['AuthorizationError', 'BadRequestError', 'NetworkError'],
   // ...

@@ -1,10 +1,10 @@
 import { NextResponse, NextRequest } from 'next/server';
+import logger from './utils/logger';
 
 export async function middleware(request: NextRequest) {
   // '/middleware-rewrite' or '/middleware-rewrite/'
   if (request.nextUrl.pathname.match(/^\/middleware-rewrite(\/)?$/)) {
     const { nextUrl: url } = request;
-    console.info('Middleware: rewrite request', url);
     url.searchParams.set('rewritten', 'true');
     return NextResponse.rewrite(url);
   }
@@ -16,7 +16,6 @@ export async function middleware(request: NextRequest) {
   }
 
   if (request.nextUrl.pathname.match(/^\/middleware-set-header(\/)?$/)) {
-    console.info('Middleware: set header request', request);
     // Clone the request headers and set a new header `x-hello-from-middleware1`
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set('x-hello-from-middleware1', 'hello');
@@ -43,7 +42,14 @@ export async function middleware(request: NextRequest) {
   // '/middleware-geolocation' or '/middleware-geolocation/'
   if (request.nextUrl.pathname.match(/^\/middleware-geolocation(\/)?$/)) {
     const { nextUrl: url, geo } = request;
-    console.info('Middleware: geolocation request', url, geo);
+    logger.log(
+      'middleware-geolocation - request',
+      {
+        url: url.toString(),
+        geo: request.geo,
+      },
+      'logging',
+    );
     const country = geo?.country || 'US';
     const city = geo?.city || 'San Francisco';
     const region = geo?.region || 'CA';
@@ -51,6 +57,15 @@ export async function middleware(request: NextRequest) {
     url.searchParams.set('country', country);
     url.searchParams.set('city', city);
     url.searchParams.set('region', region);
+
+    logger.log(
+      'middleware-geolocation - NextResponse.rewrite',
+      {
+        url: url.toString(),
+        geo: url.searchParams.toString(),
+      },
+      'logging',
+    );
 
     return NextResponse.rewrite(url);
   }

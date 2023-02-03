@@ -9,6 +9,7 @@
     "cli:staging": "node --experimental-modules ./scripts/run.mjs -e staging",
     "dev": "run-s cli dev:*",
     "dev:start": "next",
+    "start": "next start",
     "build": "next build",
     "export": "next export",
     "fix": "run-p fix:*",

@@ -25,7 +25,7 @@ const nextConfig = {
   compiler: {
     removeConsole: isProduction
       ? {
-          exclude: ['error'],
+          exclude: ['error', 'debug'],
         }
       : false,
   },
@@ -42,10 +42,8 @@ const nextConfig = {
   compress: true,
 };
 
-module.exports = withPlugins([], nextConfig);
-
 module.exports = withSentryConfig(
-  module.exports,
+  withPlugins([], nextConfig),
   { silent: true },
   { hideSourcemaps: true },
 );

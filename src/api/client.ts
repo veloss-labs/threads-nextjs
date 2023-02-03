@@ -1,5 +1,6 @@
 import ky from 'ky-universal';
-import { apiHost } from '~/constants/env';
+import * as Sentry from '@sentry/nextjs';
+import { apiHost, sentryDSN } from '~/constants/env';
 
 import type { Options } from 'ky';
 import type { BaseResponse } from '~/api/ts/schema';
@@ -7,6 +8,26 @@ import type { ApiRoutes } from '~/ts/common';
 
 export const apiClient = ky.create({
   prefixUrl: apiHost,
+  hooks: {
+    beforeError: [
+      (error) => {
+        const { response, request } = error;
+        if (response && sentryDSN) {
+          Sentry.withScope(function (scope) {
+            // group errors together based on their request and response
+            scope.setFingerprint([
+              request.method,
+              response.url,
+              String(response.status),
+            ]);
+            Sentry.captureException(error);
+          });
+        }
+
+        return error;
+      },
+    ],
+  },
 });
 
 export class ApiService {
