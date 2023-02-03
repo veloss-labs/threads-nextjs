@@ -22,6 +22,7 @@ declare global {
       NEXT_PUBLIC_API_HOST: string;
       NEXT_PUBLIC_GA_TRACKING_ID: string;
       NEXT_PUBLIC_SENTRY_DSN: string;
+      NEXT_PUBLIC_DEPLOY_GROUP: 'local' | 'development' | 'production';
     }
   }
 }

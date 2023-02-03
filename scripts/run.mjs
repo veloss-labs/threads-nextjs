@@ -67,6 +67,7 @@ function environmentSetting(params) {
     '.env.sbx',
     '.env.demo',
     '.env.dmo',
+    '.env.example'
   ];
 
   const checkList = fs

@@ -1,8 +1,16 @@
 import React from 'react';
 import Layout from '~/components/Layout';
 import { InferGetServerSidePropsType, GetServerSidePropsContext } from 'next';
+import { isEmpty } from '~/utils/assertion';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
+  if (isEmpty(context.query)) {
+    return {
+      props: {
+        qs: 'No query string',
+      },
+    };
+  }
   return {
     props: {
       qs: JSON.stringify(context.query),

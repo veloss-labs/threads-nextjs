@@ -4,7 +4,6 @@ import React from 'react';
 import { Inter } from '@next/font/google';
 
 import Provider from '~/store/provider';
-import { setApiEnv } from '~/api/env';
 
 // types
 import type { NextPage } from 'next';
@@ -49,8 +48,6 @@ export default function App({
 }
 
 App.getInitialProps = async ({ Component, ctx }: AppContext) => {
-  setApiEnv(ctx);
-
   let pageProps = {};
   // 하위 컴포넌트에 getInitialProps가 있다면 추가 (각 개별 컴포넌트에서 사용할 값 추가)
   if (Component.getInitialProps) {

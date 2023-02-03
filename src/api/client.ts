@@ -1,22 +1,41 @@
 import ky from 'ky-universal';
-import { getApiEnv, type ApiRoutes } from '~/api/env';
+import * as Sentry from '@sentry/nextjs';
+import { apiHost, sentryDSN } from '~/constants/env';
+
 import type { Options } from 'ky';
 import type { BaseResponse } from '~/api/ts/schema';
-
-const apiEnv = getApiEnv();
+import type { ApiRoutes } from '~/ts/common';
 
 export const apiClient = ky.create({
-  prefixUrl: apiEnv.url.toString(),
+  prefixUrl: apiHost,
   hooks: {
-    beforeRequest: [
-      (request) => {
-        request.headers.set('X-Requested-With', 'ky');
+    beforeError: [
+      (error) => {
+        const { response, request } = error;
+        if (response && sentryDSN) {
+          Sentry.withScope(function (scope) {
+            // group errors together based on their request and response
+            scope.setFingerprint([
+              request.method,
+              response.url,
+              String(response.status),
+            ]);
+            Sentry.captureException(error);
+          });
+        }
+
+        return error;
       },
     ],
   },
 });
 
 export class ApiService {
+  static readonly _API_ROUTES = {
+    csrf: 'csrf',
+    hello: 'hello',
+  };
+
   static async get(pathname: ApiRoutes, options?: Options | undefined) {
     const response = await apiClient.get(pathname, options);
     return response;
