@@ -27,7 +27,7 @@ const nextConfig = {
   compiler: {
     removeConsole: isProduction
       ? {
-          exclude: ['error', 'debug'],
+          exclude: ['error'],
         }
       : false,
   },
@@ -42,7 +42,7 @@ const nextConfig = {
   // * Next.js는 렌더링 된 콘텐츠와 정적 파일을 압축하기 위해 gzip 압축을 제공합니다.
   // https://nextjs.org/docs/api-reference/next.config.js/compression
   compress: true,
-  webpack: (config, { isServer }) => {
+  webpack: (config) => {
     // Add the new plugin to the existing webpack plugins
     config.plugins.push(
       new CopyPlugin({
