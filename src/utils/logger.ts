@@ -2,7 +2,15 @@ import * as Sentry from '@sentry/nextjs';
 import { environment, sentryDSN } from '~/constants/env';
 import { isBrowser } from '~/libs/browser/dom';
 
-type LogCategory = 'logging' | 'client' | 'http' | 'router' | 'error';
+type LogCategory =
+  | 'client'
+  | 'server'
+  | 'api'
+  | 'db'
+  | 'middleware'
+  | 'pages'
+  | 'components'
+  | 'logging';
 
 type Extra = Record<string, any>;
 
@@ -51,7 +59,7 @@ class Logger {
    * @param extra Arbitrary data to be logged
    * @param category A log message category that will be prepended
    */
-  log(message: string, extra?: Extra, label?: LogCategory) {
+  log(label: LogCategory, message: string, extra?: Extra) {
     if (environment === 'development') {
       if (isBrowser) {
         console.log(
@@ -114,7 +122,6 @@ class Logger {
    * @param extra Arbitrary data to be logged that will appear in prod logs
    */
   error(message: string, error: Error, extra?: Extra) {
-    console.log('sentryDSN', sentryDSN);
     if (sentryDSN) {
       Sentry.withScope(function (scope) {
         scope.setLevel('error');
