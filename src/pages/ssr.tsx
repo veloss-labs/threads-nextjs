@@ -1,7 +1,6 @@
 import React from 'react';
 import Layout from '~/components/Layout';
 import type { InferGetServerSidePropsType } from 'next';
-import logger from '~/utils/logger';
 
 export async function getServerSideProps() {
   return {
@@ -25,20 +24,6 @@ export default function Page({
           refreshed, because the page is rendered on the server on every
           request.
         </p>
-        <button
-          type="button"
-          onClick={() => {
-            logger.log(
-              'getServerSideProps()',
-              {
-                time: Date.now(),
-              },
-              'logging',
-            );
-          }}
-        >
-          Logger
-        </button>
       </article>
     </Layout>
   );

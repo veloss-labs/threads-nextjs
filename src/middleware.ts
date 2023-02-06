@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
-import logger from './utils/logger';
+import logger from '~/utils/logger';
 
 export async function middleware(request: NextRequest) {
   // '/middleware-rewrite' or '/middleware-rewrite/'
@@ -32,24 +32,9 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  if (request.nextUrl.pathname.match(/^\/middleware-fetch(\/)?$/)) {
-    console.info(
-      await fetch('https://webhook.site/facbcacc-08f2-4fb1-b67f-a26e3382b64e'),
-    );
-    return NextResponse.next();
-  }
-
   // '/middleware-geolocation' or '/middleware-geolocation/'
   if (request.nextUrl.pathname.match(/^\/middleware-geolocation(\/)?$/)) {
     const { nextUrl: url, geo } = request;
-    logger.log(
-      'middleware-geolocation - request',
-      {
-        url: url.toString(),
-        geo: request.geo,
-      },
-      'logging',
-    );
     const country = geo?.country || 'US';
     const city = geo?.city || 'San Francisco';
     const region = geo?.region || 'CA';
@@ -57,15 +42,6 @@ export async function middleware(request: NextRequest) {
     url.searchParams.set('country', country);
     url.searchParams.set('city', city);
     url.searchParams.set('region', region);
-
-    logger.log(
-      'middleware-geolocation - NextResponse.rewrite',
-      {
-        url: url.toString(),
-        geo: url.searchParams.toString(),
-      },
-      'logging',
-    );
 
     return NextResponse.rewrite(url);
   }

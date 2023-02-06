@@ -12,7 +12,7 @@ Sentry.init({
   dsn: SENTRY_DSN,
   // Adjust this value in production, or use tracesSampler for greater control
   tracesSampleRate: 0.5,
-  enabled: DEPLOY_GROUP === 'production',
+  enabled: ['production', 'development'].includes(DEPLOY_GROUP),
   ignoreErrors: [
     'AuthorizationError',
     'BadRequestError',
