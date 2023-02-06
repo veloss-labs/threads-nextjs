@@ -9,15 +9,15 @@ public
 # vscode
 .vscode
 
+# partytown
+/public/~partytown/
+
 # pc
 .DS_Store
 
 # serverless
 .serverless
 .serverless_nextjs
-
-# custom server
-server/
 
 # sst
 .open-next

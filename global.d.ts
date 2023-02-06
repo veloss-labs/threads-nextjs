@@ -4,7 +4,7 @@ declare global {
   namespace NodeJS {
     interface ProcessEnv {
       NODE_ENV: 'development' | 'production';
-      DEPLOY_GROUP: 'development' | 'production';
+      DEPLOY_GROUP: 'development' | 'production' | 'local';
 
       SENTRY_DSN: string;
 

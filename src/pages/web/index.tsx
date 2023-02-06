@@ -24,6 +24,7 @@ export default function Page({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { data } = useCsrfQuery({
     initialData: csrfToken,
+    staleTime: 1000 * 60 * 60,
   });
 
   return (

@@ -9,6 +9,9 @@ public
 # vscode
 .vscode
 
+# partytown
+/public/~partytown/
+
 # pc
 .DS_Store
 
