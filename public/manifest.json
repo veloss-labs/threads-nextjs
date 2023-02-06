@@ -15,7 +15,8 @@
     },
     {
       "src": "icon/android/android-launchericon-192-192.png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "maskable"
     },
     {
       "src": "icon/android/android-launchericon-144-144.png",

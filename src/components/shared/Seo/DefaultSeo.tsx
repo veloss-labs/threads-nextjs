@@ -21,7 +21,7 @@ const _NEXT_ANDROID_SPLASH_SCREEN = {
 };
 
 const _NEXT_APPLE_SPLASH_SCREEN = {
-  ref: 'apple-touch-startup-image',
+  ref: 'apple-touch-icon',
   media: {
     iPhone_14_Pro_Max_portrait:
       '(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)',

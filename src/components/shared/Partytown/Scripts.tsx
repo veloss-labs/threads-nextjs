@@ -5,7 +5,6 @@ import { deployGroup, gaTrackingID } from '~/constants/env';
 
 const Scripts = () => {
   const disabled = useMemo(() => !gaTrackingID || deployGroup === 'local', []);
-  // const disabled = useMemo(() => false, []);
 
   if (disabled) {
     return null;

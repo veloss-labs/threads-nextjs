@@ -11,6 +11,46 @@ const withPlugins = require('next-compose-plugins');
 
 const isProduction = process.env.NODE_ENV === 'production';
 
+// You might need to insert additional domains in script-src if you are using external services
+const ContentSecurityPolicy = `
+  default-src 'self';
+  script-src 'self' 'unsafe-eval' 'unsafe-inline' giscus.app;
+  style-src 'self' 'unsafe-inline';
+  img-src * blob: data:;
+  media-src 'none';
+  connect-src *;
+  font-src 'self';
+  frame-src giscus.app
+`
+
+const securityHeaders = [
+  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
+  {
+    key: 'Referrer-Policy',
+    value: 'strict-origin-when-cross-origin',
+  },
+  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
+  {
+    key: 'X-Content-Type-Options',
+    value: 'nosniff',
+  },
+  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-DNS-Prefetch-Control
+  {
+    key: 'X-DNS-Prefetch-Control',
+    value: 'on',
+  },
+  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
+  {
+    key: 'Strict-Transport-Security',
+    value: 'max-age=31536000; includeSubDomains',
+  },
+  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Feature-Policy
+  {
+    key: 'Permissions-Policy',
+    value: 'camera=(), microphone=(), geolocation=()',
+  },
+]
+
 /**
  * Next Config Options
  * @type {import('next').NextConfig} */
@@ -42,6 +82,14 @@ const nextConfig = {
   // * Next.js는 렌더링 된 콘텐츠와 정적 파일을 압축하기 위해 gzip 압축을 제공합니다.
   // https://nextjs.org/docs/api-reference/next.config.js/compression
   compress: true,
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: securityHeaders,
+      },
+    ]
+  },
   webpack: (config) => {
     // Add the new plugin to the existing webpack plugins
     config.plugins.push(
