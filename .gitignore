@@ -13,6 +13,9 @@
 # playwright
 /playwright-report
 
+# partytown
+/public/~partytown/
+
 # next.js
 /.next/
 /out/
@@ -52,6 +55,7 @@ scripts/env/.env.production
 # sst
 .open-next
 .sst
+
 # Sentry
 .sentryclirc
 sentry.properties
