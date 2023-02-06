@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 
-const program = new Commander.Command('create-template-app')
+const program = new Commander.Command('sst-next-template')
   .option(
     '-e, --environment <environment>',
     '어떤 .env.* 환경변수 파일을 사용할지 선택합니다.',
