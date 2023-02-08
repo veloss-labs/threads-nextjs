@@ -1,5 +1,4 @@
 import { NextResponse, NextRequest } from 'next/server';
-import logger from '~/utils/logger';
 
 export async function middleware(request: NextRequest) {
   // '/middleware-rewrite' or '/middleware-rewrite/'
