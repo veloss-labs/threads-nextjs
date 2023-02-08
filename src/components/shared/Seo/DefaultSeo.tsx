@@ -12,6 +12,7 @@ const _NEXT_ANDROID_SPLASH_SCREEN = {
   ref: 'icon',
   media: {
     'android-launchericon-512-512': '512x512',
+    'android-launchericon-384-384': '384x384',
     'android-launchericon-192-192': '192x192',
     'android-launchericon-144-144': '144x144',
     'android-launchericon-96-96': '96x96',
@@ -104,7 +105,7 @@ const DefaultSeo = () => {
         },
         {
           rel: 'manifest',
-          href: '/manifest.json',
+          href: '/app.webmanifest',
         },
         {
           rel: 'preload',
