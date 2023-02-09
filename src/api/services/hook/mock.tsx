@@ -32,7 +32,7 @@ export const useHelloQuery = (options?: UseBaseQuery) => {
 
   const loader: QueryFunction<string, string[]> = async (key) => {
     const opts = Object.assign({}, apiOptions, { key });
-    return getCsrfApi(opts);
+    return getHelloApi(opts);
   };
 
   const baseOptions = Object.assign({}, queryOpts, {});

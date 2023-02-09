@@ -59,3 +59,10 @@ scripts/env/.env.production
 # Sentry
 .sentryclirc
 sentry.properties
+
+# serivce worker
+/public/sw.js
+/public/sw.js.map
+/public/workbox-*.js
+/public/workbox-*.js.map
+/public/fallback-*.js

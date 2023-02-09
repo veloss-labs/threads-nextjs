@@ -32,12 +32,6 @@ const Scripts = () => {
           `,
         }}
       />
-      {/* <Script
-        id="sw-script"
-        type="text/partytown"
-        src="/sw.js"
-        data-service-worker="true"
-      /> */}
     </>
   );
 };

@@ -5,25 +5,31 @@ import type {
   InferGetServerSidePropsType,
 } from 'next';
 
-import { getCsrfApi } from '~/api/services/app/mock';
-import { useCsrfQuery } from '~/api/services/hook/mock';
+import { getCsrfApi, getHelloApi } from '~/api/services/app/mock';
+import { useHelloQuery } from '~/api/services/hook/mock';
 
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const csrfToken = await getCsrfApi({
     ctx,
   });
+
+  const name = await getHelloApi({
+    ctx,
+  });
   return {
     props: {
       csrfToken,
+      name,
     },
   };
 }
 
 export default function Page({
   csrfToken,
+  name,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const { data } = useCsrfQuery({
-    initialData: csrfToken,
+  const { data } = useHelloQuery({
+    initialData: name,
     staleTime: 1000 * 60 * 60,
   });
 
@@ -52,8 +58,7 @@ export default function Page({
         <br />
         <p>
           <b>Test 2:</b>
-          CSR should have get the CSRF token in the response data. CSRF_TOKEN:{' '}
-          <br />
+          CSR should have get the String in the response data. Hello Api: <br />
           {/* 말줄임 표시 */}
           <span
             style={{
