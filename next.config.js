@@ -97,6 +97,7 @@ const _nextConfig = withPWA({
   dest: 'public',
   cacheOnFrontEndNav: true,
   disable: !isProduction,
+  cacheId: 'sst:nextjs',
 })(nextConfig);
 
 module.exports = withSentryConfig(
