@@ -98,6 +98,9 @@ const _nextConfig = withPWA({
   cacheOnFrontEndNav: true,
   disable: !isProduction,
   cacheId: 'sst:nextjs',
+  publicExcludes: [
+    '!~partytown/**/*',
+  ]
 })(nextConfig);
 
 module.exports = withSentryConfig(
