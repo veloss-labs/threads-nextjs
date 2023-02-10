@@ -27,3 +27,6 @@ scripts/run.mjs
 # sst
 .open-next
 .sst
+
+# scripts
+dist/index.js

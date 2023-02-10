@@ -22,3 +22,6 @@ public
 # sst
 .open-next
 .sst
+
+# scripts
+dist/index.js
