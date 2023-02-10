@@ -1,5 +1,5 @@
 import '~/assets/css/globals.css';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import { Inter } from '@next/font/google';
 

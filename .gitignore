@@ -48,6 +48,9 @@ next-env.d.ts
 scripts/env/.env.development
 scripts/env/.env.production
 
+# cli
+dist/
+
 # .serverless
 .serverless
 .serverless_nextjs
