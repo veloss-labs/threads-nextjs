@@ -2,6 +2,14 @@ export type ApiRoutes = URL | Request | string;
 
 export type Nullable<T> = T | null;
 
+export type Undefinedable<T> = T | undefined;
+
+export type NullableUndefinedable<T> = T | null | undefined;
+
+export type IsKnown<T, Y, N> = unknown extends T ? N : Y;
+
+export type IsRequired<T> = IsKnown<T, T, T | undefined>;
+
 export type NestedObject<T extends Record<string, any>> = {
   [K in keyof T]: T[K] extends Record<string, any> ? NestedObject<T[K]> : T[K];
 };
