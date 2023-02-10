@@ -55,6 +55,7 @@
     "react-dom": "^18.2.0",
     "react-use": "^17.4.0",
     "sass": "^1.57.1",
+    "sitemap": "^7.1.1",
     "web-streams-polyfill": "^3.2.1",
     "zod": "^3.20.2",
     "zustand": "^4.3.2"
@@ -72,8 +73,8 @@
     "@types/react-dom": "^18.0.10",
     "@typescript-eslint/eslint-plugin": "^5.49.0",
     "@vitejs/plugin-react-swc": "^3.0.1",
-    "commander": "^10.0.0",
     "chalk": "^4",
+    "commander": "^10.0.0",
     "copy-webpack-plugin": "^11.0.0",
     "dotenv": "^16.0.3",
     "eslint": "^8.33.0",

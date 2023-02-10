@@ -23,7 +23,6 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
     },
   };
 }
-
 export default function Page({
   csrfToken,
   name,

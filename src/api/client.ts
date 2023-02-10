@@ -34,6 +34,8 @@ export class ApiService {
   static readonly _API_ROUTES = {
     csrf: 'csrf',
     hello: 'hello',
+    sitemap: 'sitemap',
+    sitemap_id: (id: string | number) => `sitemap/${id}`,
   };
 
   static async get(pathname: ApiRoutes, options?: Options | undefined) {
