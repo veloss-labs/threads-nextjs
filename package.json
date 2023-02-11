@@ -23,7 +23,7 @@
     "partytown": "partytown copylib public/~partytown",
     "cli:build": "tsup scripts/cli/index.ts --minify",
     "cli:dev": "tsup scripts/cli/index.ts  --watch",
-    "postinstall": "run-s cli:build"
+    "cli:start": "run-s cli:build"
   },
   "keywords": [
     "nextjs",
@@ -38,7 +38,7 @@
   "dependencies": {
     "@builder.io/partytown": "^0.7.5",
     "@next/font": "^13.1.6",
-    "@sentry/nextjs": "^7.36.0",
+    "@sentry/nextjs": "^7.37.1",
     "@tanstack/react-query": "^4.24.4",
     "@tanstack/react-query-devtools": "^4.24.4",
     "body-scroll-lock": "^4.0.0-beta.0",
@@ -54,11 +54,11 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-use": "^17.4.0",
-    "sass": "^1.57.1",
+    "sass": "^1.58.0",
     "sitemap": "^7.1.1",
     "web-streams-polyfill": "^3.2.1",
-    "zod": "^3.20.2",
-    "zustand": "^4.3.2"
+    "zod": "^3.20.6",
+    "zustand": "^4.3.3"
   },
   "devDependencies": {
     "@anansi/browserslist-config": "^1.4.1",
@@ -69,15 +69,15 @@
     "@types/lodash-es": "^4.17.6",
     "@types/node": "^18.11.18",
     "@types/qs": "^6.9.7",
-    "@types/react": "^18.0.27",
+    "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.10",
-    "@typescript-eslint/eslint-plugin": "^5.49.0",
-    "@vitejs/plugin-react-swc": "^3.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.51.0",
+    "@vitejs/plugin-react-swc": "^3.1.0",
     "chalk": "^4",
     "commander": "^10.0.0",
     "copy-webpack-plugin": "^11.0.0",
     "dotenv": "^16.0.3",
-    "eslint": "^8.33.0",
+    "eslint": "^8.34.0",
     "eslint-config-next": "^13.1.6",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-jsx-a11y": "^6.7.1",
@@ -88,11 +88,11 @@
     "next-compose-plugins": "^2.2.1",
     "next-pwa": "^5.6.0",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.8.3",
+    "prettier": "^2.8.4",
     "sst": "^2.0.16",
     "tsup": "^6.6.0",
     "typescript": "^4.9.5",
-    "vite": "^4.0.4",
-    "vitest": "^0.28.3"
+    "vite": "^4.1.1",
+    "vitest": "^0.28.4"
   }
 }
