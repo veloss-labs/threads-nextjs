@@ -234,9 +234,8 @@ const runCli = async () => {
 
   try {
     const _root = cliResults.flags.root;
-    const _env = cliResults.flags.env;
-    const next_env = replaceEnvFileName(_env);
-    const envData = processenvironmentSetting(next_env, _root);
+    const _env = replaceEnvFileName(cliResults.flags.env);
+    const envData = processenvironmentSetting(_env, _root);
     logger.info(`[Environment] - ${JSON.stringify(envData)}`);
   } catch (error) {
     throw error;
