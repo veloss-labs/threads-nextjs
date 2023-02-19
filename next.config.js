@@ -97,6 +97,7 @@ const _nextConfig = withPWA({
   dest: 'public',
   cacheOnFrontEndNav: true,
   disable: !isProduction,
+  skipWaiting: true,
   cacheId: 'sst:nextjs',
   publicExcludes: ['!~partytown/**/*'],
 })(nextConfig);
