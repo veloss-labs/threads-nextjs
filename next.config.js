@@ -8,6 +8,7 @@ const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 const partytown = require('@builder.io/partytown/utils');
 const withPWA = require('next-pwa');
+const runtimeCaching = require('next-pwa/cache');
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -100,6 +101,7 @@ const _nextConfig = withPWA({
   skipWaiting: true,
   cacheId: 'sst:nextjs',
   publicExcludes: ['!~partytown/**/*'],
+  runtimeCaching,
 })(nextConfig);
 
 module.exports = withSentryConfig(
