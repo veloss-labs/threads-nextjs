@@ -25,8 +25,8 @@ export function NextApp({ stack }: StackContext) {
 
   stack.addOutputs({
     url: site.url ?? 'undefined',
-    bucketName: site.cdk.bucket.bucketName,
-    distributionId: site.cdk.distribution.distributionId,
+    bucketName: site.cdk?.bucket.bucketName ?? 'undefined',
+    distributionId: site.cdk?.distribution.distributionId ?? 'undefined',
   });
 
   return {
