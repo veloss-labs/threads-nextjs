@@ -1,7 +1,7 @@
 import '~/assets/css/globals.css';
 import React from 'react';
 
-import { Inter } from '@next/font/google';
+import { Inter } from 'next/font/google';
 
 import Provider from '~/store/provider';
 
