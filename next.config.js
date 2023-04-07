@@ -3,10 +3,7 @@
 // https://nextjs.org/docs/api-reference/next.config.js/introduction
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 const { withSentryConfig } = require('@sentry/nextjs');
-
 const path = require('path');
-const CopyPlugin = require('copy-webpack-plugin');
-const partytown = require('@builder.io/partytown/utils');
 const withPWA = require('next-pwa');
 const runtimeCaching = require('next-pwa/cache');
 
@@ -43,58 +40,43 @@ const nextConfig = {
   // * Next.js는 렌더링 된 콘텐츠와 정적 파일을 압축하기 위해 gzip 압축을 제공합니다.
   // https://nextjs.org/docs/api-reference/next.config.js/compression
   compress: true,
-  headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
-          // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-DNS-Prefetch-Control
-          {
-            key: 'X-DNS-Prefetch-Control',
-            value: 'on',
-          },
-          // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains',
-          },
-          // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Feature-Policy
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()',
-          },
-        ],
-      },
-    ];
-  },
-  webpack: (config) => {
-    // Add the new plugin to the existing webpack plugins
-    config.plugins.push(
-      new CopyPlugin({
-        patterns: [
-          {
-            from: partytown.libDirPath(),
-            to: path.join(__dirname, 'public', '~partytown'),
-          },
-        ],
-      }),
-    );
-
-    return config;
-  },
+  // headers() {
+  //   return [
+  //     {
+  //       source: '/(.*)',
+  //       headers: [
+  //         // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
+  //         {
+  //           key: 'Referrer-Policy',
+  //           value: 'strict-origin-when-cross-origin',
+  //         },
+  //         // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
+  //         {
+  //           key: 'X-Content-Type-Options',
+  //           value: 'nosniff',
+  //         },
+  //         // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-DNS-Prefetch-Control
+  //         {
+  //           key: 'X-DNS-Prefetch-Control',
+  //           value: 'on',
+  //         },
+  //         // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
+  //         {
+  //           key: 'Strict-Transport-Security',
+  //           value: 'max-age=31536000; includeSubDomains',
+  //         },
+  //         // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Feature-Policy
+  //         {
+  //           key: 'Permissions-Policy',
+  //           value: 'camera=(), microphone=(), geolocation=()',
+  //         },
+  //       ],
+  //     },
+  //   ];
+  // },
 };
 
-const _nextConfig = withPWA({
+const _nextWithPWAConfig = withPWA({
   dest: 'public',
   cacheOnFrontEndNav: true,
   disable: !isProduction,
@@ -104,8 +86,10 @@ const _nextConfig = withPWA({
   runtimeCaching,
 })(nextConfig);
 
-module.exports = withSentryConfig(
-  _nextConfig,
+const _nextWithSentryConfig = withSentryConfig(
+  _nextWithPWAConfig,
   { silent: true },
   { hideSourcemaps: true },
 );
+
+module.exports = _nextWithSentryConfig;
