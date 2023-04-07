@@ -23,10 +23,16 @@ export function NextApp({ stack }: StackContext) {
     },
   });
 
+  const { cdk } = site;
+
+  const url = site.url || 'localhost';
+  const bucketName = cdk?.bucket?.bucketName || 'undefined';
+  const distributionId = cdk?.distribution?.distributionId || 'undefined';
+
   stack.addOutputs({
-    url: site.url ?? 'undefined',
-    bucketName: site.cdk?.bucket.bucketName ?? 'undefined',
-    distributionId: site.cdk?.distribution.distributionId ?? 'undefined',
+    url,
+    bucketName,
+    distributionId,
   });
 
   return {
