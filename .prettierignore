@@ -24,4 +24,4 @@ public
 .sst
 
 # scripts
-dist/index.js
+dist/**/*

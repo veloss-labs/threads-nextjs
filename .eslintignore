@@ -29,4 +29,4 @@ scripts/run.mjs
 .sst
 
 # scripts
-dist/index.js
+dist/**/*
