@@ -18,6 +18,7 @@ export function NextApp({ stack }: StackContext) {
     timeout: 30,
     cdk: {
       bucket: {
+        versioned: true,
         bucketName: S3_BUCKET_NAME,
       },
     },

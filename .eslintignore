@@ -17,12 +17,18 @@ public
 
 #config
 next.config.js
+next.config.mjs
+
 sst.config.js
+
 playwright.config.js
+
 sentry.server.config.js
 sentry.client.config.js
 sentry.edge.config.js
-scripts/run.mjs
+
+tailwind.config.js
+postcss.config.js
 
 # sst
 .open-next
@@ -30,3 +36,9 @@ scripts/run.mjs
 
 # scripts
 dist/**/*
+
+# env
+src/env/**/*
+
+# docker
+data/**/*

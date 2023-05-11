@@ -1,13 +1,13 @@
 import type { DependencyList, EffectCallback } from 'react';
 import { useEffect, useLayoutEffect } from 'react';
 import { useRef } from 'react';
-import { useUnmount } from 'react-use';
 import { depsAreSame } from './depsAreSame';
 import {
   type BasicTarget,
   getTargetElement,
   isBrowser,
 } from '~/libs/browser/dom';
+import { useUnmount } from '../hooks/useUnmount';
 
 const createEffectWithTarget = (
   useEffectType: typeof useEffect | typeof useLayoutEffect,

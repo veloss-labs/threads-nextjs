@@ -1,0 +1,44 @@
+.border-border {
+  --tw-border-opacity: 1;
+  border-color: #dddddd;
+  border-color: rgba(221, 221, 221, var(--tw-border-opacity));
+}
+
+.text-default {
+  --tw-text-opacity: 1;
+  color: #12124b;
+  color: rgba(18, 18, 75, var(--tw-text-opacity));
+}
+
+.py-4\.5 {
+  padding-bottom: 1.125rem;
+  padding-top: 1.125rem;
+}
+
+.section-x-inset-2xl {
+  max-width: 1536px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .section-x-inset-2xl {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+
+  .lg\:hover\:bg-azure3:hover {
+    --tw-bg-opacity: 1;
+    background-color: #e1ecf2;
+    background-color: rgba(225, 236, 242, var(--tw-bg-opacity));
+  }
+}
+
+@media (min-width: 768px) {
+  .section-x-inset-2xl {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}

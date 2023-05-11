@@ -69,3 +69,6 @@ sentry.properties
 /public/workbox-*.js
 /public/workbox-*.js.map
 /public/fallback-*.js
+
+# db
+drizzle/**/*

@@ -1,5 +1,3 @@
-import * as Sentry from '@sentry/nextjs';
-import { environment, sentryDSN } from '~/constants/env';
 import { isBrowser } from '~/libs/browser/dom';
 
 type LogCategory =
@@ -40,16 +38,14 @@ class Logger {
    * @param extra Arbitrary data to be logged
    */
   debug(label: LogCategory, message: string, extra?: Extra) {
-    if (environment === 'development') {
-      if (isBrowser) {
-        console.debug(
-          `%c[${label}]${message}`,
-          'color: #fff; background-color: #17a2b8; padding: 2px 4px; border-radius: 4px;',
-          extra,
-        );
-      } else {
-        console.debug(`[${label}]:${message}`, extra);
-      }
+    if (isBrowser) {
+      console.debug(
+        `%c[${label}]${message}`,
+        'color: #fff; background-color: #17a2b8; padding: 2px 4px; border-radius: 4px;',
+        extra,
+      );
+    } else {
+      console.debug(`[${label}]:${message}`, extra);
     }
   }
 
@@ -60,28 +56,26 @@ class Logger {
    * @param category A log message category that will be prepended
    */
   log(label: LogCategory, message: string, extra?: Extra) {
-    if (environment === 'development') {
-      if (isBrowser) {
-        console.log(
-          `%c[${label}]:${message}`,
-          'color: #fff; background-color: #17a2b8; padding: 2px 4px; border-radius: 4px;',
-          extra,
-        );
-      } else {
-        console.log(`[${label}]:${message}`, extra);
-      }
-      return;
+    if (isBrowser) {
+      console.log(
+        `%c[${label}]:${message}`,
+        'color: #fff; background-color: #17a2b8; padding: 2px 4px; border-radius: 4px;',
+        extra,
+      );
+    } else {
+      console.log(`[${label}]:${message}`, extra);
     }
+    return;
 
-    if (sentryDSN) {
-      Sentry.withScope(function (scope) {
-        scope.setLevel('log');
-        for (const key in extra) {
-          scope.setExtra(key, extra[key]);
-        }
-        Sentry.captureMessage(message);
-      });
-    }
+    // if (sentryDSN) {
+    //   Sentry.withScope(function (scope) {
+    //     scope.setLevel('log');
+    //     for (const key in extra) {
+    //       scope.setExtra(key, extra[key]);
+    //     }
+    //     Sentry.captureMessage(message);
+    //   });
+    // }
   }
 
   /**
@@ -91,17 +85,17 @@ class Logger {
    * @param extra Arbitrary data to be logged that will appear in prod logs
    */
   warn(message: string, extra?: Extra) {
-    if (sentryDSN) {
-      Sentry.withScope(function (scope) {
-        scope.setLevel('warning');
+    // if (sentryDSN) {
+    //   Sentry.withScope(function (scope) {
+    //     scope.setLevel('warning');
 
-        for (const key in extra) {
-          scope.setExtra(key, extra[key]);
-        }
+    //     for (const key in extra) {
+    //       scope.setExtra(key, extra[key]);
+    //     }
 
-        Sentry.captureMessage(message);
-      });
-    }
+    //     Sentry.captureMessage(message);
+    //   });
+    // }
 
     if (isBrowser) {
       console.warn(
@@ -121,20 +115,21 @@ class Logger {
    * @param error The error that occurred
    * @param extra Arbitrary data to be logged that will appear in prod logs
    */
-  error(message: string, error: Error, extra?: Extra) {
-    if (sentryDSN) {
-      Sentry.withScope(function (scope) {
-        scope.setLevel('error');
+  error(error: Error, message?: string, extra?: Extra) {
+    // if (sentryDSN) {
+    //   Sentry.withScope(function (scope) {
+    //     scope.setLevel('error');
 
-        for (const key in extra) {
-          scope.setExtra(key, extra[key]);
-        }
+    //     for (const key in extra) {
+    //       scope.setExtra(key, extra[key]);
+    //     }
 
-        Sentry.captureException(error);
-      });
-    }
-    console.error(message, {
+    //     Sentry.captureException(error);
+    //   });
+    // }
+    console.error({
       error,
+      message,
       extra,
     });
   }

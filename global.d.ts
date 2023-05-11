@@ -7,6 +7,7 @@ declare global {
       DEPLOY_GROUP: 'development' | 'production' | 'local';
 
       SENTRY_DSN: string;
+      DATABASE_URL: string;
 
       AWS_SST_NAME: string;
       AWS_SST_ID: string;
@@ -23,6 +24,9 @@ declare global {
       NEXT_PUBLIC_GA_TRACKING_ID: string;
       NEXT_PUBLIC_SENTRY_DSN: string;
       NEXT_PUBLIC_DEPLOY_GROUP: 'local' | 'development' | 'production';
+
+      GITHUB_CLIENT_ID: string;
+      GITHUB_CLIENT_SECRET: string;
     }
   }
 }
