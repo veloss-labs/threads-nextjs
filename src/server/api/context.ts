@@ -1,27 +1,50 @@
+import { db } from '~/server/db/prisma';
+import { getSession } from '~/server/auth/getSession';
+import { getServerSession } from 'next-auth';
+import { authConfig } from '~/server/auth/options';
+
 import type { GetServerSidePropsContext } from 'next';
 import type { NextRequest } from 'next/server';
 import type { inferAsyncReturnType } from '@trpc/server';
 import type { CreateNextContextOptions } from '@trpc/server/adapters/next';
-// import { db } from '~/server/db';
+import type { SessionUser } from '~/server/auth/options';
 
 type CreateContextOptions = {
-  //   auth: SignedInAuthObject | SignedOutAuthObject | null;
   req: NextRequest | GetServerSidePropsContext['req'] | null;
+  session: SessionUser | null;
+};
+
+type CreateContextApiOptions = CreateNextContextOptions & {
+  type: 'api';
+};
+
+type CreateContextRscOptions = {
+  type: 'rsc';
+  getSession: typeof getSession;
 };
 
 export const createContextInner = (opts: CreateContextOptions) => {
   return {
-    // auth: opts.auth,
+    db,
     req: opts.req,
-    // db,
+    session: opts.session,
   };
 };
 
-export const createContext = (opts: CreateNextContextOptions) => {
-  //   const auth = getAuth(opts.req);
+export const createContext = async (
+  opts: CreateContextApiOptions | CreateContextRscOptions,
+) => {
+  if (opts.type === 'rsc') {
+    const session = await opts.getSession();
+    return createContextInner({
+      req: null,
+      session,
+    });
+  }
+  const session = await getServerSession(opts.req, opts.res, authConfig);
   return createContextInner({
-    // auth,
     req: opts.req,
+    session: session?.user ?? null,
   });
 };
 

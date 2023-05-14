@@ -71,4 +71,5 @@ sentry.properties
 /public/fallback-*.js
 
 # db
-drizzle/**/*
+data/**/*
+prisma/migrations/**/*

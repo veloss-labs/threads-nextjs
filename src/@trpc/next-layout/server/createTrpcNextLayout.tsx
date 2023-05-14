@@ -86,16 +86,18 @@ function getQueryKey(
       ];
 }
 
+export type GetRequestStorage<Router extends AnyRouter> = {
+  _trpc: {
+    queryClient: QueryClient;
+    context: inferRouterContext<Router>;
+  };
+};
+
 export function createTRPCNextLayout<TRouter extends AnyRouter>(
   opts: CreateTRPCNextLayoutOptions<TRouter>,
 ): CreateTRPCNextLayout<TRouter> {
   function getState() {
-    const requestStorage = getRequestStorage<{
-      _trpc: {
-        queryClient: QueryClient;
-        context: inferRouterContext<TRouter>;
-      };
-    }>();
+    const requestStorage = getRequestStorage<GetRequestStorage<TRouter>>();
     requestStorage._trpc = requestStorage._trpc ?? {
       cache: Object.create(null),
       context: opts.createContext(),
@@ -118,7 +120,7 @@ export function createTRPCNextLayout<TRouter extends AnyRouter>(
     const path = [...callOpts.path];
     const lastPart = path.pop();
     const state = getState();
-    const ctx = state.context;
+    const ctx = await state.context;
     const { queryClient } = state;
 
     if (lastPart === 'dehydrate' && path.length === 0) {

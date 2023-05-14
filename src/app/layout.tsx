@@ -2,6 +2,7 @@ import { env } from '~/env/server.mjs';
 import '~/assets/css/globals.css';
 import { PreloadResources } from './preload-resources';
 import { ApiService } from '~/api/client';
+import { ClientProviders } from './client-provider';
 
 export const metadata = {
   metadataBase: new URL('http://localhost:3000'),
@@ -35,16 +36,18 @@ export default function RootLayout({
         type="application/opensearchdescription+xml"
         title="Hashnode"
       />
-      <body>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `window.ENV = ${JSON.stringify({
-              API_BASE_URL: env.NEXT_PUBLIC_API_HOST,
-            })}`,
-          }}
-        />
-        {children}
-      </body>
+      <ClientProviders>
+        <body>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `window.ENV = ${JSON.stringify({
+                API_BASE_URL: env.NEXT_PUBLIC_API_HOST,
+              })}`,
+            }}
+          />
+          {children}
+        </body>
+      </ClientProviders>
     </html>
   );
 }

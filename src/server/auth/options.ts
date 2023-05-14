@@ -1,23 +1,26 @@
-import { createDrizzleAdapter } from '~/server/auth/adapters/drizzle-orm';
-import { db } from '~/server/db/drizzle-db';
-import { type SolidAuthConfig } from './server';
-import GithubProvider from '@auth/core/providers/github';
+import { PrismaAdapter } from '@next-auth/prisma-adapter';
+import GitHubProvider from 'next-auth/providers/github';
 import { env } from '~/env/server.mjs';
+import { db } from '~/server/db/prisma';
 
-export type { DefaultSession, Session } from '@auth/core/types';
+import type { NextAuthOptions } from 'next-auth';
+import type { User } from 'next-auth';
 
-/**
- * Module augmentation for `@auth/core/types` types
- * Allows us to add custom properties to the `session` object
- * and keep type safety
- * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
- */
+type UserId = string;
 
-declare module '@auth/core/types' {
-  interface Session extends DefaultSession {
-    user: {
-      id: string;
-    } & DefaultSession['user'];
+declare module 'next-auth/jwt' {
+  interface JWT {
+    id: UserId;
+  }
+}
+
+export type SessionUser = User & {
+  id: UserId;
+};
+
+declare module 'next-auth' {
+  interface Session {
+    user: SessionUser;
   }
 }
 
@@ -26,25 +29,54 @@ declare module '@auth/core/types' {
  *
  * @see https://next-auth.js.org/configuration/options
  */
-export const authConfig: SolidAuthConfig = {
-  adapter: createDrizzleAdapter(db),
+export const authConfig: NextAuthOptions = {
+  // huh any! I know.
+  // This is a temporary fix for prisma client.
+  // @see https://github.com/prisma/prisma/issues/16117
+  // @ts-ignore
+  adapter: PrismaAdapter(db),
+  secret: env.NEXTAUTH_SECRET,
   providers: [
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore growing pains
-    GithubProvider({
+    GitHubProvider({
       clientId: env.GITHUB_CLIENT_ID,
       clientSecret: env.GITHUB_CLIENT_SECRET,
     }),
   ],
   callbacks: {
-    session({ session, user }) {
-      if (session.user) {
-        session.user.id = user.id;
+    async session({ token, session }) {
+      if (token) {
+        session.user.id = token.id;
+        session.user.name = token.name;
+        session.user.email = token.email;
+        session.user.image = token.picture;
       }
       return session;
     },
+    async jwt({ token, user }) {
+      const dbUser = await db.user.findFirst({
+        where: {
+          email: token.email,
+        },
+      });
+
+      if (!dbUser) {
+        if (user) {
+          token.id = user?.id;
+        }
+        return token;
+      }
+
+      return {
+        id: dbUser.id,
+        name: dbUser.name,
+        email: dbUser.email,
+        picture: dbUser.image,
+      };
+    },
   },
   session: {
-    strategy: 'database',
+    strategy: 'jwt',
   },
 };

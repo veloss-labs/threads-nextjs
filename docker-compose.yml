@@ -1,0 +1,27 @@
+# Use root/example as user/password credentials
+version: '3.1'
+
+services:
+  db:
+    image: mysql
+    container_name: sst-next-blog-db
+    ports:
+      - 3306:3306
+    # NOTE: use of "mysql_native_password" is not recommended: https://dev.mysql.com/doc/refman/8.0/en/upgrading-from-previous-series.html#upgrade-caching-sha2-password
+    # (this is just an example, not intended to be a production configuration)
+    command: 
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    restart: always
+    environment:
+      MYSQL_DATABASE: prisma-db
+      MYSQL_ROOT_PASSWORD: example
+      TZ: Asia/Seoul
+    volumes:
+      - ./data/:/var/lib/mysql # -v 옵션 (다렉토리 마운트 설정)
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080

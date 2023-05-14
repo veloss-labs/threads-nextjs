@@ -5,13 +5,18 @@ import { buttonVariants } from '~/components/blog/ui/Button';
 import { Icons } from '~/components/blog/Icons';
 import { Label } from '~/components/blog/ui/Label';
 import { Input } from '~/components/blog/ui/Input';
-import { signIn } from '~/server/auth/client';
+import { signIn } from 'next-auth/react';
+import { api } from '~/libs/api/client';
 
 interface AuthFormProps {
   type: 'signin' | 'signup';
 }
 
 export default function AuthForm({ type }: AuthFormProps) {
+  const { data } = api.example.hello.useQuery({
+    text: 'Test RSC TRPC Call',
+  });
+
   const [isGitHubLoading, setIsGitHubLoading] = useState<boolean>(false);
   return (
     <div className="grid gap-6">

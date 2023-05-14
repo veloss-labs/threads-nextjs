@@ -15,6 +15,7 @@ export const serverSchema = z.object({
     // VERCEL_URL doesn't include `https` so it cant be validated as a URL
     process.env.VERCEL ? z.string() : z.string().url(),
   ),
+  NEXTAUTH_SECRET: z.string().min(1),
   AUTH_SECRET: z.string().min(1),
   AWS_SST_NAME:
     process.env.NODE_ENV === 'production'
@@ -51,15 +52,7 @@ export const serverSchema = z.object({
       : z.string().optional(),
   DATABASE_URL:
     process.env.NODE_ENV === 'production'
-      ? z
-          .string()
-          .regex(
-            /^mysql:\/\/(?<user>[^:]+):(?<password>[^@]+)@(?<host>[^:]+):(?<port>[^\/]+)\/(?<database>[^?]+)/,
-            {
-              message:
-                'DATABASE_URL must be a valid mysql url of the form: mysql://user:password@host:port/database',
-            },
-          )
+      ? z.string().min(1)
       : z.string().optional(),
   GITHUB_CLIENT_ID: z.string().min(1),
   GITHUB_CLIENT_SECRET: z.string().min(1),
@@ -87,6 +80,7 @@ export const serverEnv = {
   GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
   NEXTAUTH_URL: process.env.NEXTAUTH_URL,
   AUTH_SECRET: process.env.AUTH_SECRET,
+  NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
 };
 
 /**
