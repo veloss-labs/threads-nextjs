@@ -1,23 +1,33 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useCallback, useState, useTransition } from 'react';
 import classNames from 'classnames';
 import { buttonVariants } from '~/components/blog/ui/Button';
 import { Icons } from '~/components/blog/Icons';
 import { Label } from '~/components/blog/ui/Label';
 import { Input } from '~/components/blog/ui/Input';
 import { signIn } from 'next-auth/react';
-import { api } from '~/libs/api/client';
+import { useRouter } from 'next/navigation';
+import { PAGE_ENDPOINTS } from '~/constants/constants';
 
 interface AuthFormProps {
   type: 'signin' | 'signup';
 }
 
 export default function AuthForm({ type }: AuthFormProps) {
-  const { data } = api.example.hello.useQuery({
-    text: 'Test RSC TRPC Call',
-  });
-
   const [isGitHubLoading, setIsGitHubLoading] = useState<boolean>(false);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  const onGithubSignin = useCallback(async () => {
+    setIsGitHubLoading(true);
+
+    await signIn('github');
+
+    startTransition(() => {
+      router.push(PAGE_ENDPOINTS.ROOT);
+    });
+  }, [router]);
+
   return (
     <div className="grid gap-6">
       <form>
@@ -88,14 +98,11 @@ export default function AuthForm({ type }: AuthFormProps) {
       <button
         type="button"
         className={classNames(buttonVariants({ variant: 'outline' }))}
-        onClick={() => {
-          setIsGitHubLoading(true);
-          signIn('github');
-        }}
+        onClick={onGithubSignin || isPending}
         disabled={isGitHubLoading}
         // disabled={isLoading || isGitHubLoading}
       >
-        {isGitHubLoading ? (
+        {isGitHubLoading || isPending ? (
           <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
         ) : (
           <Icons.gitHub className="mr-2 h-4 w-4" />
