@@ -1,4 +1,5 @@
 !process.env.SKIP_ENV_VALIDATION && (await import('./src/env/server.mjs'));
+// import { withSentryConfig } from '@sentry/nextjs';
 // This file sets a custom webpack configuration to use your Next.js app
 // with Sentry.
 // https://nextjs.org/docs/api-reference/next.config.js/introduction
@@ -60,5 +61,13 @@ const nextConfig = {
     ];
   },
 };
+
+// export default nextConfig;
+
+// const _nextWithSentryConfig = withSentryConfig(
+//   nextConfig,
+//   { silent: true },
+//   { hideSourcemaps: true },
+// );
 
 export default nextConfig;

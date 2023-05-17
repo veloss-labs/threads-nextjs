@@ -94,7 +94,7 @@
     "@testing-library/react": "^14.0.0",
     "@types/cookie": "^0.5.1",
     "@types/lodash-es": "^4.17.7",
-    "@types/node": "^20.1.5",
+    "@types/node": "^20.1.7",
     "@types/react": "^18.2.6",
     "@types/react-dom": "^18.2.4",
     "@typescript-eslint/eslint-plugin": "^5.59.6",
@@ -103,7 +103,7 @@
     "aws-cdk-lib": "2.79.1",
     "chalk": "^5.2.0",
     "commander": "^10.0.1",
-    "constructs": "10.2.25",
+    "constructs": "10.2.26",
     "dotenv": "^16.0.3",
     "eslint": "^8.40.0",
     "eslint-config-next": "^13.4.2",
@@ -118,12 +118,12 @@
     "prettier": "^2.8.8",
     "prettier-plugin-tailwindcss": "^0.3.0",
     "prisma": "^4.14.0",
-    "sst": "^2.8.22",
+    "sst": "^2.8.23",
     "tailwindcss": "^3.3.2",
     "tailwindcss-animate": "^1.0.5",
     "tsup": "^6.7.0",
     "typescript": "^5.0.4",
-    "vite": "^4.3.6",
+    "vite": "^4.3.7",
     "vitest": "^0.31.0"
   }
 }
