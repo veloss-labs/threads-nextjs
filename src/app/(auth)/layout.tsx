@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import React from 'react';
 import { PAGE_ENDPOINTS } from '~/constants/constants';
-import { api } from '~/libs/api/server';
+import { api } from '~/@trpc/next-layout/server/server';
 
 interface LayoutProps {
   children: React.JSX.Element;

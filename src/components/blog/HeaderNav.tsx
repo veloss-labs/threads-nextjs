@@ -3,7 +3,7 @@ import React from 'react';
 import classNames from 'classnames';
 import Link from 'next/link';
 import { buttonVariants } from '~/components/blog/ui/Button';
-import { api } from '~/libs/api/client';
+import { api } from '~/@trpc/next-layout/client/client';
 import { UserAccountNav } from './UserAccountNav';
 
 export default function HeaderNav() {

@@ -16,7 +16,6 @@ export const serverSchema = z.object({
     process.env.VERCEL ? z.string() : z.string().url(),
   ),
   NEXTAUTH_SECRET: z.string().min(1),
-  AUTH_SECRET: z.string().min(1),
   AWS_SST_NAME:
     process.env.NODE_ENV === 'production'
       ? z.string().min(1)
@@ -79,7 +78,6 @@ export const serverEnv = {
   GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
   GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
   NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-  AUTH_SECRET: process.env.AUTH_SECRET,
   NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
 };
 

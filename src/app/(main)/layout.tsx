@@ -1,6 +1,6 @@
 import React from 'react';
 import Header from '~/components/blog/Header';
-import { api } from '~/libs/api/server';
+import { api } from '~/@trpc/next-layout/server/server';
 
 interface MainLayoutProps {
   children: React.ReactNode;

@@ -1,5 +1,5 @@
 'use client';
-import { api } from '~/libs/api/client';
+import { api } from '~/@trpc/next-layout/client/client';
 
 interface ClientProvidersProps {
   children: React.JSX.Element;
