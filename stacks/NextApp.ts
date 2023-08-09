@@ -26,14 +26,9 @@ export function NextApp({ stack }: StackContext) {
 
   const { cdk } = site;
 
-  const url = site.url || 'localhost';
-  const bucketName = cdk?.bucket?.bucketName || 'undefined';
-  const distributionId = cdk?.distribution?.distributionId || 'undefined';
-
   stack.addOutputs({
-    url,
-    bucketName,
-    distributionId,
+    Id: cdk?.distribution?.distributionId,
+    SiteUrl: site.url,
   });
 
   return {

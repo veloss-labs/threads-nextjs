@@ -9,5 +9,6 @@ export function PreloadResources() {
   ReactDOM.preconnect('https://fonts.gstatic.com', {
     crossOrigin: 'anonymous',
   });
+
   return null;
 }

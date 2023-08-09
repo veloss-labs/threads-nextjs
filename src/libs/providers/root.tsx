@@ -1,10 +1,10 @@
 'use client';
 import { api } from '~/@trpc/next-layout/client/client';
 
-interface ClientProvidersProps {
+interface ProvidersProps {
   children: React.JSX.Element;
 }
 
-export function ClientProviders({ children }: ClientProvidersProps) {
+export function RootProviders({ children }: ProvidersProps) {
   return <api.Provider>{children}</api.Provider>;
 }

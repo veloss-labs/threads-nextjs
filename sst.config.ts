@@ -1,12 +1,10 @@
+import { SSTConfig } from 'sst';
 import { NextApp } from './stacks/NextApp';
 
 const AWS_SST_NAME = process.env.AWS_SST_NAME;
 const AWS_SST_STAGE = process.env.AWS_SST_STAGE;
 const AWS_REGION = process.env.AWS_REGION;
 
-/**
- * SST Config Options
- * @type {import('sst').SSTConfig} */
 export default {
   config() {
     return {
@@ -18,4 +16,4 @@ export default {
   stacks(app) {
     app.stack(NextApp);
   },
-};
+} satisfies SSTConfig;

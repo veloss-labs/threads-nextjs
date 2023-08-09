@@ -1,8 +1,8 @@
-import { env } from '~/env/server.mjs';
+import { env } from '../../env.mjs';
 import '~/assets/css/globals.css';
-import { PreloadResources } from './preload-resources';
+import { PreloadResources } from '~/libs/react/preload';
 import { ApiService } from '~/api/client';
-import { ClientProviders } from './client-provider';
+import { RootProviders } from '~/libs/providers/root';
 
 export const metadata = {
   metadataBase: new URL('http://localhost:3000'),
@@ -36,7 +36,7 @@ export default function RootLayout({
         type="application/opensearchdescription+xml"
         title="Hashnode"
       />
-      <ClientProviders>
+      <RootProviders>
         <body>
           <script
             dangerouslySetInnerHTML={{
@@ -47,7 +47,7 @@ export default function RootLayout({
           />
           {children}
         </body>
-      </ClientProviders>
+      </RootProviders>
     </html>
   );
 }
