@@ -62,12 +62,4 @@ const nextConfig = {
   },
 };
 
-// export default nextConfig;
-
-// const _nextWithSentryConfig = withSentryConfig(
-//   nextConfig,
-//   { silent: true },
-//   { hideSourcemaps: true },
-// );
-
 export default nextConfig;
