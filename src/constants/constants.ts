@@ -1,5 +1,3 @@
-export const API_ENDPOINTS = {} as const;
-
 export const QUERIES_KEY = {};
 
 export const MUTATIONS_KEY = {};
@@ -7,8 +5,6 @@ export const MUTATIONS_KEY = {};
 export const ASSET_URL = {
   SEO_IMAGE: '/images/seo_image.png',
 };
-
-export const NEXT_ROUTES_API_ENDPOINTS = {} as const;
 
 export const PAGE_ENDPOINTS = {
   ROOT: '/',

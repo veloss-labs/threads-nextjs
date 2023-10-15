@@ -1,11 +1,10 @@
 {
   "extends": [
     "next/core-web-vitals",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:react/recommended",
+    "next",
     "plugin:jsx-a11y/recommended",
-    "plugin:react-hooks/recommended",
-    "plugin:prettier/recommended"
+    "plugin:prettier/recommended",
+    "plugin:tailwindcss/recommended"
   ],
   "parserOptions": {
     "project": "tsconfig.json",

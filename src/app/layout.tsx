@@ -1,8 +1,7 @@
-import { env } from '../../env.mjs';
 import '~/assets/css/globals.css';
 import { PreloadResources } from '~/libs/react/preload';
-import { ApiService } from '~/api/client';
-import { RootProviders } from '~/libs/providers/root';
+import { Inter } from 'next/font/google';
+import { Providers } from './providers';
 
 export const metadata = {
   metadataBase: new URL('http://localhost:3000'),
@@ -21,33 +20,20 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: {
+const inter = Inter({ subsets: ['latin'] });
+
+interface RoutesProps {
   children: React.ReactNode;
-}) {
-  ApiService.setBaseUrl(env.NEXT_PUBLIC_API_HOST);
+}
+
+export default function Layout({ children }: RoutesProps) {
   return (
-    <html lang="en">
-      <PreloadResources />
-      <link
-        rel="search"
-        href="/opensearch.xml"
-        type="application/opensearchdescription+xml"
-        title="Hashnode"
-      />
-      <RootProviders>
-        <body>
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `window.ENV = ${JSON.stringify({
-                API_BASE_URL: env.NEXT_PUBLIC_API_HOST,
-              })}`,
-            }}
-          />
-          {children}
-        </body>
-      </RootProviders>
-    </html>
+    <Providers>
+      <html lang="en">
+        <PreloadResources />
+        {/* <body className={`${inter.className} bg-dark-1`}>{children}</body> */}
+        <body className={`${inter.className}`}>{children}</body>
+      </html>
+    </Providers>
   );
 }

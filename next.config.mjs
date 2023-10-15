@@ -7,8 +7,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   experimental: {
-    appDir: true,
-    legacyBrowsers: true,
+    serverActions: true,
     serverComponentsExternalPackages: ['@prisma/client'],
   },
   poweredByHeader: false,

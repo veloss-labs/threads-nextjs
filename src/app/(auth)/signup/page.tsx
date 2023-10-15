@@ -1,6 +1,12 @@
 import React from 'react';
-import AuthForm from '~/components/blog/AuthForm';
+import type { Metadata } from 'next';
+import AuthForm from '~/components/auth/auth-form';
+
+export const metadata: Metadata = {
+  title: 'Create an account',
+  description: 'Create an account to get started.',
+};
 
 export default function Page() {
-  return <AuthForm type="signup" />;
+  return <AuthForm />;
 }
