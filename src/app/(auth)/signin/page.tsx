@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Metadata } from 'next';
-import AuthForm from '~/components/auth/auth-form';
+import SignInForm from '~/components/auth/signin-form';
 
 export const metadata: Metadata = {
   title: 'Login',
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <AuthForm />;
+  return <SignInForm />;
 }

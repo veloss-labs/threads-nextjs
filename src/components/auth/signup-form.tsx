@@ -15,6 +15,7 @@ import { Button } from '~/components/ui/button';
 import { Icons } from '~/components/icons';
 
 import { createUser } from '~/server/actions/users';
+import { useFormState, useFormStatus } from '~/libs/react/form';
 
 const formSchema = z.object({
   username: z.string().min(1),
@@ -23,11 +24,21 @@ const formSchema = z.object({
 
 type FormFields = z.infer<typeof formSchema>;
 
-interface Props {}
+type Result = {
+  resultCode: number;
+  resultMessage: string | null;
+};
 
-export default function AuthForm(props: Props) {
-  console.log('AuthForm', props);
-  const [isPending, startTransition] = useTransition();
+export default function SignupForm() {
+  const initialState: Result = {
+    resultCode: -1,
+    resultMessage: null,
+  };
+
+  const [state, formAction] = useFormState<Result, FormFields>(
+    createUser,
+    initialState,
+  );
 
   const form = useForm<FormFields>({
     resolver: zodResolver(formSchema),
@@ -37,14 +48,9 @@ export default function AuthForm(props: Props) {
     },
   });
 
-  const onSubmit = useCallback(
-    async (values: FormFields) => {
-      startTransition(() => {
-        createUser(values);
-      });
-    },
-    [startTransition],
-  );
+  const onSubmit = useCallback((values: FormFields) => {
+    formAction(values);
+  }, []);
 
   return (
     <div className="grid gap-6">
@@ -89,12 +95,12 @@ export default function AuthForm(props: Props) {
                 </FormItem>
               )}
             />
-            <Button type="submit" disabled={isPending}>
-              {isPending && (
-                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              Submit
-            </Button>
+            {state?.resultMessage && (
+              <p className="text-sm font-medium text-red-500 dark:text-red-900">
+                {state?.resultMessage}
+              </p>
+            )}
+            <SignupForm.SubmitButton />
           </div>
         </form>
       </Form>
@@ -109,3 +115,13 @@ export default function AuthForm(props: Props) {
     </div>
   );
 }
+
+SignupForm.SubmitButton = function Item() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" disabled={pending} aria-disabled={pending}>
+      {pending && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
+      Submit
+    </Button>
+  );
+};

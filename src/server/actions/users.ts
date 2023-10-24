@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation';
 
 import { db } from '~/server/db/prisma';
 import { generateHash, generateSalt } from '~/server/utils/password';
-import { AUTH_CRDENTIALS_USER_SELECT } from '~/server/db/selector/user.selector';
 import { PAGE_ENDPOINTS, RESULT_CODE } from '~/constants/constants';
 
 type FormData = {
@@ -11,7 +10,15 @@ type FormData = {
   password: string;
 };
 
-export const createUser = async (formData: FormData) => {
+type Result = {
+  resultCode: number;
+  resultMessage: string | null;
+};
+
+export const createUser = async <State = any>(
+  prevState: State,
+  formData: FormData,
+): Promise<Result> => {
   try {
     const exists = await db.user.findUnique({
       where: {
@@ -21,7 +28,6 @@ export const createUser = async (formData: FormData) => {
 
     if (exists) {
       return {
-        data: null,
         resultCode: RESULT_CODE.ALREADY_EXIST,
         resultMessage: 'User already exists',
       };
@@ -38,10 +44,9 @@ export const createUser = async (formData: FormData) => {
       },
     });
 
-    redirect(PAGE_ENDPOINTS.AUTH.SIGNIN);
+    return redirect(PAGE_ENDPOINTS.AUTH.SIGNIN);
   } catch (error) {
     return {
-      data: null,
       resultCode: RESULT_CODE.FAIL,
       resultMessage: 'Failed to create user',
     };
