@@ -2,31 +2,35 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-arm64-openssl-1.0.x"]
+  provider = "prisma-client-js"
+  // binaryTargets = ["native", "linux-arm64-openssl-1.0.x"]
 }
 
 datasource db {
-  provider     = "mysql"
+  // provider     = "mysql"
+  provider     = "sqlite"
   url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  username      String?
-  gh_username   String?
-  email         String?   @unique
-  emailVerified DateTime? @map(name: "email_verified")
-  image         String?
-  bio           String?
-  onboarded     Boolean   @default(false)
-  createdAt     DateTime  @default(now()) @map(name: "created_at")
-  updatedAt     DateTime  @updatedAt @map(name: "updated_at")
-  accounts      Account[]
-  sessions      Session[]
-  threads       Thread[]
+  id               String            @id @default(cuid())
+  name             String?
+  username         String?           @unique
+  password         String?
+  salt             String?
+  email            String?           @unique
+  emailVerified    DateTime?         @map(name: "email_verified")
+  image            String?
+  bio              String?
+  onboarded        Boolean           @default(false) @map("on_boarded")
+  createdAt        DateTime          @default(now()) @map(name: "created_at")
+  updatedAt        DateTime          @updatedAt @map(name: "updated_at")
+  accounts         Account[]
+  sessions         Session[]
+  threads          Thread[]
+  communities      Community[]
+  communityMembers CommunityMember[]
 
   @@map(name: "users")
 }
@@ -75,15 +79,65 @@ model VerificationToken {
   @@map(name: "verification_tokens")
 }
 
-model Thread {
-  id        String   @id @default(cuid())
-  title     String
-  userId    String   @map(name: "user_id")
-  parentId  String?  @map(name: "parent_id")
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Community {
+  id               String            @id @default(cuid())
+  username         String
+  name             String            @unique
+  image            String?
+  bio              String?
+  creatorId        String            @map(name: "creator_id")
+  createdAt        DateTime          @default(now()) @map(name: "created_at")
+  updatedAt        DateTime          @updatedAt @map(name: "updated_at")
+  creator          User              @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  communityThreads CommunityThread[]
+  CommunityMembers CommunityMember[]
 
+  @@index([createdAt], map: "communities_created_at")
+  @@index([creatorId])
+  @@map(name: "communities")
+}
+
+model CommunityThread {
+  id          String    @id @default(cuid())
+  communityId String    @map(name: "community_id")
+  threadId    String    @map(name: "thread_id")
+  createdAt   DateTime  @default(now()) @map(name: "created_at")
+  updatedAt   DateTime  @updatedAt @map(name: "updated_at")
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  thread      Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([communityId])
+  @@index([threadId])
+  @@map(name: "community_threads")
+}
+
+model CommunityMember {
+  id          String    @id @default(cuid())
+  communityId String    @map(name: "community_id")
+  userId      String    @map(name: "user_id")
+  createdAt   DateTime  @default(now()) @map(name: "created_at")
+  updatedAt   DateTime  @updatedAt @map(name: "updated_at")
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([communityId])
+  @@index([userId])
+  @@map(name: "community_members")
+}
+
+model Thread {
+  id               String            @id @default(cuid())
+  text             String
+  reply_to         String?
+  level            Int?              @default(0)
+  has_replies      Boolean           @default(false)
+  userId           String            @map(name: "user_id")
+  createdAt        DateTime          @default(now()) @map(name: "created_at")
+  updatedAt        DateTime          @updatedAt @map(name: "updated_at")
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  communityThreads CommunityThread[]
+
+  @@index([createdAt], map: "threads_created_at")
   @@index([userId])
   @@map(name: "threads")
 }

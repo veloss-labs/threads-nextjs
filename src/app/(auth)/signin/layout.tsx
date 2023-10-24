@@ -26,16 +26,16 @@ export default function Layout({ children }: Props) {
         <div className="flex flex-col space-y-2 text-center">
           <Icons.threads className="mx-auto h-6 w-6" />
           <h1 className="text-2xl font-semibold tracking-tight">
-            Sign up to Threads
+            Sign in to Threads
           </h1>
         </div>
         {children}
         <p className="px-8 text-center text-sm">
           <Link
-            href={PAGE_ENDPOINTS.AUTH.SIGNIN}
+            href={PAGE_ENDPOINTS.AUTH.SIGNUP}
             className="underline underline-offset-4"
           >
-            Have an account? Sign in
+            Don&apos;t have an account? Sign Up
           </Link>
         </p>
       </div>

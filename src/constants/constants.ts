@@ -35,6 +35,8 @@ export const STATUS_CODE = {
 export const RESULT_CODE = {
   // 성공
   OK: 0,
+  // 실패
+  FAIL: -1,
   // 잘못된 패스워드
   INCORRECT_PASSWORD: 4004,
   // 존재하지 않음

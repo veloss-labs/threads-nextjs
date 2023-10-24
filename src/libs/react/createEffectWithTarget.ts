@@ -1,3 +1,4 @@
+'use client';
 import type { DependencyList, EffectCallback } from 'react';
 import { useEffect, useLayoutEffect } from 'react';
 import { useRef } from 'react';

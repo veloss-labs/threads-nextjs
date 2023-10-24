@@ -73,3 +73,5 @@ sentry.properties
 # db
 data/**/*
 prisma/migrations/**/*
+*.db
+*.db-journal

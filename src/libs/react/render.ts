@@ -1,3 +1,4 @@
+'use client';
 import type * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import type { Root } from 'react-dom/client';

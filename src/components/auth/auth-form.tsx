@@ -1,9 +1,8 @@
 'use client';
-import React from 'react';
+import React, { useCallback, useTransition } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
-
 import {
   Form,
   FormControl,
@@ -12,29 +11,37 @@ import {
   FormMessage,
 } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
-import { Button } from '../ui/button';
+import { Button } from '~/components/ui/button';
+import { Icons } from '~/components/icons';
+
+import { createUser } from '~/server/actions/users';
 
 const formSchema = z.object({
-  userId: z.string().min(1),
+  username: z.string().min(1),
   password: z.string().min(6),
 });
 
 type FormFields = z.infer<typeof formSchema>;
 
 export default function AuthForm() {
+  const [isPending, startTransition] = useTransition();
+
   const form = useForm<FormFields>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      userId: '',
+      username: '',
       password: '',
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
-  }
+  const onSubmit = useCallback(
+    async (values: FormFields) => {
+      startTransition(() => {
+        createUser(values);
+      });
+    },
+    [startTransition],
+  );
 
   return (
     <div className="grid gap-6">
@@ -43,13 +50,13 @@ export default function AuthForm() {
           <div className="grid gap-5">
             <FormField
               control={form.control}
-              name="userId"
+              name="username"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
                     <Input
                       type="text"
-                      placeholder="username or email"
+                      placeholder="username"
                       autoCapitalize="none"
                       autoComplete="username"
                       autoCorrect="off"
@@ -79,7 +86,12 @@ export default function AuthForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit">Submit</Button>
+            <Button type="submit" disabled={isPending}>
+              {isPending && (
+                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Submit
+            </Button>
           </div>
         </form>
       </Form>

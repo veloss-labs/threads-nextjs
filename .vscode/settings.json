@@ -1,4 +1,12 @@
 {
   "solidity.compileUsingRemoteVersion": "v0.5.16+commit.9c3226ce",
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "name": "sst-next-app",
+      "database": "${workspaceFolder:sst-next-app}/prisma/dev.db"
+    }
+  ]
 }
