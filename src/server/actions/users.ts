@@ -30,19 +30,12 @@ export const createUser = async (formData: FormData) => {
     const salt = generateSalt();
     const hash = generateHash(formData.password, salt);
 
-    const data = await db.user.create({
+    await db.user.create({
       data: {
         username: formData.username,
         password: hash,
         salt,
       },
-    });
-
-    const user = await db.user.findUnique({
-      where: {
-        id: data.id,
-      },
-      select: AUTH_CRDENTIALS_USER_SELECT,
     });
 
     redirect(PAGE_ENDPOINTS.AUTH.SIGNIN);

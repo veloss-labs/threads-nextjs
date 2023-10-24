@@ -23,7 +23,10 @@ const formSchema = z.object({
 
 type FormFields = z.infer<typeof formSchema>;
 
-export default function AuthForm() {
+interface Props {}
+
+export default function AuthForm(props: Props) {
+  console.log('AuthForm', props);
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<FormFields>({
