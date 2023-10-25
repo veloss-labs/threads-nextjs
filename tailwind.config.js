@@ -1,5 +1,4 @@
-const colors = require('tailwindcss/colors');
-const { fontSize } = require('tailwindcss/defaultTheme');
+const { fontFamily } = require('tailwindcss/defaultTheme');
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {

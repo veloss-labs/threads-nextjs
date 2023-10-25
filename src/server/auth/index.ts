@@ -24,6 +24,25 @@ declare module 'next-auth/jwt' {
   }
 }
 
+declare module 'next-auth' {
+  /**
+   * Returned by `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
+   */
+  interface Session {
+    user: {
+      id: string;
+      name: string | undefined;
+      username: string;
+      email: string | undefined;
+      emailVerified: boolean;
+      image: string | undefined;
+      profile: {
+        bio: string | undefined;
+      };
+    };
+  }
+}
+
 export const authOptions = {
   providers: [
     GitHub({
@@ -33,7 +52,6 @@ export const authOptions = {
         return {
           id: profile.id.toString(),
           name: profile.name || profile.login,
-          gh_username: profile.login,
           email: profile.email,
           image: profile.avatar_url,
         };
@@ -43,7 +61,6 @@ export const authOptions = {
       id: 'credentials',
       name: 'Credentials',
       async authorize(credentials) {
-        console.log('credentials: ', credentials);
         if (!credentials?.username || !credentials?.password) {
           return null;
         }
@@ -55,8 +72,6 @@ export const authOptions = {
             },
             select: AUTH_CRDENTIALS_USER_SELECT,
           });
-
-          console.log('user: ', user);
 
           if (!user) {
             return null;
@@ -73,7 +88,7 @@ export const authOptions = {
             }
           }
 
-          return omit(user, ['password', 'salt', 'createdAt']);
+          return omit(user, ['password', 'salt']);
         } catch (error) {
           console.error(error);
           return null;
@@ -112,9 +127,9 @@ export const authOptions = {
         // @ts-expect-error
         username: token?.user?.username,
         // @ts-expect-error
-        bio: token?.user?.bio ?? undefined,
+        emailVerified: token?.user?.emailVerified || false,
         // @ts-expect-error
-        onboarded: token?.user?.onboarded ?? undefined,
+        profile: token?.user?.profile || {},
       };
       return session;
     },
@@ -129,9 +144,11 @@ export function getSession() {
       name: string | undefined;
       username: string;
       email: string | undefined;
+      emailVerified: boolean;
       image: string | undefined;
-      onboarded: boolean;
-      bio: string | undefined;
+      profile: {
+        bio: string | undefined;
+      };
     };
   } | null>;
 }

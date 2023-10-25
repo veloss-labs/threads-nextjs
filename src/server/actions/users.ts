@@ -41,6 +41,11 @@ export const createUser = async <State = any>(
         username: formData.username,
         password: hash,
         salt,
+        profile: {
+          create: {
+            bio: undefined,
+          },
+        },
       },
     });
 

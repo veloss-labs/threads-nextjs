@@ -7,6 +7,8 @@ import { cn } from '~/utils/utils';
 import { SITE_CONFIG } from '~/constants/constants';
 import type { Metadata } from 'next';
 
+const url = new URL('http://localhost:3000');
+
 export const metadata: Metadata = {
   title: SITE_CONFIG.title,
   description: SITE_CONFIG.description,
@@ -38,7 +40,7 @@ export const metadata: Metadata = {
       },
     ],
   },
-  metadataBase: new URL('http://localhost:3000'),
+  metadataBase: url,
   manifest: '/manifest.json',
   viewport: {
     width: 'device-width',
@@ -47,6 +49,19 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: '/',
+  },
+  openGraph: {
+    title: SITE_CONFIG.title,
+    description: SITE_CONFIG.description,
+    url: url.href,
+    siteName: SITE_CONFIG.title,
+    images: [
+      {
+        url: SITE_CONFIG.ogImage,
+      },
+    ],
+    locale: 'en_US',
+    type: 'article',
   },
 };
 
@@ -68,9 +83,8 @@ interface RoutesProps {
 export default function Layout({ children }: RoutesProps) {
   return (
     <Providers>
-      <html lang="en">
+      <html lang="ko" dir="ltr">
         <PreloadResources />
-        {/* <body className={`${inter.className} bg-dark-1`}>{children}</body> */}
         <body
           className={cn(
             'min-h-screen bg-background font-sans antialiased',

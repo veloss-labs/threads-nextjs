@@ -12,6 +12,9 @@ export const PAGE_ENDPOINTS = {
     SIGNIN: '/signin',
     SIGNUP: '/signup',
   },
+  MY_PAGE: {
+    ID: (id: string) => `/@${id}`,
+  },
 } as const;
 
 export const SITE_CONFIG = {
@@ -63,3 +66,11 @@ export const RESULT_CODE = {
   // 로그인 할 수 없음
   CANNOT_BE_LOGIN: 5000,
 } as const;
+
+export const URL_STATE_KEY = {
+  modal: 'modalType',
+};
+
+export const MODAL_TYPE = {
+  thread: 'thread',
+};

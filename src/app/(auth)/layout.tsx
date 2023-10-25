@@ -1,5 +1,4 @@
 import React from 'react';
-import type { Metadata } from 'next';
 
 interface Props {
   children: React.ReactNode;

@@ -19,8 +19,10 @@ export default function Layout({ children }: Props) {
           'absolute left-4 top-4 md:left-8 md:top-8',
         )}
       >
-        <Icons.chevronLeft className="mr-2 h-4 w-4" />
-        Back
+        <>
+          <Icons.chevronLeft className="mr-2 h-4 w-4" />
+          Back
+        </>
       </Link>
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
         <div className="flex flex-col space-y-2 text-center">
@@ -30,10 +32,10 @@ export default function Layout({ children }: Props) {
           </h1>
         </div>
         {children}
-        <p className="px-8 text-center text-sm">
+        <p className="px-8 text-center text-sm text-muted-foreground">
           <Link
             href={PAGE_ENDPOINTS.AUTH.SIGNUP}
-            className="underline underline-offset-4"
+            className="hover:text-brand underline underline-offset-4"
           >
             Don&apos;t have an account? Sign Up
           </Link>
