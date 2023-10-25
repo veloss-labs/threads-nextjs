@@ -1,5 +1,5 @@
 'use client';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import Link from 'next/link';
 import {
   usePathname,
