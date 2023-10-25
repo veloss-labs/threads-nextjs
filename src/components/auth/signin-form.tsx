@@ -42,25 +42,28 @@ export default function SignInForm() {
     },
   });
 
-  const onSubmit = useCallback(async (values: FormFields) => {
-    setLoading(true);
-    try {
-      const resp = await signIn('credentials', {
-        ...values,
-        redirect: false,
-      });
+  const onSubmit = useCallback(
+    async (values: FormFields) => {
+      setLoading(true);
+      try {
+        const resp = await signIn('credentials', {
+          ...values,
+          redirect: false,
+        });
 
-      if (resp) {
-        if (!resp.error && resp?.ok) {
-          router.replace(PAGE_ENDPOINTS.ROOT);
+        if (resp) {
+          if (!resp.error && resp?.ok) {
+            router.replace(PAGE_ENDPOINTS.ROOT);
+          }
         }
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [router],
+  );
 
   return (
     <div className="grid gap-6">

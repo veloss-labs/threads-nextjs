@@ -9,13 +9,14 @@ const nextConfig = {
   experimental: {
     serverActions: true,
     serverComponentsExternalPackages: ['@prisma/client'],
+    serverActionsBodySizeLimit: '5mb',
   },
   poweredByHeader: false,
   compress: true,
   compiler: {
     removeConsole: isProduction
       ? {
-          exclude: ['error', 'debug'],
+          exclude: ['error', 'log'],
         }
       : false,
   },

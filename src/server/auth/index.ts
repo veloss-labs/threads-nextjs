@@ -29,6 +29,15 @@ export const authOptions = {
     GitHub({
       clientId: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      profile(profile) {
+        return {
+          id: profile.id.toString(),
+          name: profile.name || profile.login,
+          gh_username: profile.login,
+          email: profile.email,
+          image: profile.avatar_url,
+        };
+      },
     }),
     Credentials({
       id: 'credentials',
@@ -64,7 +73,7 @@ export const authOptions = {
             }
           }
 
-          return omit(user, ['password', 'salt']);
+          return omit(user, ['password', 'salt', 'createdAt']);
         } catch (error) {
           console.error(error);
           return null;
@@ -102,6 +111,10 @@ export const authOptions = {
         id: token.sub,
         // @ts-expect-error
         username: token?.user?.username,
+        // @ts-expect-error
+        bio: token?.user?.bio ?? undefined,
+        // @ts-expect-error
+        onboarded: token?.user?.onboarded ?? undefined,
       };
       return session;
     },
@@ -109,13 +122,16 @@ export const authOptions = {
   adapter: PrismaAdapter(db),
 } satisfies NextAuthConfig;
 
-// Helper function to get session without passing config every time
-// https://next-auth.js.org/configuration/nextjs#getserversession
-export function auth(
-  ...args:
-    | [GetServerSidePropsContext['req'], GetServerSidePropsContext['res']]
-    | [NextApiRequest, NextApiResponse]
-    | []
-) {
-  return getServerSession(...args, authOptions);
+export function getSession() {
+  return getServerSession(authOptions) as Promise<{
+    user: {
+      id: string;
+      name: string | undefined;
+      username: string;
+      email: string | undefined;
+      image: string | undefined;
+      onboarded: boolean;
+      bio: string | undefined;
+    };
+  } | null>;
 }
