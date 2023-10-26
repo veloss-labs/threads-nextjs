@@ -3,8 +3,13 @@ import React, { useCallback } from 'react';
 import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FieldErrors, FieldPath, get, useForm } from 'react-hook-form';
-import { Form, FormMessage } from '~/components/ui/form';
-import { Slot } from '@radix-ui/react-slot';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '~/components/ui/form';
 import { Button } from '~/components/ui/button';
 import { TipTapEditor } from '~/components/editor/tiptap-editor';
 import { useSession } from 'next-auth/react';
@@ -75,13 +80,32 @@ export default function ThreadsForm() {
         <Form {...form}>
           <form id="threads-form" onSubmit={form.handleSubmit(onSubmit)}>
             <div className="grid gap-5">
-              <TipTapEditor
-                editable={true}
-                value={form.watch('text')}
-                debouncedUpdatesEnabled={true}
-                onChange={(description: Object, description_html: string) => {
-                  form.setValue('text', description_html);
-                }}
+              <FormField
+                control={form.control}
+                name="text"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <TipTapEditor
+                        ref={field.ref}
+                        editable={true}
+                        debouncedUpdatesEnabled={true}
+                        name={field.name}
+                        value={field.value}
+                        onChange={(
+                          description: Object,
+                          description_html: string,
+                        ) => {
+                          field.onChange(description_html);
+                        }}
+                        onBlur={() => {
+                          field.onBlur();
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
             <ThreadsForm.EditorMessage errors={errors} id="text" />

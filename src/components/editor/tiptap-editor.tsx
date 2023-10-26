@@ -9,7 +9,9 @@ import { cn } from '~/utils/utils';
 
 export interface ITipTapRichTextEditor {
   value: string;
+  name?: string;
   onChange?: (json: any, html: string) => void;
+  onBlur?: () => void;
   setIsSubmitting?: (
     isSubmitting: 'submitting' | 'submitted' | 'saved',
   ) => void;
@@ -21,12 +23,14 @@ export interface ITipTapRichTextEditor {
 
 const Tiptap = (props: ITipTapRichTextEditor) => {
   const {
+    name,
     onChange,
     debouncedUpdatesEnabled,
     forwardedRef,
     editable,
     setIsSubmitting,
     setShouldShowAlert,
+    onBlur,
     value,
   } = props;
 
@@ -44,6 +48,9 @@ const Tiptap = (props: ITipTapRichTextEditor) => {
       } else {
         onChange?.(editor.getJSON(), editor.getHTML());
       }
+    },
+    onBlur: () => {
+      onBlur?.();
     },
   });
 
@@ -80,7 +87,7 @@ const Tiptap = (props: ITipTapRichTextEditor) => {
         editor?.chain().focus().run();
       }}
     >
-      <EditorContent editor={editor} />
+      <EditorContent name={name} editor={editor} />
     </div>
   );
 };
