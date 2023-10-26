@@ -76,7 +76,7 @@ MobileFooterNav.Link = function Item({ item }: ItemProps) {
     <Link
       href={item.disabled ? '#' : href}
       className={cn(
-        'h-10 flex items-center text-lg font-medium transition-colors hover:bg-foreground/5 hover:rounded-md sm:text-sm',
+        'h-10 p-4 flex items-center text-lg font-medium transition-colors hover:bg-foreground/5 hover:rounded-md sm:text-sm',
         isActive ? 'text-foreground' : 'text-foreground/60',
         item.disabled && 'cursor-not-allowed opacity-80',
       )}
@@ -111,7 +111,7 @@ MobileFooterNav.Popup = function Item({ item }: ItemProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger
         className={cn(
-          'h-10 flex items-center text-lg font-medium transition-colors hover:rounded-md hover:bg-foreground/5 sm:text-sm',
+          'h-10 p-4 flex items-center text-lg font-medium transition-colors hover:rounded-md hover:bg-foreground/5 sm:text-sm',
           open ? 'text-foreground' : 'text-foreground/60',
           item.disabled && 'cursor-not-allowed opacity-80',
         )}
@@ -145,7 +145,7 @@ MobileFooterNav.MyPage = function Item({ item }: ItemProps) {
     <Link
       href={item.disabled ? '#' : PAGE_ENDPOINTS.MY_PAGE.ID(data.user.id)}
       className={cn(
-        'h-10 flex items-center text-lg font-medium transition-colors hover:bg-foreground/5 hover:rounded-md sm:text-sm',
+        'h-10 p-4 flex items-center text-lg font-medium transition-colors hover:bg-foreground/5 hover:rounded-md sm:text-sm',
         isActive ? 'text-foreground' : 'text-foreground/60',
         item.disabled && 'cursor-not-allowed opacity-80',
       )}
