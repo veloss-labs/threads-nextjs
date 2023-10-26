@@ -30,6 +30,7 @@ export const NAV_CONFIG = {
       icon: Icons.pen,
     },
     {
+      type: 'link',
       title: 'Activity',
       href: '/activity',
       icon: Icons.heart,

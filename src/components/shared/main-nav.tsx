@@ -36,7 +36,7 @@ import {
 import { useCreateQueryString } from '~/libs/hooks/useCreateQueryString';
 import { useMediaQuery } from '~/libs/hooks/useMediaQuery';
 
-export function MainNav() {
+export default function MainNav() {
   return (
     <>
       <Link
