@@ -13,6 +13,7 @@ import { NAV_CONFIG, NavItem } from '~/constants/nav';
 import {
   MODAL_TYPE,
   PAGE_ENDPOINTS,
+  SHEET_TYPE,
   URL_STATE_KEY,
 } from '~/constants/constants';
 import {
@@ -24,7 +25,16 @@ import {
   DialogTrigger,
 } from '~/components/ui/dialog';
 import { useSession } from 'next-auth/react';
-import { buttonVariants } from '../ui/button';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '~/components/ui/sheet';
+import { useCreateQueryString } from '~/libs/hooks/useCreateQueryString';
+import { useMediaQuery } from '~/libs/hooks/useMediaQuery';
 
 export function MainNav() {
   return (
@@ -43,15 +53,7 @@ export function MainNav() {
         </nav>
       </div>
       <nav>
-        <Link
-          href="/login"
-          className={cn(
-            buttonVariants({ variant: 'secondary', size: 'sm' }),
-            'px-4',
-          )}
-        >
-          Login
-        </Link>
+        <MainNav.Menu />
       </nav>
     </>
   );
@@ -107,16 +109,7 @@ MainNav.Popup = function Item({ item }: ItemProps) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const createQueryString = useCallback(
-    (name: string, value: string, flag: 'remove' | 'add') => {
-      const params = new URLSearchParams(searchParams);
-      if (flag === 'remove') params.delete(name);
-      if (flag === 'add') params.set(name, value);
-
-      return params.toString();
-    },
-    [searchParams],
-  );
+  const { createQueryString } = useCreateQueryString();
 
   const onOpenChange = useCallback(
     (isOpen: boolean) => {
@@ -177,5 +170,51 @@ MainNav.MyPage = function Item({ item }: ItemProps) {
     >
       <item.icon />
     </Link>
+  );
+};
+
+MainNav.Menu = function Item() {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const isMobile = useMediaQuery('(max-width: 768px)', false);
+
+  const { createQueryString } = useCreateQueryString();
+
+  const onOpenChange = useCallback(
+    (isOpen: boolean) => {
+      const path = `${pathname}?${createQueryString(
+        URL_STATE_KEY.sheet,
+        SHEET_TYPE.menu,
+        isOpen ? 'add' : 'remove',
+      )}`;
+      router.replace(path);
+    },
+    [router, pathname, createQueryString],
+  );
+
+  const open = searchParams.get(URL_STATE_KEY.sheet) === SHEET_TYPE.menu;
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetTrigger
+        className={cn(
+          'hover:text-foreground leading-tight',
+          open ? 'text-foreground' : 'text-foreground/60',
+        )}
+      >
+        <Icons.alignLeft />
+      </SheetTrigger>
+      <SheetContent side={isMobile ? 'bottom' : 'right'}>
+        <SheetHeader>
+          <SheetTitle>Are you sure absolutely sure?</SheetTitle>
+          <SheetDescription>
+            This action cannot be undone. This will permanently delete your
+            account and remove your data from our servers.
+          </SheetDescription>
+        </SheetHeader>
+      </SheetContent>
+    </Sheet>
   );
 };

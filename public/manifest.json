@@ -2,7 +2,7 @@
   "id":"barcelona_web",
   "name":"Threads",
   "short_name":"Threads",
-  "description":"Say more with Threads \u2014 Instagram\u2019s text-based conversation app.",
+  "description":"Instagram의 새로운 텍스트 앱, Threads에서 더 많은 대화를 나누어보세요",
   "edge_side_panel":{
      "preferred_width":376
   },
@@ -14,34 +14,34 @@
   "icons":[
      {
         "purpose":"any",
-        "src":"https:\/\/static.cdninstagram.com\/rsrc.php\/v3\/yP\/r\/H1OGreqOAia.png",
+        "src":"/icons/icon_192x192.png",
         "sizes":"192x192",
         "type":"image\/png"
      },
      {
         "purpose":"any",
-        "src":"https:\/\/static.cdninstagram.com\/rsrc.php\/v3\/yy\/r\/vle9bSfknSE.png",
+        "src":"/icons/icon_512x512.png",
         "sizes":"512x512",
         "type":"image\/png"
      },
      {
         "purpose":"maskable",
-        "src":"https:\/\/static.cdninstagram.com\/rsrc.php\/v3\/yp\/r\/xageIgjWwge.png",
+        "src":"/icons/icon_maskable_192x192.png",
         "sizes":"192x192",
         "type":"image\/png"
      },
      {
         "purpose":"maskable",
-        "src":"https:\/\/static.cdninstagram.com\/rsrc.php\/v3\/ya\/r\/tTq2L1uSQ6P.png",
+        "src":"/icons/icon_maskable_512x512.png",
         "sizes":"512x512",
         "type":"image\/png"
      },
      {
         "purpose":"any",
-        "src":"https:\/\/static.cdninstagram.com\/rsrc.php\/yp\/r\/a39oFm06sEy.svg",
+        "src":"/icons/con.svg",
         "sizes":"192x192",
         "type":"image\/svg+xml"
      }
   ],
-  "lang":"en-US"
+  "lang":"ko-KR"
 }

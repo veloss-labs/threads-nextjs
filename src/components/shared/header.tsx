@@ -1,6 +1,5 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
-import { MainNav } from '~/components/shared/main-nav';
 import { getTargetElement, getWindowScrollTop } from '~/libs/browser/dom';
 import { useEventListener } from '~/libs/hooks/useEventListener';
 import { optimizeAnimation } from '~/utils/utils';
@@ -55,7 +54,7 @@ export default function Header({ children }: HeaderProps) {
       ref={ref}
     >
       <div className="container">
-        <div className="flex h-20 items-center justify-between py-6">
+        <div className="flex h-16 items-center justify-between sm:h-20 sm:py-6">
           {children}
         </div>
       </div>

@@ -21,11 +21,11 @@ export const SITE_CONFIG = {
   title: 'Threads',
   description:
     'Instagram의 새로운 텍스트 앱, Threads에서 더 많은 대화를 나누어보세요',
-  ogImage: '/assets/og/seo.png',
+  ogImage: '/og/seo.png',
   favicon: '/favicon.ico',
-  apple57x57: '/assets/icons/icon_57x57.png',
-  apple180x180: '/assets/icons/icon_180x180.png',
-  apple256x256: '/assets/icons/icon_256x256.png',
+  apple57x57: '/icons/icon_57x57.png',
+  apple180x180: '/icons/icon_180x180.png',
+  apple256x256: '/icons/icon_256x256.png',
 };
 
 export const STATUS_CODE = {
@@ -69,8 +69,13 @@ export const RESULT_CODE = {
 
 export const URL_STATE_KEY = {
   modal: 'modalType',
+  sheet: 'sheetType',
 };
 
 export const MODAL_TYPE = {
   thread: 'thread',
+};
+
+export const SHEET_TYPE = {
+  menu: 'menu',
 };

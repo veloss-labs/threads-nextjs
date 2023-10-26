@@ -25,11 +25,8 @@ export const metadata: Metadata = {
   ],
   icons: {
     icon: SITE_CONFIG.favicon,
-    apple: [
-      {
-        url: SITE_CONFIG.apple57x57,
-        sizes: '57x57',
-      },
+    apple: SITE_CONFIG.apple57x57,
+    other: [
       {
         url: SITE_CONFIG.apple180x180,
         sizes: '180x180',

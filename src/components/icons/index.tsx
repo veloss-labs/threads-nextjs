@@ -27,6 +27,7 @@ import {
   Search,
   Heart,
   PenSquare,
+  AlignLeft,
 } from 'lucide-react';
 
 export const Icons = {
@@ -55,6 +56,7 @@ export const Icons = {
   search: Search,
   pen: PenSquare,
   heart: Heart,
+  alignLeft: AlignLeft,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden="true"
