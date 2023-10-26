@@ -3,14 +3,11 @@
 
 generator client {
   provider = "prisma-client-js"
-  // binaryTargets = ["native", "linux-arm64-openssl-1.0.x"]
 }
 
 datasource db {
-  // provider     = "mysql"
-  provider     = "sqlite"
-  url          = env("DATABASE_URL")
-  relationMode = "prisma"
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -27,6 +24,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   profile       UserProfile?
+  threads       Thread[]
 
   @@map(name: "users")
 }
@@ -82,4 +80,33 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map(name: "verification_tokens")
+}
+
+model Thread {
+  id          String   @id @default(cuid())
+  text        String
+  hasChildren Boolean? @default(false) @map(name: "has_children")
+  parentId    String?  @map(name: "parent_id")
+  level       Int?     @default(0)
+  deleted     Boolean? @default(false)
+  createdAt   DateTime @default(now()) @map(name: "created_at")
+  updatedAt   DateTime @updatedAt @map(name: "updated_at")
+  userId      String   @map(name: "user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt], map: "threads_created_at")
+  @@index([deleted])
+  @@index([parentId], map: "threads_parent_id")
+  @@index([userId, deleted], map: "threads_user_id_deleted")
+  @@map(name: "threads")
+}
+
+model Asset {
+  id        String   @id @default(cuid())
+  type      String
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@index([type])
+  @@map(name: "assets")
 }

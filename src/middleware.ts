@@ -34,9 +34,6 @@ export default async function middleware(req: NextRequest) {
     hostname == process.env.NEXT_PUBLIC_ROOT_DOMAIN
   ) {
     const session = await getToken({ req });
-    console.log('[session] ====>', session);
-    console.log('[path] ====>', path);
-    console.log('[req] ====>', req.url);
     if (!session && !publicRoutes.includes(path)) {
       return NextResponse.redirect(new URL('/signin', req.url));
     } else if (session && publicRoutes.includes(path)) {
