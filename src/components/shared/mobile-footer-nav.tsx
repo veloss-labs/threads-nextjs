@@ -8,14 +8,6 @@ import {
   useSelectedLayoutSegment,
 } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '~/components/ui/dialog';
 import { cn } from '~/utils/utils';
 import { NAV_CONFIG, NavItem } from '~/constants/nav';
 import {
@@ -24,10 +16,11 @@ import {
   URL_STATE_KEY,
 } from '~/constants/constants';
 import { useCreateQueryString } from '~/libs/hooks/useCreateQueryString';
+import ThreadsDialog from '../write/threads-dialog';
 
 export default function MobileFooterNav() {
   return (
-    <nav className="fixed bottom-0 z-40 flex w-full items-center justify-around border-t bg-white py-2 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 sm:hidden md:hidden">
+    <nav className="fixed bottom-0 z-40 flex w-full items-center justify-around border-t bg-white py-2 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 md:hidden">
       {NAV_CONFIG.mainNav.map((item, index) => (
         <div key={index} className="relative w-max">
           <MobileFooterNav.Item item={item} />
@@ -108,26 +101,7 @@ MobileFooterNav.Popup = function Item({ item }: ItemProps) {
   const open = searchParams.get(URL_STATE_KEY.modal) === MODAL_TYPE.thread;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger
-        className={cn(
-          'h-10 p-4 flex items-center text-lg font-medium transition-colors hover:rounded-md hover:bg-foreground/5 sm:text-sm',
-          open ? 'text-foreground' : 'text-foreground/60',
-          item.disabled && 'cursor-not-allowed opacity-80',
-        )}
-      >
-        <item.icon />
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>새로운 스레드</DialogTitle>
-          <DialogDescription>
-            This action cannot be undone. This will permanently delete your
-            account and remove your data from our servers.
-          </DialogDescription>
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
+    <ThreadsDialog isMobile open={open} onOpenChange={onOpenChange} {...item} />
   );
 };
 

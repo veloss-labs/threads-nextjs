@@ -1,6 +1,5 @@
 'use server';
 import { redirect } from 'next/navigation';
-
 import { db } from '~/server/db/prisma';
 import { generateHash, generateSalt } from '~/server/utils/password';
 import { PAGE_ENDPOINTS, RESULT_CODE } from '~/constants/constants';

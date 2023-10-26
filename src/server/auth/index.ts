@@ -1,9 +1,4 @@
 'server-only';
-import type {
-  GetServerSidePropsContext,
-  NextApiRequest,
-  NextApiResponse,
-} from 'next';
 import type { NextAuthOptions as NextAuthConfig } from 'next-auth';
 import { getServerSession } from 'next-auth';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
@@ -16,11 +11,24 @@ import omit from 'lodash-es/omit';
 import { generateHash, secureCompare } from '~/server/utils/password';
 import { db } from '~/server/db/prisma';
 import { AUTH_CRDENTIALS_USER_SELECT } from '~/server/db/selector/user.selector';
+import { isEmpty } from '~/utils/assertion';
+import { API_ENDPOINTS } from '~/constants/constants';
 
 // Read more at: https://next-auth.js.org/getting-started/typescript#module-augmentation
 declare module 'next-auth/jwt' {
   interface JWT {
     /** The user's role. */
+    user: {
+      id: string;
+      name: string | undefined;
+      username: string;
+      email: string | undefined;
+      emailVerified: boolean;
+      image: string | undefined;
+      profile: {
+        bio: string | undefined;
+      };
+    };
   }
 }
 
@@ -115,20 +123,27 @@ export const authOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.user = user;
+        token.user = user as any;
       }
       return token;
     },
     session: async ({ session, token }) => {
+      if (
+        isEmpty(session?.user?.image) &&
+        isEmpty(token?.user?.image) &&
+        token?.user?.username
+      ) {
+        const searchParams = new URLSearchParams();
+        searchParams.append('seed', token.user.username);
+        session.user.image = API_ENDPOINTS.avatar(searchParams);
+      }
+
       session.user = {
         ...session.user,
         // @ts-expect-error
         id: token.sub,
-        // @ts-expect-error
         username: token?.user?.username,
-        // @ts-expect-error
         emailVerified: token?.user?.emailVerified || false,
-        // @ts-expect-error
         profile: token?.user?.profile || {},
       };
       return session;

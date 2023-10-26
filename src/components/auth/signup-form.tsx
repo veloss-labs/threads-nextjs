@@ -48,9 +48,12 @@ export default function SignupForm() {
     },
   });
 
-  const onSubmit = useCallback((values: FormFields) => {
-    formAction(values);
-  }, []);
+  const onSubmit = useCallback(
+    (values: FormFields) => {
+      formAction(values);
+    },
+    [formAction],
+  );
 
   return (
     <div className="grid gap-6">

@@ -8,7 +8,8 @@ export const MEDIA_QUERY = {
   large: '(min-width: 1280px)',
   medium: '(min-width: 1024px)',
   small: '(max-width: 768px)',
-  xsmall: '(max-width: 375px)',
+  xsmall: '(max-width: 640px)',
+  xxsmall: '(max-width: 375px)',
 };
 
 export function useMediaQuery(query: string, serverFallback: boolean): boolean {

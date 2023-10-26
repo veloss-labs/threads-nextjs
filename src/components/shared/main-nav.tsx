@@ -16,14 +16,6 @@ import {
   SHEET_TYPE,
   URL_STATE_KEY,
 } from '~/constants/constants';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '~/components/ui/dialog';
 import { useSession } from 'next-auth/react';
 import {
   Sheet,
@@ -34,7 +26,8 @@ import {
   SheetTrigger,
 } from '~/components/ui/sheet';
 import { useCreateQueryString } from '~/libs/hooks/useCreateQueryString';
-import { useMediaQuery } from '~/libs/hooks/useMediaQuery';
+import { MEDIA_QUERY, useMediaQuery } from '~/libs/hooks/useMediaQuery';
+import ThreadsDialog from '../write/threads-dialog';
 
 export default function MainNav() {
   return (
@@ -125,28 +118,7 @@ MainNav.Popup = function Item({ item }: ItemProps) {
 
   const open = searchParams.get(URL_STATE_KEY.modal) === MODAL_TYPE.thread;
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger
-        className={cn(
-          'mx-[2px] my-1 flex items-center px-8 py-5 text-lg font-medium transition-colors hover:rounded-md hover:bg-foreground/5 sm:text-sm',
-          open ? 'text-foreground' : 'text-foreground/60',
-          item.disabled && 'cursor-not-allowed opacity-80',
-        )}
-      >
-        <item.icon />
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>새로운 스레드</DialogTitle>
-          <DialogDescription>
-            This action cannot be undone. This will permanently delete your
-            account and remove your data from our servers.
-          </DialogDescription>
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
-  );
+  return <ThreadsDialog open={open} onOpenChange={onOpenChange} {...item} />;
 };
 
 MainNav.MyPage = function Item({ item }: ItemProps) {
@@ -178,7 +150,7 @@ MainNav.Menu = function Item() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const isMobile = useMediaQuery('(max-width: 768px)', false);
+  const isMobile = useMediaQuery(MEDIA_QUERY.small, false);
 
   const { createQueryString } = useCreateQueryString();
 

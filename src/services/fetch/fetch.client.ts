@@ -16,10 +16,10 @@ import type { ApiRoutes, Body, ApiOptions } from './fetch.type';
 export class FetchService {
   static baseURL = isBrowser
     ? (function () {
-        return 'http://localhost:8080';
+        return 'http://localhost:3000';
       })()
     : (function () {
-        return 'http://localhost:8080';
+        return 'http://localhost:3000';
       })();
 
   static prefix = '/api';
@@ -227,5 +227,14 @@ export class FetchService {
 
   static async toJson<FetchData = any>(response: Response) {
     return response.json() as Promise<FetchData>;
+  }
+
+  static async raw(input: RequestInfo | URL, init?: RequestInit | undefined) {
+    const requset = new Request(input, init);
+    const response = await fetch(requset);
+    if (!response.ok) {
+      throw new FetchError(response, requset, undefined);
+    }
+    return response;
   }
 }

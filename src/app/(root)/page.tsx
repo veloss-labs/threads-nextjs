@@ -7,12 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from '~/components/ui/card';
-import { getSession } from '~/server/auth';
 
 export default async function Pages() {
-  const session = await getSession();
-  console.log(`[session] ===>`, session);
-
   return (
     <div className="container max-w-4xl px-4 py-6 lg:py-10">
       {/* <div className="flex flex-col items-start gap-4 md:flex-row md:justify-between md:gap-8">

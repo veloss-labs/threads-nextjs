@@ -2,9 +2,17 @@ export const QUERIES_KEY = {};
 
 export const MUTATIONS_KEY = {};
 
-export const ASSET_URL = {
-  SEO_IMAGE: '/images/seo_image.png',
+export const API_ENDPOINTS = {
+  avatar: (searchParams: URLSearchParams, styles = 'notionists') => {
+    const url = new URL(`/7.x/${styles}/jpg`, 'https://api.dicebear.com');
+    for (const [key, value] of searchParams.entries()) {
+      url.searchParams.append(key, value);
+    }
+    return url.href;
+  },
 };
+
+export const ASSET_URL = {};
 
 export const PAGE_ENDPOINTS = {
   ROOT: '/',
@@ -65,6 +73,8 @@ export const RESULT_CODE = {
   TOKEN_EXPIRED: 4001,
   // 로그인 할 수 없음
   CANNOT_BE_LOGIN: 5000,
+  // 로그인이 필요함
+  LOGIN_REQUIRED: 5001,
 } as const;
 
 export const URL_STATE_KEY = {

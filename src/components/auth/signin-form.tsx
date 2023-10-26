@@ -24,11 +24,6 @@ const formSchema = z.object({
 
 type FormFields = z.infer<typeof formSchema>;
 
-type Result = {
-  resultCode: number;
-  resultMessage: string | null;
-};
-
 export default function SignInForm() {
   const [isLoading, setLoading] = useState(false);
 
