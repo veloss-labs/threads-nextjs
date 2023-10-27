@@ -42,8 +42,11 @@ export default function Header({ children }: HeaderProps) {
   useEffect(() => {
     const $ele = getTargetElement(ref);
     if (!$ele) return;
-    setHeight($ele.clientHeight);
+    const bounding = $ele.getBoundingClientRect();
+    setHeight(bounding.height);
   }, []);
+
+  console.log('Header', translateY);
 
   return (
     <header
