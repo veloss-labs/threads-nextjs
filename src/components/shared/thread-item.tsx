@@ -22,7 +22,7 @@ export default function ThreadItem({ item }: ThreadItemProps) {
         <div className="md:shrink-0">
           <span className="h-[192px] w-[192px] rounded-md bg-muted object-cover md:w-48" />
         </div>
-        <div className="w-full p-8">
+        <div className="w-full py-4 md:p-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Avatars
