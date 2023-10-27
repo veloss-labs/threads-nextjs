@@ -103,8 +103,11 @@ export default function ThreadsForm({ isDialog }: ThreadsFormProps) {
                         name={field.name}
                         value={field.value}
                         noBorder
+                        className={cn(
+                          'prose prose-brand prose-headings:font-display font-default focus:outline-none',
+                        )}
                         customClassName={cn(
-                          isDialog ? 'max-w-[462px] p-0' : 'max-w-[50rem] p-0',
+                          isDialog ? 'max-w-[462px] p-0' : 'p-0',
                         )}
                         onChange={(
                           _,

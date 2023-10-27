@@ -7,6 +7,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   experimental: {
+    taint: true,
     serverActions: {
       bodySizeLimit: '5mb',
     },

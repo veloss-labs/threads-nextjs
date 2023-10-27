@@ -35,7 +35,7 @@ export default function Layout({ children }: Props) {
         <p className="px-8 text-center text-sm text-muted-foreground">
           <Link
             href={PAGE_ENDPOINTS.AUTH.SIGNUP}
-            className="hover:text-brand underline underline-offset-4"
+            className={cn('hover:text-brand underline underline-offset-4')}
           >
             Don&apos;t have an account? Sign Up
           </Link>
