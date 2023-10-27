@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from '~/components/ui/dialog';
 import ThreadsForm from '~/components/write/threads-form';
+import { PAGE_ENDPOINTS } from '~/constants/constants';
 
 export default function ThreadsDialog() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export default function ThreadsDialog() {
   const open = ['threads', '/threads'].includes(pathname);
 
   const onClose = useCallback(() => {
-    router.back();
+    router.replace(PAGE_ENDPOINTS.ROOT);
   }, [router]);
 
   return (
