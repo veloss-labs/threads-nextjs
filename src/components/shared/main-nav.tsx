@@ -11,7 +11,6 @@ import { Icons } from '~/components/icons';
 import { cn } from '~/utils/utils';
 import { NAV_CONFIG, NavItem } from '~/constants/nav';
 import {
-  MODAL_TYPE,
   PAGE_ENDPOINTS,
   SHEET_TYPE,
   URL_STATE_KEY,
@@ -27,7 +26,6 @@ import {
 } from '~/components/ui/sheet';
 import { useCreateQueryString } from '~/libs/hooks/useCreateQueryString';
 import { MEDIA_QUERY, useMediaQuery } from '~/libs/hooks/useMediaQuery';
-import ThreadsDialog from '../write/threads-dialog';
 
 export default function MainNav() {
   return (
@@ -61,9 +59,6 @@ MainNav.Item = function Item({ item }: ItemProps) {
     case 'link': {
       return <MainNav.Link item={item} />;
     }
-    case 'popup': {
-      return <MainNav.Popup item={item} />;
-    }
     case 'myPage': {
       return <MainNav.MyPage item={item} />;
     }
@@ -86,6 +81,7 @@ MainNav.Link = function Item({ item }: ItemProps) {
   return (
     <Link
       href={item.disabled ? '#' : href}
+      scroll={item.id === 'thread' ? false : true}
       className={cn(
         'px-8 py-5 mx-[2px] my-1 flex items-center text-lg font-medium transition-colors hover:bg-foreground/5 hover:rounded-md sm:text-sm',
         isActive ? 'text-foreground' : 'text-foreground/60',
@@ -97,35 +93,23 @@ MainNav.Link = function Item({ item }: ItemProps) {
   );
 };
 
-MainNav.Popup = function Item({ item }: ItemProps) {
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
-
-  const { createQueryString } = useCreateQueryString();
-
-  const onOpenChange = useCallback(
-    (isOpen: boolean) => {
-      const path = `${pathname}?${createQueryString(
-        URL_STATE_KEY.modal,
-        MODAL_TYPE.thread,
-        isOpen ? 'add' : 'remove',
-      )}`;
-      router.replace(path);
-    },
-    [router, pathname, createQueryString],
-  );
-
-  const open = searchParams.get(URL_STATE_KEY.modal) === MODAL_TYPE.thread;
-
-  return <ThreadsDialog open={open} onOpenChange={onOpenChange} {...item} />;
-};
-
 MainNav.MyPage = function Item({ item }: ItemProps) {
   const segment = useSelectedLayoutSegment();
   const { data } = useSession();
 
-  if (!data || !data.user) return null;
+  if (!data || !data.user) {
+    return (
+      <Link
+        href={'#'}
+        className={cn(
+          'px-8 py-5 mx-[2px] my-1 flex items-center text-lg font-medium transition-colors hover:bg-foreground/5 hover:rounded-md sm:text-sm',
+          'text-foreground/60',
+        )}
+      >
+        <item.icon />
+      </Link>
+    );
+  }
 
   const href = PAGE_ENDPOINTS.MY_PAGE.ID(data.user.id);
 

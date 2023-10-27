@@ -1,8 +1,7 @@
 'use server';
-import { PAGE_ENDPOINTS, RESULT_CODE } from '~/constants/constants';
+import { RESULT_CODE } from '~/constants/constants';
 import { getSession } from '~/server/auth';
 import { db } from '~/server/db/prisma';
-import { revalidatePath } from 'next/cache';
 
 type FormData = {
   text: string;
@@ -13,10 +12,7 @@ type Result = {
   resultMessage: string | null;
 };
 
-export const createThreads = async <State = any>(
-  prevState: State,
-  formData: FormData,
-): Promise<Result | undefined> => {
+export const createThreads = async (formData: FormData): Promise<Result> => {
   try {
     const session = await getSession();
     if (!session) {
@@ -35,8 +31,12 @@ export const createThreads = async <State = any>(
       },
     });
 
-    revalidatePath(PAGE_ENDPOINTS.ROOT);
+    return {
+      resultCode: RESULT_CODE.OK,
+      resultMessage: null,
+    };
   } catch (error) {
+    console.log('error', error);
     return {
       resultCode: RESULT_CODE.FAIL,
       resultMessage: 'Failed to create threads',

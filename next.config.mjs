@@ -7,9 +7,10 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   experimental: {
-    serverActions: true,
+    serverActions: {
+      bodySizeLimit: '5mb',
+    },
     serverComponentsExternalPackages: ['@prisma/client'],
-    serverActionsBodySizeLimit: '5mb',
   },
   poweredByHeader: false,
   compress: true,

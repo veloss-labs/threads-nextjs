@@ -39,9 +39,6 @@ MobileFooterNav.Item = function Item({ item }: ItemProps) {
     case 'link': {
       return <MobileFooterNav.Link item={item} />;
     }
-    case 'popup': {
-      return <MobileFooterNav.Popup item={item} />;
-    }
     case 'myPage': {
       return <MobileFooterNav.MyPage item={item} />;
     }
@@ -68,6 +65,7 @@ MobileFooterNav.Link = function Item({ item }: ItemProps) {
   return (
     <Link
       href={item.disabled ? '#' : href}
+      scroll={item.id === 'thread' ? false : true}
       className={cn(
         'h-10 p-4 flex items-center text-lg font-medium transition-colors hover:bg-foreground/5 hover:rounded-md sm:text-sm',
         isActive ? 'text-foreground' : 'text-foreground/60',
@@ -79,37 +77,23 @@ MobileFooterNav.Link = function Item({ item }: ItemProps) {
   );
 };
 
-MobileFooterNav.Popup = function Item({ item }: ItemProps) {
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
-
-  const { createQueryString } = useCreateQueryString();
-
-  const onOpenChange = useCallback(
-    (isOpen: boolean) => {
-      const path = `${pathname}?${createQueryString(
-        URL_STATE_KEY.modal,
-        MODAL_TYPE.thread,
-        isOpen ? 'add' : 'remove',
-      )}`;
-      router.replace(path);
-    },
-    [router, pathname, createQueryString],
-  );
-
-  const open = searchParams.get(URL_STATE_KEY.modal) === MODAL_TYPE.thread;
-
-  return (
-    <ThreadsDialog isMobile open={open} onOpenChange={onOpenChange} {...item} />
-  );
-};
-
 MobileFooterNav.MyPage = function Item({ item }: ItemProps) {
   const segment = useSelectedLayoutSegment();
   const { data } = useSession();
 
-  if (!data || !data.user) return null;
+  if (!data || !data.user) {
+    return (
+      <Link
+        href={'#'}
+        className={cn(
+          'h-10 p-4 flex items-center text-lg font-medium transition-colors hover:bg-foreground/5 hover:rounded-md sm:text-sm',
+          'text-foreground/60',
+        )}
+      >
+        <item.icon />
+      </Link>
+    );
+  }
 
   const href = PAGE_ENDPOINTS.MY_PAGE.ID(data.user.id);
 
