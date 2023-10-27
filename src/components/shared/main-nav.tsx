@@ -1,31 +1,19 @@
 'use client';
-import React, { useCallback } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import {
-  usePathname,
-  useSearchParams,
-  useRouter,
-  useSelectedLayoutSegment,
-} from 'next/navigation';
+import { useSelectedLayoutSegment } from 'next/navigation';
 import { Icons } from '~/components/icons';
 import { cn } from '~/utils/utils';
 import { NAV_CONFIG, NavItem } from '~/constants/nav';
-import {
-  PAGE_ENDPOINTS,
-  SHEET_TYPE,
-  URL_STATE_KEY,
-} from '~/constants/constants';
+import { PAGE_ENDPOINTS } from '~/constants/constants';
 import { useSession } from 'next-auth/react';
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '~/components/ui/sheet';
-import { useCreateQueryString } from '~/libs/hooks/useCreateQueryString';
-import { MEDIA_QUERY, useMediaQuery } from '~/libs/hooks/useMediaQuery';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '~/components/ui/dropdown-menu';
+import { signOut } from 'next-auth/react';
 
 export default function MainNav() {
   return (
@@ -130,47 +118,21 @@ MainNav.MyPage = function Item({ item }: ItemProps) {
 };
 
 MainNav.Menu = function Item() {
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
-
-  const isMobile = useMediaQuery(MEDIA_QUERY.small, false);
-
-  const { createQueryString } = useCreateQueryString();
-
-  const onOpenChange = useCallback(
-    (isOpen: boolean) => {
-      const path = `${pathname}?${createQueryString(
-        URL_STATE_KEY.sheet,
-        SHEET_TYPE.menu,
-        isOpen ? 'add' : 'remove',
-      )}`;
-      router.replace(path);
-    },
-    [router, pathname, createQueryString],
-  );
-
-  const open = searchParams.get(URL_STATE_KEY.sheet) === SHEET_TYPE.menu;
+  const [open, setOpen] = useState(false);
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetTrigger
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger
         className={cn(
           'hover:text-foreground leading-tight',
           open ? 'text-foreground' : 'text-foreground/60',
         )}
       >
         <Icons.alignLeft />
-      </SheetTrigger>
-      <SheetContent side={isMobile ? 'bottom' : 'right'}>
-        <SheetHeader>
-          <SheetTitle>Are you sure absolutely sure?</SheetTitle>
-          <SheetDescription>
-            This action cannot be undone. This will permanently delete your
-            account and remove your data from our servers.
-          </SheetDescription>
-        </SheetHeader>
-      </SheetContent>
-    </Sheet>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56">
+        <DropdownMenuItem onClick={() => signOut()}>Log out</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };

@@ -1,22 +1,11 @@
 'use client';
-import React, { useCallback } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import {
-  usePathname,
-  useSearchParams,
-  useRouter,
-  useSelectedLayoutSegment,
-} from 'next/navigation';
+import { useSelectedLayoutSegment } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { cn } from '~/utils/utils';
 import { NAV_CONFIG, NavItem } from '~/constants/nav';
-import {
-  MODAL_TYPE,
-  PAGE_ENDPOINTS,
-  URL_STATE_KEY,
-} from '~/constants/constants';
-import { useCreateQueryString } from '~/libs/hooks/useCreateQueryString';
-import ThreadsDialog from '../write/threads-dialog';
+import { PAGE_ENDPOINTS } from '~/constants/constants';
 
 export default function MobileFooterNav() {
   return (
