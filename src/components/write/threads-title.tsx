@@ -3,12 +3,13 @@ import React, { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icons } from '~/components/icons';
 import { Button } from '~/components/ui/button';
+import { PAGE_ENDPOINTS } from '~/constants/constants';
 
 export default function ThreadsTitle() {
   const router = useRouter();
 
   const onClick = useCallback(() => {
-    router.back();
+    router.replace(PAGE_ENDPOINTS.ROOT);
   }, [router]);
 
   return (
