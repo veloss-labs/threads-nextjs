@@ -76,6 +76,7 @@
     "server-only": "^0.0.1",
     "superjson": "^2.2.0",
     "tailwind-merge": "^1.14.0",
+    "unique-username-generator": "^1.2.0",
     "use-debounce": "^9.0.4",
     "zod": "^3.22.4",
     "zustand": "^4.4.4"

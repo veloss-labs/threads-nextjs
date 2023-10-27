@@ -1,3 +1,4 @@
+'use client';
 import { useImperativeHandle, useRef, forwardRef } from 'react';
 import type { Editor } from '@tiptap/react';
 import { useEditor, EditorContent } from '@tiptap/react';

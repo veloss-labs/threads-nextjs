@@ -55,6 +55,7 @@ MobileFooterNav.Link = function Item({ item }: ItemProps) {
     <Link
       href={item.disabled ? '#' : href}
       scroll={item.id === 'thread' ? false : true}
+      replace={item.id === 'thread' ? true : false}
       className={cn(
         'h-10 p-4 flex items-center text-lg font-medium transition-colors hover:bg-foreground/5 hover:rounded-md sm:text-sm',
         isActive ? 'text-foreground' : 'text-foreground/60',

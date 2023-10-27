@@ -1,5 +1,5 @@
 'use client';
-import React, { useCallback } from 'react';
+import React, { useState, useTransition } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
@@ -15,7 +15,8 @@ import { Button } from '~/components/ui/button';
 import { Icons } from '~/components/icons';
 
 import { createUser } from '~/server/actions/users';
-import { useFormState, useFormStatus } from '~/libs/react/form';
+import { PAGE_ENDPOINTS, RESULT_CODE } from '~/constants/constants';
+import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   username: z.string().min(1),
@@ -24,21 +25,10 @@ const formSchema = z.object({
 
 type FormFields = z.infer<typeof formSchema>;
 
-type Result = {
-  resultCode: number;
-  resultMessage: string | null;
-};
-
 export default function SignupForm() {
-  const initialState: Result = {
-    resultCode: -1,
-    resultMessage: null,
-  };
-
-  const [state, formAction] = useFormState<Result, FormFields>(
-    createUser,
-    initialState,
-  );
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<FormFields>({
     resolver: zodResolver(formSchema),
@@ -48,12 +38,21 @@ export default function SignupForm() {
     },
   });
 
-  const onSubmit = useCallback(
-    (values: FormFields) => {
-      formAction(values);
-    },
-    [formAction],
-  );
+  const onSubmit = (values: FormFields) => {
+    const action = async () => {
+      const result = await createUser(values);
+      if (result.resultCode === RESULT_CODE.OK) {
+        router.replace(PAGE_ENDPOINTS.AUTH.SIGNIN);
+        return;
+      }
+
+      setError(result.resultMessage);
+    };
+
+    startTransition(() => {
+      action();
+    });
+  };
 
   return (
     <div className="grid gap-6">
@@ -98,12 +97,21 @@ export default function SignupForm() {
                 </FormItem>
               )}
             />
-            {state?.resultMessage && (
+            {error && (
               <p className="text-sm font-medium text-red-500 dark:text-red-900">
-                {state?.resultMessage}
+                {error}
               </p>
             )}
-            <SignupForm.SubmitButton />
+            <Button
+              type="submit"
+              disabled={isPending}
+              aria-disabled={isPending}
+            >
+              {isPending && (
+                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Submit
+            </Button>
           </div>
         </form>
       </Form>
@@ -120,13 +128,3 @@ export default function SignupForm() {
     </div>
   );
 }
-
-SignupForm.SubmitButton = function Item() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending} aria-disabled={pending}>
-      {pending && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-      Submit
-    </Button>
-  );
-};

@@ -37,21 +37,23 @@ export default function ThreadsForm({ isDialog }: ThreadsFormProps) {
     },
   });
 
-  const onSubmit = async (values: FormFields) => {
+  const onSubmit = (values: FormFields) => {
     setError(null);
 
-    const action = async () => {
-      const result = await createThreads(values);
-      if (result.resultCode === RESULT_CODE.OK) {
-        router.back();
-        return;
-      }
+    // const action = async () => {
+    //   const result = await createThreads(values);
+    //   console.log(result);
+    //   if (result.resultCode === RESULT_CODE.OK) {
+    //     // router.back();
+    //     return;
+    //   }
 
-      setError(result.resultMessage);
-    };
+    //   setError(result.resultMessage);
+    // };
 
     startTransition(() => {
-      action();
+      // action();
+      createThreads(values);
     });
   };
 

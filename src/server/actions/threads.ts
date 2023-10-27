@@ -1,5 +1,8 @@
 'use server';
-import { RESULT_CODE } from '~/constants/constants';
+
+import { revalidatePath } from 'next/cache';
+import { RedirectType, redirect } from 'next/navigation';
+import { PAGE_ENDPOINTS, RESULT_CODE } from '~/constants/constants';
 import { getSession } from '~/server/auth';
 import { db } from '~/server/db/prisma';
 
@@ -31,10 +34,9 @@ export const createThreads = async (formData: FormData): Promise<Result> => {
       },
     });
 
-    return {
-      resultCode: RESULT_CODE.OK,
-      resultMessage: null,
-    };
+    revalidatePath(PAGE_ENDPOINTS.ROOT);
+
+    return redirect(PAGE_ENDPOINTS.ROOT, RedirectType.replace);
   } catch (error) {
     console.log('error', error);
     return {

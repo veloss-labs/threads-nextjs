@@ -70,6 +70,7 @@ MainNav.Link = function Item({ item }: ItemProps) {
     <Link
       href={item.disabled ? '#' : href}
       scroll={item.id === 'thread' ? false : true}
+      replace={item.id === 'thread' ? true : false}
       className={cn(
         'px-8 py-5 mx-[2px] my-1 flex items-center text-lg font-medium transition-colors hover:bg-foreground/5 hover:rounded-md sm:text-sm',
         isActive ? 'text-foreground' : 'text-foreground/60',
