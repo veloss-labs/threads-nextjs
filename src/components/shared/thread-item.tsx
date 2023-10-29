@@ -12,12 +12,9 @@ interface ThreadItemProps {
 }
 
 export default function ThreadItem({ item }: ThreadItemProps) {
-  console.log(item);
+  // console.log(item);
   return (
-    <Card
-      key="1"
-      className="m-3 mx-auto overflow-hidden rounded-xl border-none shadow-none"
-    >
+    <Card className="m-3 mx-auto overflow-hidden rounded-xl border-none shadow-none">
       <div className="md:flex">
         <div className="md:shrink-0">
           <span className="h-[192px] w-[192px] rounded-md bg-muted object-cover md:w-48" />

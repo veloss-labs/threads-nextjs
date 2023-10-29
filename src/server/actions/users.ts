@@ -8,6 +8,7 @@ import {
   RESULT_CODE,
 } from '~/constants/constants';
 import { generatorName } from '~/utils/utils';
+import { revalidatePath } from 'next/cache';
 
 type FormData = {
   username: string;
@@ -19,7 +20,10 @@ type Result = {
   resultMessage: string | null;
 };
 
-export const createUser = async (formData: FormData): Promise<Result> => {
+export const createUser = async (
+  prevState: Result,
+  formData: FormData,
+): Promise<Result> => {
   try {
     const exists = await db.user.findUnique({
       where: {
@@ -57,16 +61,11 @@ export const createUser = async (formData: FormData): Promise<Result> => {
         },
       },
     });
-
-    return {
-      resultCode: RESULT_CODE.OK,
-      resultMessage: null,
-    };
   } catch (error) {
     console.error(error);
-    return {
-      resultCode: RESULT_CODE.FAIL,
-      resultMessage: 'Failed to create user',
-    };
+    throw error;
   }
+
+  revalidatePath(PAGE_ENDPOINTS.ROOT);
+  redirect(PAGE_ENDPOINTS.ROOT);
 };

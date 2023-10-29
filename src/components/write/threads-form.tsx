@@ -1,18 +1,18 @@
 'use client';
-import React, { useState, useTransition } from 'react';
+import React from 'react';
 import * as z from 'zod';
+import Avatars from '~/components/shared/avatars';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FieldErrors, FieldPath, get, useForm } from 'react-hook-form';
 import { Form, FormControl, FormField, FormItem } from '~/components/ui/form';
 import { Button } from '~/components/ui/button';
 import { TipTapEditor } from '~/components/editor/tiptap-editor';
 import { useSession } from 'next-auth/react';
-import Avatars from '~/components/shared/avatars';
 import { createThreads } from '~/server/actions/threads';
 import { Icons } from '../icons';
 import { cn } from '~/utils/utils';
+import { useFormState, useFormStatus } from '~/libs/react/form';
 import { RESULT_CODE } from '~/constants/constants';
-import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   text: z.string().min(1).max(500),
@@ -24,11 +24,23 @@ interface ThreadsFormProps {
   isDialog?: boolean;
 }
 
+type FormState = {
+  resultCode: number;
+  resultMessage: string | null;
+};
+
+const initialFormState: FormState = {
+  resultCode: RESULT_CODE.OK,
+  resultMessage: null,
+};
+
 export default function ThreadsForm({ isDialog }: ThreadsFormProps) {
-  const router = useRouter();
   const { data } = useSession();
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
+
+  const [state, formAction] = useFormState<FormState, FormFields>(
+    createThreads,
+    initialFormState,
+  );
 
   const form = useForm<FormFields>({
     resolver: zodResolver(formSchema),
@@ -38,28 +50,14 @@ export default function ThreadsForm({ isDialog }: ThreadsFormProps) {
   });
 
   const onSubmit = (values: FormFields) => {
-    setError(null);
-
-    // const action = async () => {
-    //   const result = await createThreads(values);
-    //   console.log(result);
-    //   if (result.resultCode === RESULT_CODE.OK) {
-    //     // router.back();
-    //     return;
-    //   }
-
-    //   setError(result.resultMessage);
-    // };
-
-    startTransition(() => {
-      // action();
-      createThreads(values);
-    });
+    formAction(values);
   };
 
   const {
     formState: { errors },
   } = form;
+
+  console.log(state);
 
   return (
     <>
@@ -71,22 +69,12 @@ export default function ThreadsForm({ isDialog }: ThreadsFormProps) {
           </p>
         </div>
         <div className="flex w-full justify-end">
-          <Button
-            form="threads-form"
-            type="submit"
-            disabled={isPending}
-            aria-disabled={isPending}
-          >
-            {isPending && (
-              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-            )}
-            게시
-          </Button>
+          <ThreadsForm.Submit />
         </div>
       </div>
 
       <ThreadsForm.EditorMessage errors={errors} id="text" />
-      <ThreadsForm.ServerMessage error={error} />
+      <ThreadsForm.ServerMessage error={state?.resultMessage ?? null} />
 
       <div className={cn('grid gap-6', isDialog ? undefined : 'my-4')}>
         <Form {...form}>
@@ -133,6 +121,22 @@ export default function ThreadsForm({ isDialog }: ThreadsFormProps) {
     </>
   );
 }
+
+ThreadsForm.Submit = function Item() {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button
+      form="threads-form"
+      type="submit"
+      disabled={pending}
+      aria-disabled={pending}
+    >
+      {pending && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
+      게시
+    </Button>
+  );
+};
 
 interface EditorMessageProps {
   errors: FieldErrors<FormFields>;
