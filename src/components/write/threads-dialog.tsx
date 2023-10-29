@@ -1,6 +1,5 @@
 'use client';
-import { usePathname, useRouter } from 'next/navigation';
-import React, { useCallback } from 'react';
+import React from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,18 +7,13 @@ import {
   DialogTitle,
 } from '~/components/ui/dialog';
 import ThreadsForm from '~/components/write/threads-form';
-import { PAGE_ENDPOINTS } from '~/constants/constants';
 
-export default function ThreadsDialog() {
-  const router = useRouter();
-  const pathname = usePathname();
+interface ThreadsDialogProps {
+  open: boolean;
+  onClose: () => void;
+}
 
-  const open = ['threads', '/threads'].includes(pathname);
-
-  const onClose = useCallback(() => {
-    router.replace(PAGE_ENDPOINTS.ROOT);
-  }, [router]);
-
+export default function ThreadsDialog({ open, onClose }: ThreadsDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
