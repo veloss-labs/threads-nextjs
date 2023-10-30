@@ -1,5 +1,4 @@
 import React from 'react';
-import ThreadsInput from '~/components/write/threads-input';
 import MainLayout from '~/components/layout/main-layout';
 
 interface Props {
@@ -7,5 +6,5 @@ interface Props {
 }
 
 export default function Layout({ children }: Props) {
-  return <MainLayout before={<ThreadsInput />}>{children}</MainLayout>;
+  return <MainLayout>{children}</MainLayout>;
 }
