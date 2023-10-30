@@ -19,9 +19,6 @@ export default async function Pages() {
     },
   });
 
-  const data = await queryClient.getQueryData(QUERIES_KEY.threads.root);
-  console.log(data);
-
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <ThreadList />

@@ -15,8 +15,13 @@ import {
 import { Icons } from '../icons';
 import { cn } from '~/utils/utils';
 import { useFormState, useFormStatus } from '~/libs/react/form';
-import { PAGE_ENDPOINTS, RESULT_CODE } from '~/constants/constants';
+import {
+  PAGE_ENDPOINTS,
+  QUERIES_KEY,
+  RESULT_CODE,
+} from '~/constants/constants';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 
 const formSchema = z.object({
   text: z.string().min(1).max(500),
@@ -57,6 +62,8 @@ export default function ThreadsForm({ isDialog }: ThreadsFormProps) {
 
   const [isPending, startTransition] = useTransition();
 
+  const queryClient = useQueryClient();
+
   const onSubmit = (values: FormFields) => {
     if (isDialog) {
       /**
@@ -67,6 +74,9 @@ export default function ThreadsForm({ isDialog }: ThreadsFormProps) {
        */
       startTransition(async () => {
         await createThreads(values);
+        await queryClient.invalidateQueries({
+          queryKey: QUERIES_KEY.threads.root,
+        });
         router.replace(PAGE_ENDPOINTS.ROOT);
       });
       return;

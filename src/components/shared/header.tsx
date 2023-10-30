@@ -47,7 +47,8 @@ Header.Internal = function Item({ children }: HeaderProps) {
     const $ele = getTargetElement(ref);
     if (!$ele) return;
     const bounding = $ele.getBoundingClientRect();
-    setHeight(bounding.height);
+    const height = bounding.height + 10;
+    setHeight(height);
   }, []);
 
   return (
