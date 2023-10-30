@@ -131,7 +131,7 @@ MainNav.Menu = function Item() {
       >
         <Icons.alignLeft />
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56">
+      <DropdownMenuContent className="w-56" sideOffset={20}>
         <DropdownMenuItem onClick={() => signOut()}>Log out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

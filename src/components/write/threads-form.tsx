@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useTransition } from 'react';
 import * as z from 'zod';
 import Avatars from '~/components/shared/avatars';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,11 +8,15 @@ import { Form, FormControl, FormField, FormItem } from '~/components/ui/form';
 import { Button } from '~/components/ui/button';
 import { TipTapEditor } from '~/components/editor/tiptap-editor';
 import { useSession } from 'next-auth/react';
-import { createThreads } from '~/server/actions/threads';
+import {
+  createThreadsWithRedirect,
+  createThreads,
+} from '~/server/actions/threads';
 import { Icons } from '../icons';
 import { cn } from '~/utils/utils';
 import { useFormState, useFormStatus } from '~/libs/react/form';
-import { RESULT_CODE } from '~/constants/constants';
+import { PAGE_ENDPOINTS, RESULT_CODE } from '~/constants/constants';
+import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   text: z.string().min(1).max(500),
@@ -37,8 +41,10 @@ const initialFormState: FormState = {
 export default function ThreadsForm({ isDialog }: ThreadsFormProps) {
   const { data } = useSession();
 
+  const router = useRouter();
+
   const [state, formAction] = useFormState<FormState, FormFields>(
-    createThreads,
+    createThreadsWithRedirect,
     initialFormState,
   );
 
@@ -49,15 +55,28 @@ export default function ThreadsForm({ isDialog }: ThreadsFormProps) {
     },
   });
 
+  const [isPending, startTransition] = useTransition();
+
   const onSubmit = (values: FormFields) => {
+    if (isDialog) {
+      /**
+       * intercepting route server action 리다이렉트시 에러가 발생하는 이슈가 있어서
+       * 클라이언트 사이드에서 리다이렉트를 처리하도록 수정
+       * @sse https://nextjs.org/docs/app/building-your-application/routing/intercepting-routes
+       * @sse https://medium.com/@rezahedi/next-js-issue-of-redirect-in-server-actions-with-unmounting-intercepting-route-or-modal-from-the-ui-62b7a9702b7f
+       */
+      startTransition(async () => {
+        await createThreads(values);
+        router.replace(PAGE_ENDPOINTS.ROOT);
+      });
+      return;
+    }
     formAction(values);
   };
 
   const {
     formState: { errors },
   } = form;
-
-  console.log(state);
 
   return (
     <>
@@ -69,7 +88,7 @@ export default function ThreadsForm({ isDialog }: ThreadsFormProps) {
           </p>
         </div>
         <div className="flex w-full justify-end">
-          <ThreadsForm.Submit />
+          <ThreadsForm.Submit isDialog={!!isDialog} isPending={isPending} />
         </div>
       </div>
 
@@ -122,17 +141,24 @@ export default function ThreadsForm({ isDialog }: ThreadsFormProps) {
   );
 }
 
-ThreadsForm.Submit = function Item() {
+interface SubmitProps {
+  isPending: boolean;
+  isDialog: boolean;
+}
+
+ThreadsForm.Submit = function Item({ isDialog, isPending }: SubmitProps) {
   const { pending } = useFormStatus();
+
+  const loading = isDialog ? isPending : pending;
 
   return (
     <Button
       form="threads-form"
       type="submit"
-      disabled={pending}
-      aria-disabled={pending}
+      disabled={loading}
+      aria-disabled={loading}
     >
-      {pending && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
+      {loading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
       게시
     </Button>
   );

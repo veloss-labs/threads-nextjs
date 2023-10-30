@@ -15,10 +15,7 @@ type Result = {
   resultMessage: string | null;
 };
 
-export const createThreads = async (
-  prevState: Result,
-  formData: FormData,
-): Promise<Result> => {
+export const createThreads = async (formData: FormData): Promise<Result> => {
   try {
     const session = await getSession();
     if (!session) {
@@ -36,14 +33,22 @@ export const createThreads = async (
         text: formData.text,
       },
     });
+
+    return {
+      resultCode: RESULT_CODE.OK,
+      resultMessage: null,
+    };
   } catch (error) {
     console.log('error', error);
     throw error;
   }
+};
 
-  console.log('revalidatePath');
+export const createThreadsWithRedirect = async (
+  prevState: Result,
+  formData: FormData,
+): Promise<Result> => {
+  await createThreads(formData);
   revalidatePath(PAGE_ENDPOINTS.ROOT);
-  console.log('redirect');
   redirect(PAGE_ENDPOINTS.ROOT, RedirectType.replace);
-  console.log('redirected');
 };

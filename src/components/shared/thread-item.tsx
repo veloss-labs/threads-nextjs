@@ -3,7 +3,7 @@ import { Card } from '~/components/ui/card';
 import type { Thread, User } from '@prisma/client';
 import Avatars from './avatars';
 import { TipTapEditor } from '../editor/tiptap-editor';
-import { cn } from '~/utils/utils';
+import { cn, getDateFormatted } from '~/utils/utils';
 
 interface ThreadItemProps {
   item: Thread & {
@@ -12,7 +12,7 @@ interface ThreadItemProps {
 }
 
 export default function ThreadItem({ item }: ThreadItemProps) {
-  // console.log(item);
+  const date = getDateFormatted(item.createdAt);
   return (
     <Card className="m-3 mx-auto overflow-hidden rounded-xl border-none shadow-none">
       <div className="md:flex">
@@ -21,18 +21,25 @@ export default function ThreadItem({ item }: ThreadItemProps) {
         </div>
         <div className="w-full py-4 md:p-8">
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
+            <div className="flex w-full items-center">
               <Avatars
                 src={item.user?.image ?? undefined}
                 alt={`${item.user?.username} profile picture`}
                 fallback="T"
               />
-              <div className="ml-4">
-                <div className="text-base font-semibold tracking-wide text-black dark:text-white">
-                  {item.user?.username}
+              <div className="ml-4 flex w-full flex-row">
+                <div>
+                  <div className="text-base font-semibold tracking-wide text-black dark:text-white">
+                    {item.user?.username}
+                  </div>
+                  <div className="text-xs text-gray-400 dark:text-gray-300">
+                    @{item.user?.name}
+                  </div>
                 </div>
-                <div className="text-sm text-gray-400 dark:text-gray-300">
-                  @{item.user?.name}
+                <div className="flex flex-1 items-center justify-end">
+                  <div className="text-sm text-gray-400 dark:text-gray-300">
+                    {date}
+                  </div>
                 </div>
               </div>
             </div>
