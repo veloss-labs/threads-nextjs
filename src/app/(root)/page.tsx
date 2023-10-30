@@ -1,14 +1,15 @@
 import React from 'react';
-import ThreadItem from '~/components/shared/thread-item';
+import ThreadList from '~/components/shared/thread-list';
 import { db } from '~/server/db/prisma';
 
 export default async function Pages() {
-  const data = await db.thread.findMany({ include: { user: true } });
+  const data = await db.thread.findMany({
+    include: { user: true },
+    orderBy: { createdAt: 'desc' },
+  });
   return (
-    <div className="container max-w-2xl pb-10 pt-0 lg:py-10">
-      {data.map((item) => (
-        <ThreadItem key={`thread-${item.id}`} item={item} />
-      ))}
+    <div className="container max-w-2xl px-4 pb-10 pt-0 lg:py-10">
+      <ThreadList items={data} />
     </div>
   );
 }

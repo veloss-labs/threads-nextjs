@@ -37,7 +37,10 @@ export default function ThreadItem({ item }: ThreadItemProps) {
                   </div>
                 </div>
                 <div className="flex flex-1 items-center justify-end">
-                  <div className="text-sm text-gray-400 dark:text-gray-300">
+                  <div
+                    className="text-sm text-gray-400 dark:text-gray-300"
+                    suppressHydrationWarning
+                  >
                     {date}
                   </div>
                 </div>
