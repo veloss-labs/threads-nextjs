@@ -43,11 +43,15 @@ const useIsFirstRender = (): boolean => {
 interface SkipRenderOnClientProps {
   children: React.ReactNode;
   shouldRenderOnClient: () => boolean;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
 export default function SkipRenderOnClient({
   children,
   shouldRenderOnClient,
+  className,
+  style,
 }: SkipRenderOnClientProps) {
   const id = React.useId();
   const isClient = typeof window !== 'undefined';
@@ -62,5 +66,9 @@ export default function SkipRenderOnClient({
 
   const shouldRender = isClient ? shouldRenderOnClient() : true;
 
-  return <div id={id}>{shouldRender && children}</div>;
+  return (
+    <div id={id} className={className} style={style}>
+      {shouldRender && children}
+    </div>
+  );
 }

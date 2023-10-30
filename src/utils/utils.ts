@@ -39,7 +39,7 @@ export const generatorName = (seed: string) => {
   return username;
 };
 
-export const getDateFormatted = (date: Date) => {
+export const getDateFormatted = (date: Date | string) => {
   // ** 시간전 표시 (Intl) 방식으로
   // 현재 시간 기준으로 얼마나 지났는지 표시
   // 24시간 이내는 시간, 24시간 이후는 날짜 표시
@@ -48,7 +48,9 @@ export const getDateFormatted = (date: Date) => {
   // 24시간 이내는 n시간 전 표시
   // 24시간 이후는 날짜 표시
   const now = new Date();
-  const diff = now.getTime() - date.getTime();
+  const diff =
+    now.getTime() -
+    (date instanceof Date ? date.getTime() : new Date(date).getTime());
   const diffSeconds = Math.floor(diff / 1000);
   const diffMinutes = Math.floor(diffSeconds / 60);
   const diffHours = Math.floor(diffMinutes / 60);

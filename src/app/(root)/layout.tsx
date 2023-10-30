@@ -10,11 +10,13 @@ interface Props {
 export default function Layout({ children }: Props) {
   return (
     <>
-      <div className="flex min-h-screen flex-col">
+      <div className="flex flex-col">
         <Header>
           <MainNav />
         </Header>
-        <main className="flex-1">{children}</main>
+        <main className="flex-1">
+          <div className="container max-w-2xl px-4">{children}</div>
+        </main>
         <MobileFooterNav />
       </div>
     </>

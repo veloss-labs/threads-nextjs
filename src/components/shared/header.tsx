@@ -9,6 +9,10 @@ interface HeaderProps {
 }
 
 export default function Header({ children }: HeaderProps) {
+  return <Header.Internal>{children}</Header.Internal>;
+}
+
+Header.Internal = function Item({ children }: HeaderProps) {
   const ref = useRef<HTMLElement>(null);
   const [translateY, setTranslateY] = useState(0);
   const [height, setHeight] = useState(0);
@@ -61,4 +65,4 @@ export default function Header({ children }: HeaderProps) {
       </div>
     </header>
   );
-}
+};

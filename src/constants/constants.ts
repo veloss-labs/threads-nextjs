@@ -1,4 +1,8 @@
-export const QUERIES_KEY = {};
+export const QUERIES_KEY = {
+  threads: {
+    root: ['threads'],
+  },
+};
 
 export const MUTATIONS_KEY = {};
 

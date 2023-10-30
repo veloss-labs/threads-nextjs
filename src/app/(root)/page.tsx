@@ -1,15 +1,30 @@
 import React from 'react';
 import ThreadList from '~/components/shared/thread-list';
-import { db } from '~/server/db/prisma';
+import { threadService } from '~/services/threads/threads';
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import getQueryClient from '~/services/query/getQueryClient';
+import { QUERIES_KEY } from '~/constants/constants';
 
 export default async function Pages() {
-  const data = await db.thread.findMany({
-    include: { user: true },
-    orderBy: { createdAt: 'desc' },
+  const queryClient = getQueryClient();
+
+  await queryClient.prefetchInfiniteQuery({
+    queryKey: QUERIES_KEY.threads.root,
+    initialPageParam: null,
+    queryFn: async () => {
+      return await threadService.getItems({
+        type: 'cursor',
+        limit: 10,
+      });
+    },
   });
+
+  const data = await queryClient.getQueryData(QUERIES_KEY.threads.root);
+  console.log(data);
+
   return (
-    <div className="container max-w-2xl px-4 pb-10 pt-0 lg:py-10">
-      <ThreadList items={data} />
-    </div>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <ThreadList />
+    </HydrationBoundary>
   );
 }

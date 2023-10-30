@@ -6,16 +6,21 @@ import { useSession } from 'next-auth/react';
 import { cn } from '~/utils/utils';
 import { NAV_CONFIG, NavItem } from '~/constants/nav';
 import { PAGE_ENDPOINTS } from '~/constants/constants';
+import SkipRenderOnClient from './skip-render-on-client';
+import { useMediaQuery } from '~/libs/hooks/useMediaQuery';
 
 export default function MobileFooterNav() {
+  const isMobile = useMediaQuery('(max-width: 768px)', false);
   return (
-    <nav className="fixed bottom-0 z-40 flex w-full items-center justify-around border-t bg-white py-2 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 md:hidden">
-      {NAV_CONFIG.mainNav.map((item, index) => (
-        <div key={index} className="relative w-max">
-          <MobileFooterNav.Item item={item} />
-        </div>
-      ))}
-    </nav>
+    <SkipRenderOnClient shouldRenderOnClient={() => isMobile}>
+      <nav className="fixed bottom-0 z-40 flex w-full items-center justify-around border-t bg-white py-2 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 md:hidden">
+        {NAV_CONFIG.mainNav.map((item, index) => (
+          <div key={index} className="relative w-max">
+            <MobileFooterNav.Item item={item} />
+          </div>
+        ))}
+      </nav>
+    </SkipRenderOnClient>
   );
 }
 

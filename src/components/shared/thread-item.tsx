@@ -1,14 +1,12 @@
 import { Card } from '~/components/ui/card';
-
-import type { Thread, User } from '@prisma/client';
 import Avatars from './avatars';
 import { TipTapEditor } from '../editor/tiptap-editor';
 import { cn, getDateFormatted } from '~/utils/utils';
 
+import type { ThreadItemSchema } from '~/services/threads/threads.model';
+
 interface ThreadItemProps {
-  item: Thread & {
-    user: User;
-  };
+  item: ThreadItemSchema;
 }
 
 export default function ThreadItem({ item }: ThreadItemProps) {

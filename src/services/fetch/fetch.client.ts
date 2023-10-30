@@ -1,5 +1,3 @@
-import cookies from 'cookie';
-
 // libs
 import { isEmpty, isString } from '~/utils/assertion';
 import { isBrowser } from '~/libs/browser/dom';
@@ -50,7 +48,7 @@ export class FetchService {
     if (v1) {
       _prefix = `${_prefix}/v1/`;
     } else {
-      _prefix = `${_prefix}/v1/`;
+      _prefix = `${_prefix}/`;
     }
 
     const _baseURL = _prefix
@@ -109,64 +107,10 @@ export class FetchService {
     return body as BodyInit;
   };
 
-  static headerCookie = (options?: ApiOptions) => {
-    const isAuthticated = options?.customOptions?.withAuthorization ?? false;
-    const $headers = options?.request?.headers ?? new Headers();
-
-    if (!isAuthticated) {
-      return $headers;
-    }
-
-    let token: string | null = null;
-    const $cookie = $headers.get('cookie') || $headers.get('set-cookie');
-    if ($cookie) {
-      const { access_token } = cookies.parse($cookie);
-      if (access_token) token = access_token;
-    }
-
-    if (!token) {
-      if ($headers.has('cookie')) $headers.delete('cookie');
-      if ($headers.has('set-cookie')) $headers.delete('set-cookie');
-      return $headers;
-    }
-
-    return $headers;
-  };
-
-  static headerJSON = (options?: ApiOptions) => {
-    const $headers = this.headerCookie(options);
-
-    if (
-      options?.requestInit?.headers &&
-      options.requestInit.headers instanceof Headers
-    ) {
-      for (const [key, value] of options.requestInit.headers.entries()) {
-        $headers.set(key, value);
-      }
-    }
-    $headers.set('content-type', 'application/json');
-    return $headers;
-  };
-
-  static headerFormData = (options?: ApiOptions) => {
-    const $headers = this.headerCookie(options);
-
-    if (
-      options?.requestInit?.headers &&
-      options.requestInit.headers instanceof Headers
-    ) {
-      for (const [key, value] of options.requestInit.headers.entries()) {
-        $headers.set(key, value);
-      }
-    }
-    $headers.delete('content-type');
-    return $headers;
-  };
-
   static async get(request: ApiRoutes, options?: ApiOptions) {
     const { url } = this.makeURL(request, options);
     const requset = new Request(url, {
-      headers: this.headerJSON(options),
+      ...options?.requestInit,
       method: 'GET',
     });
     const response = await fetch(requset);
@@ -180,10 +124,7 @@ export class FetchService {
     const { url } = this.makeURL(request, options);
     const body = this.makeBody(input);
     const requset = new Request(url, {
-      headers:
-        body instanceof FormData
-          ? this.headerFormData(options)
-          : this.headerJSON(options),
+      ...options?.requestInit,
       method: 'POST',
       body,
     });
@@ -197,7 +138,7 @@ export class FetchService {
   static async delete(request: ApiRoutes, options?: ApiOptions) {
     const { url } = this.makeURL(request, options);
     const requset = new Request(url, {
-      headers: this.headerJSON(options),
+      ...options?.requestInit,
       method: 'DELETE',
     });
     const response = await fetch(requset);
@@ -211,10 +152,7 @@ export class FetchService {
     const { url } = this.makeURL(request, options);
     const body = this.makeBody(input);
     const requset = new Request(url, {
-      headers:
-        body instanceof FormData
-          ? this.headerFormData(options)
-          : this.headerJSON(options),
+      ...options?.requestInit,
       method: 'PUT',
       body,
     });
