@@ -27,6 +27,9 @@ export const PAGE_ENDPOINTS = {
   MY_PAGE: {
     ID: (id: string) => `/@${id}`,
   },
+  THREADS: {
+    ROOT: '/threads',
+  },
 } as const;
 
 export const SITE_CONFIG = {

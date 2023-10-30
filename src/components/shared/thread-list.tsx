@@ -90,7 +90,6 @@ export default function ThreadList() {
       }}
       overscan={10}
       initialItemCount={list.length - 1}
-      itemsRendered={(props) => console.log('items rendered', props)}
       totalListHeightChanged={() => {
         if (!mounted) {
           setMounted(true);

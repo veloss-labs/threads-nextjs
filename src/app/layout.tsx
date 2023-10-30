@@ -6,7 +6,6 @@ import { Providers } from './providers';
 import { cn } from '~/utils/utils';
 import { SITE_CONFIG } from '~/constants/constants';
 import type { Metadata } from 'next';
-import { isUndefined } from '~/utils/assertion';
 
 const url = new URL('http://localhost:3000');
 
