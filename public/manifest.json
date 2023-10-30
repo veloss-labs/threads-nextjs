@@ -1,34 +1,47 @@
 {
-  "name": "Hashnode",
-  "short_name": "Hashnode",
-  "icons": [
-    {
-      "src": "https://cdn.hashnode.com/res/hashnode/image/upload/v1611242375722/lfDjH4Nh1.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "https://cdn.hashnode.com/res/hashnode/image/upload/v1611242435690/zj8apC_bD.png",
-      "type": "image/png",
-      "sizes": "512x512"
-    }
+  "id":"barcelona_web",
+  "name":"Threads",
+  "short_name":"Threads",
+  "description":"Instagram의 새로운 텍스트 앱, Threads에서 더 많은 대화를 나누어보세요",
+  "edge_side_panel":{
+     "preferred_width":376
+  },
+  "start_url":"/",
+  "orientation":"landscape-primary",
+  "display":"standalone",
+  "background_color":"#ffffff",
+  "theme_color":"#ffffff",
+  "icons":[
+     {
+        "purpose":"any",
+        "src":"/icons/icon_192x192.png",
+        "sizes":"192x192",
+        "type":"image\/png"
+     },
+     {
+        "purpose":"any",
+        "src":"/icons/icon_512x512.png",
+        "sizes":"512x512",
+        "type":"image\/png"
+     },
+     {
+        "purpose":"maskable",
+        "src":"/icons/icon_maskable_192x192.png",
+        "sizes":"192x192",
+        "type":"image\/png"
+     },
+     {
+        "purpose":"maskable",
+        "src":"/icons/icon_maskable_512x512.png",
+        "sizes":"512x512",
+        "type":"image\/png"
+     },
+     {
+        "purpose":"any",
+        "src":"/icons/con.svg",
+        "sizes":"192x192",
+        "type":"image\/svg+xml"
+     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
-  "display": "standalone",
-  "start_url": "/",
-  "gcm_sender_id": "482941778795",
-  "gcm_sender_id_comment": "Do not change the GCM Sender ID",
-  "prefer_related_applications": true,
-  "related_applications": [
-    {
-      "platform": "play",
-      "id": "com.hashnode.hashnode",
-      "url": "https://play.google.com/store/apps/details?id=com.hashnode.hashnode"
-    },
-    {
-      "platform": "itunes",
-      "url": "https://itunes.apple.com/app/hashnode-dev-community/id1472412417"
-    }
-  ]
+  "lang":"ko-KR"
 }

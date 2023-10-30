@@ -3,66 +3,74 @@
 
 generator client {
   provider = "prisma-client-js"
-  binaryTargets = ["native", "linux-arm64-openssl-1.0.x"]
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
-  relationMode = "prisma"
+}
+
+model User {
+  id            String       @id @default(cuid())
+  name          String?
+  username      String?      @unique
+  password      String?
+  salt          String?
+  email         String?      @unique
+  emailVerified DateTime?    @map(name: "email_verified")
+  image         String?
+  createdAt     DateTime     @default(now()) @map(name: "created_at")
+  updatedAt     DateTime     @updatedAt @map(name: "updated_at")
+  accounts      Account[]
+  sessions      Session[]
+  profile       UserProfile?
+  threads       Thread[]
+
+  @@map(name: "users")
+}
+
+model UserProfile {
+  id     String  @id @default(cuid())
+  bio    String?
+  userId String  @unique @map(name: "user_id")
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
 }
 
 model Account {
-  id                String   @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?  @db.Text
-  access_token      String?  @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?  @db.Text
-  session_state     String?
-  createdAt         DateTime @default(now()) @map(name: "created_at")
-  updatedAt         DateTime @default(now()) @map(name: "updated_at")
+  id                       String  @id @default(cuid())
+  userId                   String  @map(name: "user_id")
+  type                     String
+  provider                 String
+  providerAccountId        String  @map(name: "provider_account_id")
+  refresh_token            String?
+  refresh_token_expires_in Int?
+  access_token             String?
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String?
+  session_state            String?
+  oauth_token_secret       String?
+  oauth_token              String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
   @@map(name: "accounts")
 }
 
 model Session {
   id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
+  sessionToken String   @unique @map(name: "session_token")
+  userId       String   @map(name: "user_id")
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map(name: "sessions")
-}
-
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime  @default(now()) @map(name: "created_at")
-  updatedAt     DateTime  @default(now()) @map(name: "updated_at")
-
-  accounts Account[]
-  sessions Session[]
-  Post     Post[]
-
-  stripeCustomerId       String?   @unique @map(name: "stripe_customer_id")
-  stripeSubscriptionId   String?   @unique @map(name: "stripe_subscription_id")
-  stripePriceId          String?   @map(name: "stripe_price_id")
-  stripeCurrentPeriodEnd DateTime? @map(name: "stripe_current_period_end")
-
-  @@map(name: "users")
 }
 
 model VerificationToken {
@@ -74,17 +82,31 @@ model VerificationToken {
   @@map(name: "verification_tokens")
 }
 
-model Post {
+model Thread {
+  id          String   @id @default(cuid())
+  text        String
+  hasChildren Boolean? @default(false) @map(name: "has_children")
+  parentId    String?  @map(name: "parent_id")
+  level       Int?     @default(0)
+  deleted     Boolean? @default(false)
+  createdAt   DateTime @default(now()) @map(name: "created_at")
+  updatedAt   DateTime @updatedAt @map(name: "updated_at")
+  userId      String   @map(name: "user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt], map: "threads_created_at")
+  @@index([deleted])
+  @@index([parentId], map: "threads_parent_id")
+  @@index([userId, deleted], map: "threads_user_id_deleted")
+  @@map(name: "threads")
+}
+
+model Asset {
   id        String   @id @default(cuid())
-  title     String
-  image     String?
-  content   Json?
-  published Boolean  @default(false)
+  type      String
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
-  authorId  String
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  author User @relation(fields: [authorId], references: [id])
-
-  @@map(name: "posts")
+  @@index([type])
+  @@map(name: "assets")
 }

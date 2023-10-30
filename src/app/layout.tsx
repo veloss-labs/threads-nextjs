@@ -1,53 +1,103 @@
-import { env } from '../../env.mjs';
 import '~/assets/css/globals.css';
 import { PreloadResources } from '~/libs/react/preload';
-import { ApiService } from '~/api/client';
-import { RootProviders } from '~/libs/providers/root';
+import { Inter as FontSans } from 'next/font/google';
+import localFont from 'next/font/local';
+import { Providers } from './providers';
+import { cn } from '~/utils/utils';
+import { SITE_CONFIG } from '~/constants/constants';
+import type { Metadata } from 'next';
+import { isUndefined } from '~/utils/assertion';
 
-export const metadata = {
-  metadataBase: new URL('http://localhost:3000'),
-  manifest: '/manifest.json',
-  themeColor: '#0F172A',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
+const url = new URL('http://localhost:3000');
+
+export const metadata: Metadata = {
+  title: SITE_CONFIG.title,
+  description: SITE_CONFIG.description,
+  keywords: [
+    'Next.js',
+    'React',
+    'Tailwind CSS',
+    'Server Components',
+    'Radix UI',
+  ],
+  icons: {
+    icon: SITE_CONFIG.favicon,
+    apple: SITE_CONFIG.apple57x57,
+    other: [
+      {
+        url: SITE_CONFIG.apple180x180,
+        sizes: '180x180',
+      },
+      {
+        url: SITE_CONFIG.apple256x256,
+        sizes: '256x256',
+      },
+    ],
   },
+  metadataBase: url,
+  manifest: '/manifest.json',
   alternates: {
     canonical: '/',
   },
-  other: {
-    'msapplication-TileColor': '#ffffff',
+  openGraph: {
+    title: SITE_CONFIG.title,
+    description: SITE_CONFIG.description,
+    url: url.href,
+    siteName: SITE_CONFIG.title,
+    images: [
+      {
+        url: SITE_CONFIG.ogImage,
+      },
+    ],
+    locale: 'en_US',
+    type: 'article',
   },
 };
 
-export default function RootLayout({
-  children,
-}: {
+const fontSans = FontSans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+});
+
+const fontHeading = localFont({
+  src: '../assets/fonts/CalSans-SemiBold.woff2',
+  variable: '--font-heading',
+});
+
+interface RoutesProps {
   children: React.ReactNode;
-}) {
-  ApiService.setBaseUrl(env.NEXT_PUBLIC_API_HOST);
+  modal: React.ReactNode;
+}
+
+export default function Layout(props: RoutesProps) {
   return (
-    <html lang="en">
-      <PreloadResources />
-      <link
-        rel="search"
-        href="/opensearch.xml"
-        type="application/opensearchdescription+xml"
-        title="Hashnode"
-      />
-      <RootProviders>
-        <body>
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `window.ENV = ${JSON.stringify({
-                API_BASE_URL: env.NEXT_PUBLIC_API_HOST,
-              })}`,
-            }}
+    <Providers>
+      <html lang="ko" dir="ltr">
+        <PreloadResources />
+        <head>
+          <meta
+            name="viewport"
+            content="width=device-width,initial-scale=1,maximum-scale=2,shrink-to-fit=no"
           />
-          {children}
+          <meta
+            name="referrer"
+            content="origin-when-cross-origin"
+            id="meta_referrer"
+          />
+          <meta name="color-scheme" content="light" />
+          <meta name="theme-color" content="#FFFFFF" />
+        </head>
+        <body
+          className={cn(
+            'bg-background font-sans antialiased',
+            fontSans.variable,
+            fontHeading.variable,
+          )}
+        >
+          {props.children}
         </body>
-      </RootProviders>
-    </html>
+        {props.modal}
+      </html>
+    </Providers>
   );
 }

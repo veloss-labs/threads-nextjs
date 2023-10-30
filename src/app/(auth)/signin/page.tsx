@@ -1,6 +1,12 @@
 import React from 'react';
-import AuthForm from '~/components/blog/AuthForm';
+import type { Metadata } from 'next';
+import SignInForm from '~/components/auth/signin-form';
 
-export default function page() {
-  return <AuthForm type="signin" />;
+export const metadata: Metadata = {
+  title: 'Login',
+  description: 'Login to your account',
+};
+
+export default function Page() {
+  return <SignInForm />;
 }
