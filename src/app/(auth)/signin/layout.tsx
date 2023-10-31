@@ -21,23 +21,20 @@ export default function Layout({ children }: Props) {
       >
         <>
           <Icons.chevronLeft className="mr-2 h-4 w-4" />
-          Back
+          뒤로가기
         </>
       </Link>
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
         <div className="flex flex-col space-y-2 text-center">
-          <Icons.threads className="mx-auto h-6 w-6" />
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Sign in to Threads
-          </h1>
+          <Icons.threads className="mx-auto h-8 w-8" />
         </div>
         {children}
-        <p className="px-8 text-center text-sm text-muted-foreground">
+        <p className={cn('px-8 text-center text-sm text-muted-foreground')}>
           <Link
             href={PAGE_ENDPOINTS.AUTH.SIGNUP}
             className={cn('hover:text-brand underline underline-offset-4')}
           >
-            Don&apos;t have an account? Sign Up
+            아직 계정이 없으신가요? 회원가입
           </Link>
         </p>
       </div>

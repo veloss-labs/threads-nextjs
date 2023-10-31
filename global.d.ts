@@ -24,6 +24,7 @@ declare global {
       NEXT_PUBLIC_GA_TRACKING_ID: string;
       NEXT_PUBLIC_SENTRY_DSN: string;
       NEXT_PUBLIC_DEPLOY_GROUP: 'local' | 'development' | 'production';
+      NEXT_PUBLIC_ROOT_DOMAIN: string;
 
       GITHUB_CLIENT_ID: string;
       GITHUB_CLIENT_SECRET: string;
