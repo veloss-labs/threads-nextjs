@@ -9,6 +9,8 @@ import { getThreadsApi } from '~/services/threads/threads.api';
 import useBeforeUnload from '~/libs/hooks/useBeforeUnload';
 import useIsHydrating from '~/libs/hooks/useIsHydrating';
 import { isBrowser } from '~/libs/browser/dom';
+import { scheduleMicrotask } from '~/libs/browser/schedule';
+import { flushSync } from 'react-dom';
 
 const useSSRLayoutEffect = !isBrowser ? () => {} : useLayoutEffect;
 
@@ -24,7 +26,6 @@ export default function ThreadList() {
     queryKey: QUERIES_KEY.threads.root,
     queryFn: async ({ pageParam }) => {
       return await getThreadsApi({
-        type: 'cursor',
         limit: 10,
         cursor: pageParam ? pageParam : undefined,
       });
@@ -57,18 +58,20 @@ export default function ThreadList() {
 
   useSSRLayoutEffect(() => {
     if (!hydrating) return;
-    if (!mounted) return;
+    if (mounted) {
+      const $api = $virtuoso.current;
+      if (!$api) return;
 
-    const $api = $virtuoso.current;
-    if (!$api) return;
+      const infiniteScrollTop = sessionStorage.getItem(key);
+      if (!infiniteScrollTop) return;
 
-    const infiniteScrollTop = sessionStorage.getItem(key);
-    if (!infiniteScrollTop) return;
+      console.log('infiniteScrollTop', infiniteScrollTop);
 
-    $api.scrollTo?.({
-      top: parseInt(infiniteScrollTop),
-      behavior: 'smooth',
-    });
+      $api.scrollTo?.({
+        top: parseInt(infiniteScrollTop),
+        behavior: 'smooth',
+      });
+    }
 
     return () => {
       sessionStorage.removeItem(key);
@@ -92,7 +95,12 @@ export default function ThreadList() {
       initialItemCount={list.length - 1}
       totalListHeightChanged={() => {
         if (!mounted) {
-          setMounted(true);
+          // TODO: 스크롤 버벅임
+          scheduleMicrotask(() => {
+            flushSync(() => {
+              setMounted(true);
+            });
+          });
         }
       }}
       itemContent={(_, item) => {

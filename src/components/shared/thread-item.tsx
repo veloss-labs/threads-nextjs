@@ -44,7 +44,7 @@ export default function ThreadItem({ item }: ThreadItemProps) {
                     @{item.user?.name}
                   </div>
                 </div>
-                <div className="flex flex-1 items-center justify-end">
+                <div className="flex flex-1 items-center justify-end space-x-3">
                   <div
                     className="text-sm text-gray-400 dark:text-gray-300"
                     suppressHydrationWarning
@@ -53,7 +53,7 @@ export default function ThreadItem({ item }: ThreadItemProps) {
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="link" size="sm" className="ml-2">
+                      <Button variant="link" size="icon" className="!mr-2">
                         <Icons.moreHorizontal className="h-5 w-5" />
                       </Button>
                     </DropdownMenuTrigger>
