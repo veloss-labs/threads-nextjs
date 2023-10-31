@@ -5,6 +5,7 @@ import * as z from 'zod';
 
 const searchParamsSchema = z.object({
   cursor: z.string().optional(),
+  pageNo: z.number().optional(),
   limit: z.string().optional(),
   type: z.enum(['page', 'cursor']).optional(),
   deleted: z.boolean().optional().default(false),
