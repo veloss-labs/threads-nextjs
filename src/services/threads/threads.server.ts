@@ -1,19 +1,24 @@
 'server-only';
 import { db } from '~/server/db/prisma';
 import { isString } from '~/utils/assertion';
-import type { BaseThreadQuery, ThreadQuery } from './threads.query';
-import type { ThreadSchema } from './threads.model';
+import { THREADS_SELECT } from './threads.selector';
+import type { ThreadQuery } from './threads.query';
 
 export class ThreadService {
-  getItems(query: ThreadQuery): Promise<ThreadSchema> {
+  getItems(query: ThreadQuery) {
     if (query.type === 'page') {
       return this._getItemsByPage(query);
-    } else {
-      return this._getItemsByCursor(query);
     }
+
+    return this._getItemsByCursor(query);
   }
 
-  private async _getItemsByCursor({ cursor, limit }: BaseThreadQuery) {
+  private async _getItemsByCursor({
+    cursor,
+    limit,
+    userId,
+    deleted = false,
+  }: ThreadQuery) {
     if (isString(cursor)) {
       cursor = cursor;
     }
@@ -25,7 +30,14 @@ export class ThreadService {
     }
 
     const [totalCount, list] = await Promise.all([
-      db.thread.count(),
+      db.thread.count({
+        where: {
+          deleted,
+          ...(userId && {
+            userId,
+          }),
+        },
+      }),
       db.thread.findMany({
         orderBy: [
           {
@@ -38,11 +50,13 @@ export class ThreadService {
                 lt: cursor,
               }
             : undefined,
+          ...(userId && {
+            userId,
+          }),
+          deleted,
         },
         take: limit,
-        include: {
-          user: true,
-        },
+        select: THREADS_SELECT,
       }),
     ]);
 
@@ -53,6 +67,10 @@ export class ThreadService {
             id: {
               lt: endCursor,
             },
+            deleted,
+            ...(userId && {
+              userId,
+            }),
           },
           orderBy: [
             {
@@ -70,7 +88,12 @@ export class ThreadService {
     };
   }
 
-  private async _getItemsByPage({ pageNo, limit }: BaseThreadQuery) {
+  private async _getItemsByPage({
+    pageNo,
+    limit,
+    userId,
+    deleted = false,
+  }: ThreadQuery) {
     if (isString(pageNo)) {
       pageNo = Number(pageNo);
     } else {
@@ -84,18 +107,29 @@ export class ThreadService {
     }
 
     const [totalCount, list] = await Promise.all([
-      db.thread.count(),
+      db.thread.count({
+        where: {
+          deleted,
+          ...(userId && {
+            userId,
+          }),
+        },
+      }),
       db.thread.findMany({
         orderBy: [
           {
             id: 'desc',
           },
         ],
+        where: {
+          deleted,
+          ...(userId && {
+            userId,
+          }),
+        },
         skip: (pageNo - 1) * limit,
         take: limit,
-        include: {
-          user: true,
-        },
+        select: THREADS_SELECT,
       }),
     ]);
 
@@ -106,6 +140,10 @@ export class ThreadService {
             id: {
               lt: endCursor,
             },
+            deleted,
+            ...(userId && {
+              userId,
+            }),
           },
           orderBy: [
             {

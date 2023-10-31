@@ -1,8 +1,8 @@
 import React from 'react';
 import ThreadList from '~/components/shared/thread-list';
-import { threadService } from '~/services/threads/threads';
+import { threadService } from '~/services/threads/threads.server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
-import getQueryClient from '~/services/query/getQueryClient';
+import getQueryClient from '~/services/query/get-query-client';
 import { QUERIES_KEY } from '~/constants/constants';
 
 export default async function Pages() {

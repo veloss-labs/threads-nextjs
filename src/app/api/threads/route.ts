@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '~/server/auth';
-import { threadService } from '~/services/threads/threads';
+import { threadService } from '~/services/threads/threads.server';
 import * as z from 'zod';
 
 const searchParamsSchema = z.object({
   cursor: z.string().optional(),
   limit: z.string().optional(),
   type: z.enum(['page', 'cursor']).optional(),
+  deleted: z.boolean().optional().default(false),
+  userId: z.string().optional(),
 });
 
 export async function GET(request: Request) {
@@ -23,6 +25,8 @@ export async function GET(request: Request) {
       pageNo: searchParams.get('pageNo') ?? undefined,
       limit: searchParams.get('limit') ?? undefined,
       type: searchParams.get('type') ?? undefined,
+      deleted: searchParams.get('deleted') ?? undefined,
+      userId: searchParams.get('userId') ?? undefined,
     });
 
     const data = await threadService.getItems(query);

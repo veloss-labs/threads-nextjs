@@ -25,7 +25,7 @@ export const PAGE_ENDPOINTS = {
     SIGNUP: '/signup',
   },
   MY_PAGE: {
-    ID: (id: string) => `/users/@${id}`,
+    ID: (id: string) => `/profile/${id}`,
   },
   THREADS: {
     ROOT: '/threads',

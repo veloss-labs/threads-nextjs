@@ -10,7 +10,7 @@ import omit from 'lodash-es/omit';
 
 import { generateHash, secureCompare } from '~/server/utils/password';
 import { db } from '~/server/db/prisma';
-import { AUTH_CRDENTIALS_USER_SELECT } from '~/server/db/selector/user.selector';
+import { AUTH_CRDENTIALS_USER_SELECT } from '~/services/users/user.selector';
 import { isEmpty } from '~/utils/assertion';
 import { API_ENDPOINTS } from '~/constants/constants';
 
@@ -128,16 +128,6 @@ export const authOptions = {
       return token;
     },
     session: async ({ session, token }) => {
-      if (
-        isEmpty(session?.user?.image) &&
-        isEmpty(token?.user?.image) &&
-        token?.user?.username
-      ) {
-        const searchParams = new URLSearchParams();
-        searchParams.append('seed', token.user.username);
-        session.user.image = API_ENDPOINTS.avatar(searchParams);
-      }
-
       session.user = {
         ...session.user,
         // @ts-expect-error
