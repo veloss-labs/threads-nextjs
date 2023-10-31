@@ -114,21 +114,15 @@ model Asset {
 }
 
 model Reposts {
-  id          String   @id @default(cuid())
-  text        String
-  hasChildren Boolean? @default(false) @map(name: "has_children")
-  parentId    String?  @map(name: "parent_id")
-  level       Int?     @default(0)
-  deleted     Boolean? @default(false)
-  createdAt   DateTime @default(now()) @map(name: "created_at")
-  updatedAt   DateTime @updatedAt @map(name: "updated_at")
-  userId      String   @map(name: "user_id")
-  threadId    String   @map(name: "thread_id")
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  thread      Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  userId    String   @map(name: "user_id")
+  threadId  String   @map(name: "thread_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
 
   @@index([createdAt], map: "reposts_created_at")
-  @@index([deleted], map: "reposts_deleted")
   @@index([userId, threadId], map: "reposts_user_id_thread_id")
   @@map(name: "reposts")
 }
