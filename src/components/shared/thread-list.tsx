@@ -1,6 +1,6 @@
 'use client';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import React, { useRef, useLayoutEffect, useState } from 'react';
+import React, { useRef, useLayoutEffect, useEffect } from 'react';
 import last from 'lodash-es/last';
 import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso';
 import ThreadItem from '~/components/shared/thread-item';
@@ -9,8 +9,7 @@ import { getThreadsApi } from '~/services/threads/threads.api';
 import useBeforeUnload from '~/libs/hooks/useBeforeUnload';
 import useIsHydrating from '~/libs/hooks/useIsHydrating';
 import { isBrowser } from '~/libs/browser/dom';
-import { scheduleMicrotask } from '~/libs/browser/schedule';
-import { flushSync } from 'react-dom';
+import { isString } from '~/utils/assertion';
 
 const useSSRLayoutEffect = !isBrowser ? () => {} : useLayoutEffect;
 
@@ -18,9 +17,9 @@ const key = '@threads::scroll';
 
 export default function ThreadList() {
   const $virtuoso = useRef<VirtuosoHandle>(null);
+  const cacheTop = useRef<number | null>(null);
 
   const hydrating = useIsHydrating('[data-hydrating-signal]');
-  const [mounted, setMounted] = useState(false);
 
   const { data, fetchNextPage } = useInfiniteQuery({
     queryKey: QUERIES_KEY.threads.root,
@@ -38,7 +37,10 @@ export default function ThreadList() {
 
   const list = data?.pages?.map((page) => page?.list).flat() ?? [];
 
+  const currentCount = list.length;
+
   const loadMore = (index: number) => {
+    console.log('loadMore', index);
     if (index <= 0) return;
 
     const lastData = last(data?.pages ?? []);
@@ -58,27 +60,39 @@ export default function ThreadList() {
 
   useSSRLayoutEffect(() => {
     if (!hydrating) return;
-    if (mounted) {
-      const $api = $virtuoso.current;
-      if (!$api) return;
+    const $api = $virtuoso.current;
+    if (!$api) return;
 
-      const infiniteScrollTop = sessionStorage.getItem(key);
-      if (!infiniteScrollTop) return;
-
-      console.log('infiniteScrollTop', infiniteScrollTop);
-
-      $api.scrollTo?.({
-        top: parseInt(infiniteScrollTop),
-        behavior: 'smooth',
-      });
-    }
-
+    const _scrollTop = sessionStorage.getItem(key);
+    if (!_scrollTop) return;
+    const top = isString(_scrollTop) ? Number(_scrollTop) : _scrollTop;
+    if (isNaN(top)) return;
+    $api.scrollTo?.({
+      top: top,
+      behavior: 'smooth',
+    });
+    cacheTop.current = top;
     return () => {
       sessionStorage.removeItem(key);
     };
-  }, [hydrating, mounted]);
+  }, [hydrating]);
+
+  // useEffect(() => {
+  //   console.log('currentCount', currentCount);
+  //   const $api = $virtuoso.current;
+  //   if (!$api) return;
+
+  //   if (cacheTop.current) {
+  //     $api.scrollTo?.({
+  //       top: cacheTop.current,
+  //       behavior: 'smooth',
+  //     });
+  //   }
+  // }, [currentCount]);
 
   const lastItem = last(data?.pages ?? []);
+
+  console.log('cacheTop.current', cacheTop.current);
 
   return (
     <Virtuoso
@@ -93,16 +107,16 @@ export default function ThreadList() {
       }}
       overscan={10}
       initialItemCount={list.length - 1}
-      totalListHeightChanged={() => {
-        if (!mounted) {
-          // TODO: 스크롤 버벅임
-          scheduleMicrotask(() => {
-            flushSync(() => {
-              setMounted(true);
-            });
-          });
-        }
-      }}
+      // totalListHeightChanged={() => {
+      //   if (!mounted) {
+      //     // TODO: 스크롤 버벅임
+      //     scheduleMicrotask(() => {
+      //       flushSync(() => {
+      //         setMounted(true);
+      //       });
+      //     });
+      //   }
+      // }}
       itemContent={(_, item) => {
         return <ThreadItem item={item} />;
       }}
