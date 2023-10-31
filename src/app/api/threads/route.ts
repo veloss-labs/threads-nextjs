@@ -9,6 +9,11 @@ const searchParamsSchema = z.object({
   pageNo: z.number().optional(),
   limit: z.string().optional(),
   deleted: z.boolean().optional().default(false),
+  hasParent: z
+    .enum(['true', 'false'])
+    .optional()
+    .default('false')
+    .transform((val) => val === 'true'),
   userId: z.string().optional(),
 });
 
@@ -27,6 +32,7 @@ export async function GET(request: Request) {
       limit: searchParams.get('limit') ?? undefined,
       deleted: searchParams.get('deleted') ?? undefined,
       userId: searchParams.get('userId') ?? undefined,
+      hasParent: searchParams.get('hasParent') ?? undefined,
     });
 
     const data = await threadService.getItems(query);

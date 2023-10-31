@@ -20,7 +20,7 @@ export default async function Pages() {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <ThreadList />
+      <ThreadList type="root" />
     </HydrationBoundary>
   );
 }

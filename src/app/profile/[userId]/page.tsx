@@ -15,7 +15,7 @@ export default async function Pages({ params }: Props) {
   const queryClient = getQueryClient();
 
   await queryClient.prefetchInfiniteQuery({
-    queryKey: QUERIES_KEY.threads.owner(params.userId),
+    queryKey: QUERIES_KEY.threads.owners(params.userId),
     initialPageParam: null,
     queryFn: async () => {
       return await threadService.getItems({
@@ -27,7 +27,7 @@ export default async function Pages({ params }: Props) {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <ThreadList userId={params.userId} />
+      <ThreadList userId={params.userId} type="threads" />
     </HydrationBoundary>
   );
 }

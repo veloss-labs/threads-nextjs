@@ -22,6 +22,7 @@ export class ThreadService {
     cursor,
     limit,
     userId,
+    hasParent = false,
     deleted = false,
   }: ThreadQuery) {
     if (isString(cursor)) {
@@ -41,6 +42,11 @@ export class ThreadService {
           ...(userId && {
             userId,
           }),
+          ...(hasParent && {
+            parentId: {
+              not: null,
+            },
+          }),
         },
       }),
       db.thread.findMany({
@@ -57,6 +63,11 @@ export class ThreadService {
             : undefined,
           ...(userId && {
             userId,
+          }),
+          ...(hasParent && {
+            parentId: {
+              not: null,
+            },
           }),
           deleted,
         },
@@ -75,6 +86,11 @@ export class ThreadService {
             deleted,
             ...(userId && {
               userId,
+            }),
+            ...(hasParent && {
+              parentId: {
+                not: null,
+              },
             }),
           },
           orderBy: [

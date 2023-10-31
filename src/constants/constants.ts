@@ -1,7 +1,9 @@
 export const QUERIES_KEY = {
   threads: {
     root: ['threads'],
-    owner: (id: string) => ['threads', 'owner', id],
+    owners: (id: string) => ['threads', 'owner', id],
+    comments: (id: string) => ['threads', 'comment', id],
+    reposts: (id: string) => ['threads', 'reposts', id],
   },
 };
 

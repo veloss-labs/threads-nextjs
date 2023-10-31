@@ -15,15 +15,17 @@ import { scheduleMicrotask } from '~/libs/browser/schedule';
 const useSSRLayoutEffect = !isBrowser ? () => {} : useLayoutEffect;
 
 interface ThreadListProps {
+  type: 'root' | 'threads' | 'comments' | 'reposts';
   userId?: string;
 }
 
-export default function ThreadList({ userId }: ThreadListProps) {
+export default function ThreadList({ userId, type = 'root' }: ThreadListProps) {
   const $virtuoso = useRef<VirtuosoHandle>(null);
   const cacheTop = useRef<number | null>(null);
+
   const key = useMemo(() => {
-    return userId ? `@threads::scroll::${userId}` : '@threads::scroll';
-  }, [userId]);
+    return `@threads::scroll::${type}`;
+  }, [type]);
 
   const getTop = useCallback(() => {
     return cacheTop.current;
@@ -35,14 +37,31 @@ export default function ThreadList({ userId }: ThreadListProps) {
 
   const hydrating = useIsHydrating('[data-hydrating-signal]');
 
+  const queryKey = useMemo(() => {
+    if (userId) {
+      if (type === 'threads') {
+        return QUERIES_KEY.threads.owners(userId);
+      }
+
+      if (type === 'comments') {
+        return QUERIES_KEY.threads.comments(userId);
+      }
+
+      if (type === 'reposts') {
+        return QUERIES_KEY.threads.reposts(userId);
+      }
+    }
+
+    return QUERIES_KEY.threads.root;
+  }, [userId, type]);
+
   const { data, fetchNextPage } = useInfiniteQuery({
-    queryKey: userId
-      ? QUERIES_KEY.threads.owner(userId)
-      : QUERIES_KEY.threads.root,
+    queryKey: queryKey,
     queryFn: async ({ pageParam }) => {
       return await getThreadsApi({
         limit: 10,
         ...(userId ? { userId: userId } : {}),
+        ...(type === 'comments' ? { hasParent: true } : {}),
         cursor: pageParam ? pageParam : undefined,
       });
     },
