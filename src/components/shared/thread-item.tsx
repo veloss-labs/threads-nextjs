@@ -31,7 +31,8 @@ export default function ThreadItem({ item }: ThreadItemProps) {
           <div className="flex items-center justify-between">
             <div className="flex w-full items-center">
               <Avatars
-                src={item.user?.image ?? undefined}
+                // src={item.user?.image ?? undefined}
+                src={undefined}
                 alt={`${item.user?.username} profile picture`}
                 fallback="T"
               />

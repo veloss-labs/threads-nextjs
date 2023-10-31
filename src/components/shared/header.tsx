@@ -53,7 +53,7 @@ Header.Internal = function Item({ children }: HeaderProps) {
 
   return (
     <header
-      className="sticky top-0 z-40 border-b border-gray-100 bg-white/90 backdrop-blur-md"
+      className="sticky top-0 z-40 bg-white/90 backdrop-blur-md"
       style={{
         transform: `translateY(${translateY}px)`,
       }}

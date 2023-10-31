@@ -1,6 +1,6 @@
 'use client';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import React, { useRef, useLayoutEffect, useEffect, useCallback } from 'react';
+import React, { useRef, useLayoutEffect, useCallback, useMemo } from 'react';
 import last from 'lodash-es/last';
 import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso';
 import ThreadItem from '~/components/shared/thread-item';
@@ -14,11 +14,16 @@ import { scheduleMicrotask } from '~/libs/browser/schedule';
 
 const useSSRLayoutEffect = !isBrowser ? () => {} : useLayoutEffect;
 
-const key = '@threads::scroll';
+interface ThreadListProps {
+  userId?: string;
+}
 
-export default function ThreadList() {
+export default function ThreadList({ userId }: ThreadListProps) {
   const $virtuoso = useRef<VirtuosoHandle>(null);
   const cacheTop = useRef<number | null>(null);
+  const key = useMemo(() => {
+    return userId ? `@threads::scroll::${userId}` : '@threads::scroll';
+  }, [userId]);
 
   const getTop = useCallback(() => {
     return cacheTop.current;
@@ -31,10 +36,13 @@ export default function ThreadList() {
   const hydrating = useIsHydrating('[data-hydrating-signal]');
 
   const { data, fetchNextPage } = useInfiniteQuery({
-    queryKey: QUERIES_KEY.threads.root,
+    queryKey: userId
+      ? QUERIES_KEY.threads.owner(userId)
+      : QUERIES_KEY.threads.root,
     queryFn: async ({ pageParam }) => {
       return await getThreadsApi({
         limit: 10,
+        ...(userId ? { userId: userId } : {}),
         cursor: pageParam ? pageParam : undefined,
       });
     },

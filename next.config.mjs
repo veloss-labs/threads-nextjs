@@ -65,11 +65,11 @@ const nextConfig = {
         destination: '/',
         permanent: false,
       },
-      {
-        source: '/profile/:path*',
-        destination: '/',
-        permanent: false,
-      },
+      // {
+      //   source: '/profile/:path*',
+      //   destination: '/',
+      //   permanent: false,
+      // },
       {
         source: '/activity',
         destination: '/',

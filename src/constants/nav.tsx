@@ -48,7 +48,7 @@ export const NAV_CONFIG = {
       type: 'myPage',
       title: 'My Page',
       icon: Icons.user,
-      disabled: true,
+      // disabled: true,
     },
   ] as NavItem[],
 };

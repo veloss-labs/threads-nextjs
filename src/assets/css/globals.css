@@ -313,3 +313,16 @@ ul[data-type='taskList'] li[data-checked='true'] > div > p {
 .ProseMirror table * .is-empty::before {
   opacity: 0;
 }
+
+.grid-cols-max {
+  grid-template-columns: minmax(0, 1fr) max-content;
+}
+
+.text-align-inherit {
+  text-align: inherit;
+}
+
+.profile-outline {
+  outline-offset: -0.5px;
+  outline: 0.5px solid rgb(0, 0, 0);
+}

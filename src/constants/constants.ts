@@ -1,6 +1,7 @@
 export const QUERIES_KEY = {
   threads: {
     root: ['threads'],
+    owner: (id: string) => ['threads', 'owner', id],
   },
 };
 
