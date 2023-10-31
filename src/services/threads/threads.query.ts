@@ -5,7 +5,6 @@ export type BaseThreadQuery = {
 };
 
 export type ThreadQuery = BaseThreadQuery & {
-  type?: 'page' | 'cursor';
   deleted?: boolean;
   userId?: string;
 };

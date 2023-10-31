@@ -7,7 +7,6 @@ const searchParamsSchema = z.object({
   cursor: z.string().optional(),
   pageNo: z.number().optional(),
   limit: z.string().optional(),
-  type: z.enum(['page', 'cursor']).optional(),
   deleted: z.boolean().optional().default(false),
   userId: z.string().optional(),
 });
@@ -25,7 +24,6 @@ export async function GET(request: Request) {
       cursor: searchParams.get('cursor') ?? undefined,
       pageNo: searchParams.get('pageNo') ?? undefined,
       limit: searchParams.get('limit') ?? undefined,
-      type: searchParams.get('type') ?? undefined,
       deleted: searchParams.get('deleted') ?? undefined,
       userId: searchParams.get('userId') ?? undefined,
     });

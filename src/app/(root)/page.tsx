@@ -13,7 +13,6 @@ export default async function Pages() {
     initialPageParam: null,
     queryFn: async () => {
       return await threadService.getItems({
-        type: 'cursor',
         limit: 10,
       });
     },
