@@ -1,6 +1,6 @@
 'use client';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import React, { useRef, useLayoutEffect, useEffect } from 'react';
+import React, { useRef, useLayoutEffect, useEffect, useCallback } from 'react';
 import last from 'lodash-es/last';
 import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso';
 import ThreadItem from '~/components/shared/thread-item';
@@ -10,6 +10,7 @@ import useBeforeUnload from '~/libs/hooks/useBeforeUnload';
 import useIsHydrating from '~/libs/hooks/useIsHydrating';
 import { isBrowser } from '~/libs/browser/dom';
 import { isString } from '~/utils/assertion';
+import { scheduleMicrotask } from '~/libs/browser/schedule';
 
 const useSSRLayoutEffect = !isBrowser ? () => {} : useLayoutEffect;
 
@@ -18,6 +19,14 @@ const key = '@threads::scroll';
 export default function ThreadList() {
   const $virtuoso = useRef<VirtuosoHandle>(null);
   const cacheTop = useRef<number | null>(null);
+
+  const getTop = useCallback(() => {
+    return cacheTop.current;
+  }, []);
+
+  const setTop = useCallback((top: number | null) => {
+    cacheTop.current = top;
+  }, []);
 
   const hydrating = useIsHydrating('[data-hydrating-signal]');
 
@@ -37,10 +46,7 @@ export default function ThreadList() {
 
   const list = data?.pages?.map((page) => page?.list).flat() ?? [];
 
-  const currentCount = list.length;
-
   const loadMore = (index: number) => {
-    console.log('loadMore', index);
     if (index <= 0) return;
 
     const lastData = last(data?.pages ?? []);
@@ -71,28 +77,13 @@ export default function ThreadList() {
       top: top,
       behavior: 'smooth',
     });
-    cacheTop.current = top;
+    setTop(top);
     return () => {
       sessionStorage.removeItem(key);
     };
   }, [hydrating]);
 
-  // useEffect(() => {
-  //   console.log('currentCount', currentCount);
-  //   const $api = $virtuoso.current;
-  //   if (!$api) return;
-
-  //   if (cacheTop.current) {
-  //     $api.scrollTo?.({
-  //       top: cacheTop.current,
-  //       behavior: 'smooth',
-  //     });
-  //   }
-  // }, [currentCount]);
-
   const lastItem = last(data?.pages ?? []);
-
-  console.log('cacheTop.current', cacheTop.current);
 
   return (
     <Virtuoso
@@ -107,16 +98,20 @@ export default function ThreadList() {
       }}
       overscan={10}
       initialItemCount={list.length - 1}
-      // totalListHeightChanged={() => {
-      //   if (!mounted) {
-      //     // TODO: 스크롤 버벅임
-      //     scheduleMicrotask(() => {
-      //       flushSync(() => {
-      //         setMounted(true);
-      //       });
-      //     });
-      //   }
-      // }}
+      totalListHeightChanged={(height) => {
+        scheduleMicrotask(() => {
+          const cacheTopValue = getTop();
+          if (cacheTopValue === null) return;
+          if (cacheTopValue > height) return;
+          const $api = $virtuoso.current;
+          if (!$api) return;
+          $api.scrollTo?.({
+            top: cacheTopValue,
+            behavior: 'smooth',
+          });
+          setTop(null);
+        });
+      }}
       itemContent={(_, item) => {
         return <ThreadItem item={item} />;
       }}
