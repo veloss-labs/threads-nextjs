@@ -5,9 +5,17 @@ import { THREADS_SELECT } from '~/services/threads/threads.selector';
 import type { ThreadQuery } from '~/services/threads/threads.query';
 
 export class ThreadService {
-  async getItems(query: ThreadQuery) {
-    const data = await this._getItemsByCursor(query);
-    return data;
+  getItems(query: ThreadQuery) {
+    return this._getItemsByCursor(query);
+  }
+
+  getDefaultItems<Data = any>() {
+    return {
+      totalCount: 0,
+      list: [] as Data[],
+      endCursor: null,
+      hasNextPage: false,
+    };
   }
 
   private async _getItemsByCursor({
