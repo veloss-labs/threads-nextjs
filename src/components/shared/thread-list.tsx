@@ -9,8 +9,7 @@ import { getThreadsApi } from '~/services/threads/threads.api';
 import useBeforeUnload from '~/libs/hooks/useBeforeUnload';
 import useIsHydrating from '~/libs/hooks/useIsHydrating';
 import { isBrowser } from '~/libs/browser/dom';
-import { isString } from '~/utils/assertion';
-import { scheduleMicrotask } from '~/libs/browser/schedule';
+import { isEmpty } from '~/utils/assertion';
 
 const useSSRLayoutEffect = !isBrowser ? () => {} : useLayoutEffect;
 
@@ -19,20 +18,25 @@ interface ThreadListProps {
   userId?: string;
 }
 
+type Cache = {
+  top: number;
+  pages: string[];
+};
+
 export default function ThreadList({ userId, type = 'root' }: ThreadListProps) {
   const $virtuoso = useRef<VirtuosoHandle>(null);
-  const cacheTop = useRef<number | null>(null);
+  const $cache = useRef<Cache | null>(null);
 
   const key = useMemo(() => {
     return `@threads::scroll::${type}`;
   }, [type]);
 
-  const getTop = useCallback(() => {
-    return cacheTop.current;
+  const getCache = useCallback(() => {
+    return $cache.current;
   }, []);
 
-  const setTop = useCallback((top: number | null) => {
-    cacheTop.current = top;
+  const setCache = useCallback((data: Cache | null) => {
+    $cache.current = data;
   }, []);
 
   const hydrating = useIsHydrating('[data-hydrating-signal]');
@@ -59,15 +63,17 @@ export default function ThreadList({ userId, type = 'root' }: ThreadListProps) {
     queryKey: queryKey,
     queryFn: async ({ pageParam }) => {
       return await getThreadsApi({
-        limit: 10,
         ...(userId ? { userId: userId } : {}),
         ...(type === 'comments' ? { hasParent: true } : {}),
+        limit: 10,
         cursor: pageParam ? pageParam : undefined,
       });
     },
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => {
-      return lastPage?.endCursor ?? null;
+      return lastPage?.hasNextPage && lastPage?.endCursor
+        ? lastPage?.endCursor
+        : null;
     },
   });
 
@@ -87,27 +93,55 @@ export default function ThreadList({ userId, type = 'root' }: ThreadListProps) {
     const $api = $virtuoso.current;
     if (!$api) return;
     $api.getState((state) => {
-      sessionStorage.setItem(key, state.scrollTop?.toString());
+      sessionStorage.setItem(
+        key,
+        JSON.stringify({
+          top: state.scrollTop,
+          pages: data?.pages
+            ?.filter((page) => page?.endCursor && page?.hasNextPage)
+            ?.map((page) => page.endCursor)
+            ?.filter(Boolean),
+        }),
+      );
     });
   });
 
   useSSRLayoutEffect(() => {
-    if (!hydrating) return;
-    const $api = $virtuoso.current;
-    if (!$api) return;
-
-    const _scrollTop = sessionStorage.getItem(key);
-    if (!_scrollTop) return;
-    const top = isString(_scrollTop) ? Number(_scrollTop) : _scrollTop;
-    if (isNaN(top)) return;
-    $api.scrollTo?.({
-      top: top,
-      behavior: 'smooth',
-    });
-    setTop(top);
+    if (hydrating) {
+      const _data = JSON.parse(sessionStorage.getItem(key) || '{}') as Cache;
+      if (_data) setCache(_data);
+    }
     return () => {
       sessionStorage.removeItem(key);
     };
+  }, [hydrating]);
+
+  const fetchScrollRestoration = async () => {
+    const el = document
+      .querySelector('[data-hydrating-signal]')
+      ?.querySelector('[data-test-id="virtuoso-item-list"]');
+
+    const _data = getCache();
+    if (_data && !isEmpty(_data)) {
+      const _pages = data?.pages ?? [];
+      const currentCursor = _pages.at(_pages.length - 1)?.endCursor;
+      const _cursorIndex = _data.pages.findIndex(
+        (page) => page === currentCursor,
+      );
+      const _pagesAfterCursor = _data.pages.slice(_cursorIndex + 1);
+      for (const page of _pagesAfterCursor) {
+        await fetchNextPage();
+      }
+      setCache(null);
+      $virtuoso.current?.scrollTo({
+        top: _data.top,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  useSSRLayoutEffect(() => {
+    if (hydrating) fetchScrollRestoration();
   }, [hydrating]);
 
   const lastItem = last(data?.pages ?? []);
@@ -121,24 +155,10 @@ export default function ThreadList({ userId, type = 'root' }: ThreadListProps) {
       data={list}
       totalCount={lastItem?.totalCount ?? 0}
       computeItemKey={(index, item) => {
-        return `threads-${item.id}-${index}`;
+        return `${type}-threads-${item.id}-${index}`;
       }}
       overscan={10}
       initialItemCount={list.length - 1}
-      totalListHeightChanged={(height) => {
-        scheduleMicrotask(() => {
-          const cacheTopValue = getTop();
-          if (cacheTopValue === null) return;
-          if (cacheTopValue > height) return;
-          const $api = $virtuoso.current;
-          if (!$api) return;
-          $api.scrollTo?.({
-            top: cacheTopValue,
-            behavior: 'smooth',
-          });
-          setTop(null);
-        });
-      }}
       itemContent={(_, item) => {
         return <ThreadItem item={item} />;
       }}
