@@ -10,3 +10,7 @@ export type ThreadQuery = BaseThreadQuery & {
   hasParent?: boolean;
   hasRepost?: boolean;
 };
+
+export type SearchThreadQuery = BaseThreadQuery & {
+  q?: string;
+};
