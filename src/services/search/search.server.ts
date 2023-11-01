@@ -20,7 +20,7 @@ export class SearchService {
 
   private async _getSearchByCursor(
     userId: string,
-    { cursor, limit }: SearchQuery,
+    { cursor, limit, q }: SearchQuery,
   ) {
     if (isString(cursor)) {
       cursor = cursor;
@@ -38,6 +38,15 @@ export class SearchService {
           id: {
             not: userId,
           },
+          username: {
+            contains: q,
+          },
+          name: {
+            contains: q,
+          },
+          email: {
+            contains: q,
+          },
         },
       }),
       db.user.findMany({
@@ -53,6 +62,15 @@ export class SearchService {
                 not: userId,
               }
             : undefined,
+          username: {
+            contains: q,
+          },
+          name: {
+            contains: q,
+          },
+          email: {
+            contains: q,
+          },
         },
         take: limit,
         select: SEARCH_SELECT,
@@ -66,6 +84,15 @@ export class SearchService {
             id: {
               lt: endCursor,
               not: userId,
+            },
+            username: {
+              contains: q,
+            },
+            name: {
+              contains: q,
+            },
+            email: {
+              contains: q,
             },
           },
           orderBy: [
