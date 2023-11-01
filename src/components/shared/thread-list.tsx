@@ -65,6 +65,7 @@ export default function ThreadList({ userId, type = 'root' }: ThreadListProps) {
       return await getThreadsApi({
         ...(userId ? { userId: userId } : {}),
         ...(type === 'comments' ? { hasParent: true } : {}),
+        ...(type === 'reposts' ? { hasRepost: true } : {}),
         limit: 10,
         cursor: pageParam ? pageParam : undefined,
       });

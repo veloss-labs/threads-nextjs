@@ -18,9 +18,15 @@ export default async function Pages() {
     },
   });
 
+  const data = await queryClient.getQueryData<
+    ReturnType<typeof threadService.getItems>
+  >(QUERIES_KEY.threads.root);
+
+  const isEmptyData = (data?.totalCount ?? 0) === 0;
+
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <ThreadList type="root" />
+      {isEmptyData ? <>Empty</> : <ThreadList type="root" />}
     </HydrationBoundary>
   );
 }

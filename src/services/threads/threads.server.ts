@@ -22,6 +22,7 @@ export class ThreadService {
     cursor,
     limit,
     userId,
+    hasRepost = false,
     hasParent = false,
     deleted = false,
   }: ThreadQuery) {
@@ -47,6 +48,11 @@ export class ThreadService {
               not: null,
             },
           }),
+          ...(hasRepost && {
+            repostId: {
+              not: null,
+            },
+          }),
         },
       }),
       db.thread.findMany({
@@ -66,6 +72,11 @@ export class ThreadService {
           }),
           ...(hasParent && {
             parentId: {
+              not: null,
+            },
+          }),
+          ...(hasRepost && {
+            repostId: {
               not: null,
             },
           }),
@@ -89,6 +100,11 @@ export class ThreadService {
             }),
             ...(hasParent && {
               parentId: {
+                not: null,
+              },
+            }),
+            ...(hasRepost && {
+              repostId: {
                 not: null,
               },
             }),

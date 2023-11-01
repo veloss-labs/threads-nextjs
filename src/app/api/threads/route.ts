@@ -14,6 +14,11 @@ const searchParamsSchema = z.object({
     .optional()
     .default('false')
     .transform((val) => val === 'true'),
+  hasRepost: z
+    .enum(['true', 'false'])
+    .optional()
+    .default('false')
+    .transform((val) => val === 'true'),
   userId: z.string().optional(),
 });
 
@@ -33,6 +38,7 @@ export async function GET(request: Request) {
       deleted: searchParams.get('deleted') ?? undefined,
       userId: searchParams.get('userId') ?? undefined,
       hasParent: searchParams.get('hasParent') ?? undefined,
+      hasRepost: searchParams.get('hasRepost') ?? undefined,
     });
 
     const data = await threadService.getItems(query);

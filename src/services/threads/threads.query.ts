@@ -8,4 +8,5 @@ export type ThreadQuery = BaseThreadQuery & {
   deleted?: boolean;
   userId?: string;
   hasParent?: boolean;
+  hasRepost?: boolean;
 };
