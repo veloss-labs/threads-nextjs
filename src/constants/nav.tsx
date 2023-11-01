@@ -40,6 +40,7 @@ export const NAV_CONFIG = {
       title: 'Activity',
       href: '/activity',
       icon: Icons.heart,
+      disabled: true,
     },
     {
       id: 'myPage',

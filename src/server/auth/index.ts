@@ -6,13 +6,8 @@ import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import GitHub from 'next-auth/providers/github';
 import Credentials from 'next-auth/providers/credentials';
 
-import omit from 'lodash-es/omit';
-
-import { generateHash, secureCompare } from '~/server/utils/password';
 import { db } from '~/server/db/prisma';
-import { AUTH_CRDENTIALS_USER_SELECT } from '~/server/db/selector/user.selector';
-import { isEmpty } from '~/utils/assertion';
-import { API_ENDPOINTS } from '~/constants/constants';
+import { userService } from '~/services/users/user.server';
 
 // Read more at: https://next-auth.js.org/getting-started/typescript#module-augmentation
 declare module 'next-auth/jwt' {
@@ -74,29 +69,7 @@ export const authOptions = {
         }
 
         try {
-          const user = await db.user.findUnique({
-            where: {
-              username: credentials.username,
-            },
-            select: AUTH_CRDENTIALS_USER_SELECT,
-          });
-
-          if (!user) {
-            return null;
-          }
-
-          if (user.password && user.salt) {
-            if (
-              !secureCompare(
-                user.password,
-                generateHash(credentials.password, user.salt),
-              )
-            ) {
-              return null;
-            }
-          }
-
-          return omit(user, ['password', 'salt']);
+          return await userService.getAuthCredentials(credentials);
         } catch (error) {
           console.error(error);
           return null;
@@ -128,16 +101,6 @@ export const authOptions = {
       return token;
     },
     session: async ({ session, token }) => {
-      if (
-        isEmpty(session?.user?.image) &&
-        isEmpty(token?.user?.image) &&
-        token?.user?.username
-      ) {
-        const searchParams = new URLSearchParams();
-        searchParams.append('seed', token.user.username);
-        session.user.image = API_ENDPOINTS.avatar(searchParams);
-      }
-
       session.user = {
         ...session.user,
         // @ts-expect-error

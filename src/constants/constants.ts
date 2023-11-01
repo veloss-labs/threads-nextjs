@@ -1,6 +1,19 @@
 export const QUERIES_KEY = {
   threads: {
     root: ['threads'],
+    owners: (id: string) => ['threads', 'owner', id],
+    comments: (id: string) => ['threads', 'comment', id],
+    reposts: (id: string) => ['threads', 'reposts', id],
+  },
+  users: {
+    root: ['users'],
+    search: (keyword?: string) => {
+      const keys = ['users', 'search'];
+      if (keyword) {
+        keys.push(keyword);
+      }
+      return keys;
+    },
   },
 };
 
@@ -25,7 +38,10 @@ export const PAGE_ENDPOINTS = {
     SIGNUP: '/signup',
   },
   MY_PAGE: {
-    ID: (id: string) => `/@${id}`,
+    ID: (id: string) => `/profile/${id}`,
+  },
+  THREADS: {
+    ROOT: '/threads',
   },
 } as const;
 
@@ -38,6 +54,7 @@ export const SITE_CONFIG = {
   apple57x57: '/icons/icon_57x57.png',
   apple180x180: '/icons/icon_180x180.png',
   apple256x256: '/icons/icon_256x256.png',
+  manifest: '/manifest.json',
 };
 
 export const STATUS_CODE = {

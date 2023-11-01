@@ -13,6 +13,7 @@ export const env = createEnv({
       process.env.VERCEL ? z.string() : z.string().url(),
     ),
     NEXTAUTH_SECRET: z.string().min(1),
+    AUTH_SECRET: z.string().min(1),
     AWS_SST_NAME:
       process.env.NODE_ENV === 'production'
         ? z.string().min(1)
@@ -54,8 +55,9 @@ export const env = createEnv({
     GITHUB_CLIENT_SECRET: z.string().min(1),
   },
   client: {
-    NEXT_PUBLIC_SITE_URL: z.string().optional(),
-    NEXT_PUBLIC_API_HOST: z.string().optional(),
+    NEXT_PUBLIC_SITE_URL: z.string(),
+    NEXT_PUBLIC_API_HOST: z.string(),
+    NEXT_PUBLIC_ROOT_DOMAIN: z.string(),
     NEXT_PUBLIC_DEPLOY_GROUP: z.enum(['development', 'local', 'production']),
     NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
   },
@@ -78,9 +80,11 @@ export const env = createEnv({
     GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+    AUTH_SECRET: process.env.AUTH_SECRET,
     // client
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_API_HOST: process.env.NEXT_PUBLIC_API_HOST,
     NEXT_PUBLIC_DEPLOY_GROUP: process.env.NEXT_PUBLIC_DEPLOY_GROUP,
+    NEXT_PUBLIC_ROOT_DOMAIN: process.env.NEXT_PUBLIC_ROOT_DOMAIN,
   },
 });

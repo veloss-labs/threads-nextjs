@@ -1,4 +1,5 @@
 import '~/assets/css/globals.css';
+import { env } from '../../env.mjs';
 import { PreloadResources } from '~/libs/react/preload';
 import { Inter as FontSans } from 'next/font/google';
 import localFont from 'next/font/local';
@@ -6,9 +7,8 @@ import { Providers } from './providers';
 import { cn } from '~/utils/utils';
 import { SITE_CONFIG } from '~/constants/constants';
 import type { Metadata } from 'next';
-import { isUndefined } from '~/utils/assertion';
 
-const url = new URL('http://localhost:3000');
+const url = new URL(env.NEXT_PUBLIC_SITE_URL);
 
 export const metadata: Metadata = {
   title: SITE_CONFIG.title,
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     ],
   },
   metadataBase: url,
-  manifest: '/manifest.json',
+  manifest: SITE_CONFIG.manifest,
   alternates: {
     canonical: '/',
   },
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
         url: SITE_CONFIG.ogImage,
       },
     ],
-    locale: 'en_US',
+    locale: 'ko_KR',
     type: 'article',
   },
 };

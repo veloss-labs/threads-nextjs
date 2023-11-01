@@ -5,5 +5,12 @@ export type BaseThreadQuery = {
 };
 
 export type ThreadQuery = BaseThreadQuery & {
-  type?: 'page' | 'cursor';
+  deleted?: boolean;
+  userId?: string;
+  hasParent?: boolean;
+  hasRepost?: boolean;
+};
+
+export type SearchThreadQuery = BaseThreadQuery & {
+  q?: string;
 };

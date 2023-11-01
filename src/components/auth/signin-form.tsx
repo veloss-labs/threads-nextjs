@@ -1,5 +1,5 @@
 'use client';
-import React, { useCallback, useState, useTransition } from 'react';
+import React, { useCallback, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
@@ -16,6 +16,7 @@ import { Icons } from '~/components/icons';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { PAGE_ENDPOINTS } from '~/constants/constants';
+import { cn } from '~/utils/utils';
 
 const formSchema = z.object({
   username: z.string().min(1),
@@ -73,7 +74,7 @@ export default function SignInForm() {
                   <FormControl>
                     <Input
                       type="text"
-                      placeholder="username"
+                      placeholder="사용자 이름"
                       autoCapitalize="none"
                       autoComplete="username"
                       autoCorrect="off"
@@ -93,7 +94,7 @@ export default function SignInForm() {
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="password"
+                      placeholder="비밀번호"
                       autoComplete="current-password"
                       dir="ltr"
                       {...field}
@@ -111,7 +112,7 @@ export default function SignInForm() {
               {isLoading && (
                 <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Submit
+              로그인
             </Button>
           </div>
         </form>
@@ -121,8 +122,8 @@ export default function SignInForm() {
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            Or continue with
+          <span className={cn('bg-background px-2 text-muted-foreground')}>
+            또는
           </span>
         </div>
       </div>

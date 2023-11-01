@@ -17,6 +17,7 @@ import { Icons } from '~/components/icons';
 import { createUser } from '~/server/actions/users';
 import { RESULT_CODE } from '~/constants/constants';
 import { useFormState, useFormStatus } from '~/libs/react/form';
+import { cn } from '~/utils/utils';
 
 const formSchema = z.object({
   username: z.string().min(1),
@@ -66,7 +67,7 @@ export default function SignupForm() {
                   <FormControl>
                     <Input
                       type="text"
-                      placeholder="username"
+                      placeholder="사용자 이름"
                       autoCapitalize="none"
                       autoComplete="username"
                       autoCorrect="off"
@@ -86,7 +87,7 @@ export default function SignupForm() {
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="password"
+                      placeholder="비밀번호"
                       autoComplete="current-password"
                       dir="ltr"
                       {...field}
@@ -110,8 +111,8 @@ export default function SignupForm() {
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            Or continue with
+          <span className={cn('bg-background px-2 text-muted-foreground')}>
+            또는
           </span>
         </div>
       </div>
@@ -125,7 +126,7 @@ SignupForm.Submit = function Item() {
   return (
     <Button type="submit" disabled={pending} aria-disabled={pending}>
       {pending && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-      Submit
+      회원가입
     </Button>
   );
 };

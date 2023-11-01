@@ -11,6 +11,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
 import { signOut } from 'next-auth/react';
@@ -132,7 +133,9 @@ MainNav.Menu = function Item() {
         <Icons.alignLeft />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" sideOffset={20}>
-        <DropdownMenuItem onClick={() => signOut()}>Log out</DropdownMenuItem>
+        <DropdownMenuItem>모드전환</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => signOut()}>로그아웃</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

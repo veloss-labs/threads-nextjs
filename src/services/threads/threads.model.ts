@@ -1,4 +1,4 @@
-import type { Thread, User } from '@prisma/client';
+import type { Thread, User, UserProfile } from '@prisma/client';
 
 export type BasePaginationSchema = {
   totalCount: number;
@@ -6,8 +6,10 @@ export type BasePaginationSchema = {
   hasNextPage: boolean;
 };
 
-export type ThreadItemSchema = Thread & {
-  user: User;
+export type ThreadItemSchema = Omit<Thread, 'userId' | 'updatedAt'> & {
+  user: Pick<User, 'id' | 'name' | 'username' | 'email' | 'image'> & {
+    profile: Pick<UserProfile, 'bio'>;
+  };
 };
 
 export type ThreadSchema = BasePaginationSchema & {

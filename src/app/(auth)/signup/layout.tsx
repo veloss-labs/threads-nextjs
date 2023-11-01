@@ -19,34 +19,38 @@ export default function Layout({ children }: Props) {
           'absolute right-4 top-4 md:right-8 md:top-8',
         )}
       >
-        Login
+        로그인
       </Link>
-      <div className="hidden h-full bg-muted lg:block" />
+      <div className={cn('hidden h-full bg-muted lg:block')} />
       <div className="lg:p-8">
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
           <div className="flex flex-col space-y-2 text-center">
-            <Icons.threads className="mx-auto h-6 w-6" />
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Sign up to Threads
-            </h1>
+            <Icons.threads className="mx-auto h-8 w-8" />
           </div>
           {children}
-          <p className="px-8 text-center text-sm text-muted-foreground">
-            By clicking continue, you agree to our{' '}
+          <p
+            className={cn(
+              'px-8 text-center text-sm text-muted-foreground space-x-3',
+            )}
+          >
             <Link
               href="/terms"
-              className="hover:text-brand underline underline-offset-4"
+              className={cn('hover:text-brand underline underline-offset-4')}
             >
-              Terms of Service
-            </Link>{' '}
-            and{' '}
+              Threads 약관
+            </Link>
             <Link
               href="/privacy"
-              className="hover:text-brand underline underline-offset-4"
+              className={cn('hover:text-brand underline underline-offset-4')}
             >
-              Privacy Policy
+              개인정보처리방침
             </Link>
-            .
+            <Link
+              href="/cookie"
+              className={cn('hover:text-brand underline underline-offset-4')}
+            >
+              쿠키정책
+            </Link>
           </p>
         </div>
       </div>

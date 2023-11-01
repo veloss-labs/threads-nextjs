@@ -1,6 +1,6 @@
 'use client';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import React, { useRef, useLayoutEffect, useState } from 'react';
+import React, { useRef, useLayoutEffect, useCallback, useMemo } from 'react';
 import last from 'lodash-es/last';
 import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso';
 import ThreadItem from '~/components/shared/thread-item';
@@ -9,29 +9,72 @@ import { getThreadsApi } from '~/services/threads/threads.api';
 import useBeforeUnload from '~/libs/hooks/useBeforeUnload';
 import useIsHydrating from '~/libs/hooks/useIsHydrating';
 import { isBrowser } from '~/libs/browser/dom';
+import { isEmpty } from '~/utils/assertion';
 
 const useSSRLayoutEffect = !isBrowser ? () => {} : useLayoutEffect;
 
-const key = '@threads::scroll';
+interface ThreadListProps {
+  type: 'root' | 'threads' | 'comments' | 'reposts';
+  userId?: string;
+}
 
-export default function ThreadList() {
+type Cache = {
+  top: number;
+  pages: string[];
+};
+
+export default function ThreadList({ userId, type = 'root' }: ThreadListProps) {
   const $virtuoso = useRef<VirtuosoHandle>(null);
+  const $cache = useRef<Cache | null>(null);
+
+  const key = useMemo(() => {
+    return `@threads::scroll::${type}`;
+  }, [type]);
+
+  const getCache = useCallback(() => {
+    return $cache.current;
+  }, []);
+
+  const setCache = useCallback((data: Cache | null) => {
+    $cache.current = data;
+  }, []);
 
   const hydrating = useIsHydrating('[data-hydrating-signal]');
-  const [mounted, setMounted] = useState(false);
+
+  const queryKey = useMemo(() => {
+    if (userId) {
+      if (type === 'threads') {
+        return QUERIES_KEY.threads.owners(userId);
+      }
+
+      if (type === 'comments') {
+        return QUERIES_KEY.threads.comments(userId);
+      }
+
+      if (type === 'reposts') {
+        return QUERIES_KEY.threads.reposts(userId);
+      }
+    }
+
+    return QUERIES_KEY.threads.root;
+  }, [userId, type]);
 
   const { data, fetchNextPage } = useInfiniteQuery({
-    queryKey: QUERIES_KEY.threads.root,
+    queryKey: queryKey,
     queryFn: async ({ pageParam }) => {
       return await getThreadsApi({
-        type: 'cursor',
+        ...(userId ? { userId: userId } : {}),
+        ...(type === 'comments' ? { hasParent: true } : {}),
+        ...(type === 'reposts' ? { hasRepost: true } : {}),
         limit: 10,
         cursor: pageParam ? pageParam : undefined,
       });
     },
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => {
-      return lastPage?.endCursor ?? null;
+      return lastPage?.hasNextPage && lastPage?.endCursor
+        ? lastPage?.endCursor
+        : null;
     },
   });
 
@@ -51,29 +94,56 @@ export default function ThreadList() {
     const $api = $virtuoso.current;
     if (!$api) return;
     $api.getState((state) => {
-      sessionStorage.setItem(key, state.scrollTop?.toString());
+      sessionStorage.setItem(
+        key,
+        JSON.stringify({
+          top: state.scrollTop,
+          pages: data?.pages
+            ?.filter((page) => page?.endCursor)
+            ?.map((page) => page.endCursor)
+            ?.filter(Boolean),
+        }),
+      );
     });
   });
 
   useSSRLayoutEffect(() => {
-    if (!hydrating) return;
-    if (!mounted) return;
-
-    const $api = $virtuoso.current;
-    if (!$api) return;
-
-    const infiniteScrollTop = sessionStorage.getItem(key);
-    if (!infiniteScrollTop) return;
-
-    $api.scrollTo?.({
-      top: parseInt(infiniteScrollTop),
-      behavior: 'smooth',
-    });
-
+    if (hydrating) {
+      const _data = JSON.parse(sessionStorage.getItem(key) || '{}') as Cache;
+      if (_data) setCache(_data);
+    }
     return () => {
       sessionStorage.removeItem(key);
     };
-  }, [hydrating, mounted]);
+  }, [hydrating]);
+
+  const fetchScrollRestoration = async () => {
+    const el = document
+      .querySelector('[data-hydrating-signal]')
+      ?.querySelector('[data-test-id="virtuoso-item-list"]');
+
+    const _data = getCache();
+    if (_data && !isEmpty(_data)) {
+      const _pages = data?.pages ?? [];
+      const currentCursor = _pages.at(_pages.length - 1)?.endCursor;
+      const _cursorIndex = _data.pages.findIndex(
+        (page) => page === currentCursor,
+      );
+      const _pagesAfterCursor = _data.pages.slice(_cursorIndex + 1);
+      for (const page of _pagesAfterCursor) {
+        await fetchNextPage();
+      }
+      setCache(null);
+      $virtuoso.current?.scrollTo({
+        top: _data.top,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  useSSRLayoutEffect(() => {
+    if (hydrating) fetchScrollRestoration();
+  }, [hydrating]);
 
   const lastItem = last(data?.pages ?? []);
 
@@ -86,16 +156,10 @@ export default function ThreadList() {
       data={list}
       totalCount={lastItem?.totalCount ?? 0}
       computeItemKey={(index, item) => {
-        return `threads-${item.id}-${index}`;
+        return `${type}-threads-${item.id}-${index}`;
       }}
       overscan={10}
       initialItemCount={list.length - 1}
-      itemsRendered={(props) => console.log('items rendered', props)}
-      totalListHeightChanged={() => {
-        if (!mounted) {
-          setMounted(true);
-        }
-      }}
       itemContent={(_, item) => {
         return <ThreadItem item={item} />;
       }}

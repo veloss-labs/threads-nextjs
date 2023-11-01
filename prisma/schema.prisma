@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
 datasource db {
@@ -85,8 +86,10 @@ model VerificationToken {
 model Thread {
   id          String   @id @default(cuid())
   text        String
+  hasReposts  Boolean? @default(false) @map(name: "has_reposts")
   hasChildren Boolean? @default(false) @map(name: "has_children")
   parentId    String?  @map(name: "parent_id")
+  repostId    String?  @map(name: "repost_id")
   level       Int?     @default(0)
   deleted     Boolean? @default(false)
   createdAt   DateTime @default(now()) @map(name: "created_at")
@@ -97,6 +100,7 @@ model Thread {
   @@index([createdAt], map: "threads_created_at")
   @@index([deleted])
   @@index([parentId], map: "threads_parent_id")
+  @@index([repostId], map: "threads_repost_id")
   @@index([userId, deleted], map: "threads_user_id_deleted")
   @@map(name: "threads")
 }

@@ -1,8 +1,9 @@
 import React from 'react';
 import ThreadList from '~/components/shared/thread-list';
-import { threadService } from '~/services/threads/threads';
+import ThreadsInput from '~/components/write/threads-input';
+import { threadService } from '~/services/threads/threads.server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
-import getQueryClient from '~/services/query/getQueryClient';
+import getQueryClient from '~/services/query/get-query-client';
 import { QUERIES_KEY } from '~/constants/constants';
 
 export default async function Pages() {
@@ -13,15 +14,27 @@ export default async function Pages() {
     initialPageParam: null,
     queryFn: async () => {
       return await threadService.getItems({
-        type: 'cursor',
         limit: 10,
       });
     },
   });
 
+  const data = await queryClient.getQueryData<any>(QUERIES_KEY.threads.root);
+
+  const totalCount =
+    data?.pages
+      ?.map((page: any) => page?.totalCount)
+      .flat()
+      ?.at(0) ?? 0;
+
+  const isEmptyData = totalCount === 0;
+
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <ThreadList />
-    </HydrationBoundary>
+    <>
+      <ThreadsInput />
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        {isEmptyData ? <>Empty</> : <ThreadList type="root" />}
+      </HydrationBoundary>
+    </>
   );
 }
