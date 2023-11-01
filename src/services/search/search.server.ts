@@ -5,8 +5,8 @@ import { SEARCH_SELECT } from '~/services/search/search.selector';
 import type { SearchQuery } from '~/services/search/search.query';
 
 export class SearchService {
-  getSearch(userId: string, query: SearchQuery) {
-    return this._getSearchByCursor(userId, query);
+  getSearch(query: SearchQuery) {
+    return this._getSearchByCursor(query);
   }
 
   getDefaultItems<Data = any>() {
@@ -18,10 +18,7 @@ export class SearchService {
     };
   }
 
-  private async _getSearchByCursor(
-    userId: string,
-    { cursor, limit, q }: SearchQuery,
-  ) {
+  private async _getSearchByCursor({ cursor, limit, q }: SearchQuery) {
     if (isString(cursor)) {
       cursor = cursor;
     }
@@ -35,9 +32,9 @@ export class SearchService {
     const [totalCount, list] = await Promise.all([
       db.user.count({
         where: {
-          id: {
-            not: userId,
-          },
+          // id: {
+          //   not: userId,
+          // },
           username: {
             contains: q,
           },
@@ -59,7 +56,7 @@ export class SearchService {
           id: cursor
             ? {
                 lt: cursor,
-                not: userId,
+                // not: userId,
               }
             : undefined,
           username: {
@@ -83,7 +80,7 @@ export class SearchService {
           where: {
             id: {
               lt: endCursor,
-              not: userId,
+              // not: userId,
             },
             username: {
               contains: q,

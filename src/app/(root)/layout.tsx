@@ -7,5 +7,5 @@ interface Props {
 }
 
 export default function Layout({ children }: Props) {
-  return <MainLayout before={<ThreadsInput />}>{children}</MainLayout>;
+  return <MainLayout>{children}</MainLayout>;
 }

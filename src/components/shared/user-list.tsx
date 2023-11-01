@@ -3,9 +3,9 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import React, { useRef, useLayoutEffect, useCallback, useMemo } from 'react';
 import last from 'lodash-es/last';
 import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso';
-import ThreadItem from '~/components/shared/thread-item';
+import UserItem from '~/components/shared/user-item';
 import { QUERIES_KEY } from '~/constants/constants';
-import { getThreadsApi } from '~/services/threads/threads.api';
+import { getSearchApi } from '~/services/search/search.api';
 import useBeforeUnload from '~/libs/hooks/useBeforeUnload';
 import useIsHydrating from '~/libs/hooks/useIsHydrating';
 import { isBrowser } from '~/libs/browser/dom';
@@ -13,9 +13,9 @@ import { isEmpty } from '~/utils/assertion';
 
 const useSSRLayoutEffect = !isBrowser ? () => {} : useLayoutEffect;
 
-interface ThreadListProps {
-  type: 'root' | 'threads' | 'comments' | 'reposts';
-  userId?: string;
+interface UserListProps {
+  type: 'root';
+  q?: string;
 }
 
 type Cache = {
@@ -23,12 +23,12 @@ type Cache = {
   pages: string[];
 };
 
-export default function ThreadList({ userId, type = 'root' }: ThreadListProps) {
+export default function UserList({ q, type = 'root' }: UserListProps) {
   const $virtuoso = useRef<VirtuosoHandle>(null);
   const $cache = useRef<Cache | null>(null);
 
   const key = useMemo(() => {
-    return `@threads::scroll::${type}`;
+    return `@users::scroll::${type}`;
   }, [type]);
 
   const getCache = useCallback(() => {
@@ -42,30 +42,14 @@ export default function ThreadList({ userId, type = 'root' }: ThreadListProps) {
   const hydrating = useIsHydrating('[data-hydrating-signal]');
 
   const queryKey = useMemo(() => {
-    if (userId) {
-      if (type === 'threads') {
-        return QUERIES_KEY.threads.owners(userId);
-      }
-
-      if (type === 'comments') {
-        return QUERIES_KEY.threads.comments(userId);
-      }
-
-      if (type === 'reposts') {
-        return QUERIES_KEY.threads.reposts(userId);
-      }
-    }
-
-    return QUERIES_KEY.threads.root;
-  }, [userId, type]);
+    return QUERIES_KEY.users.search(q);
+  }, [q]);
 
   const { data, fetchNextPage } = useInfiniteQuery({
     queryKey: queryKey,
     queryFn: async ({ pageParam }) => {
-      return await getThreadsApi({
-        ...(userId ? { userId: userId } : {}),
-        ...(type === 'comments' ? { hasParent: true } : {}),
-        ...(type === 'reposts' ? { hasRepost: true } : {}),
+      return await getSearchApi({
+        ...(q ? { q } : {}),
         limit: 10,
         cursor: pageParam ? pageParam : undefined,
       });
@@ -77,6 +61,8 @@ export default function ThreadList({ userId, type = 'root' }: ThreadListProps) {
         : null;
     },
   });
+
+  console.log(data);
 
   const list = data?.pages?.map((page) => page?.list).flat() ?? [];
 
@@ -156,12 +142,12 @@ export default function ThreadList({ userId, type = 'root' }: ThreadListProps) {
       data={list}
       totalCount={lastItem?.totalCount ?? 0}
       computeItemKey={(index, item) => {
-        return `${type}-threads-${item.id}-${index}`;
+        return `${type}-users-${item.id}-${index}`;
       }}
       overscan={10}
       initialItemCount={list.length - 1}
       itemContent={(_, item) => {
-        return <ThreadItem item={item} />;
+        return <UserItem item={item} />;
       }}
       components={{
         Footer: () => <div className="h-20"></div>,

@@ -15,30 +15,35 @@ export default async function Pages({ params }: Props) {
   const queryClient = getQueryClient();
 
   await queryClient.prefetchInfiniteQuery({
-    queryKey: QUERIES_KEY.threads.reposts(params.userId),
+    queryKey: QUERIES_KEY.threads.comments(params.userId),
     initialPageParam: null,
     queryFn: async () => {
       return await threadService.getItems({
         limit: 10,
         hasParent: true,
-        hasRepost: true,
         userId: params.userId,
       });
     },
   });
 
-  const data = await queryClient.getQueryData<
-    ReturnType<typeof threadService.getItems>
-  >(QUERIES_KEY.threads.reposts(params.userId));
+  const data = await queryClient.getQueryData<any>(
+    QUERIES_KEY.threads.reposts(params.userId),
+  );
 
-  const isEmptyData = (data?.totalCount ?? 0) === 0;
+  const totalCount =
+    data?.pages
+      ?.map((page: any) => page?.totalCount)
+      .flat()
+      ?.at(0) ?? 0;
+
+  const isEmptyData = totalCount === 0;
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       {isEmptyData ? (
         <>Empty</>
       ) : (
-        <ThreadList userId={params.userId} type="reposts" />
+        <ThreadList userId={params.userId} type="comments" />
       )}
     </HydrationBoundary>
   );

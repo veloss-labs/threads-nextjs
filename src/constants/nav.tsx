@@ -26,7 +26,6 @@ export const NAV_CONFIG = {
       title: 'Search',
       href: '/search',
       icon: Icons.search,
-      disabled: true,
     },
     {
       id: 'thread',
@@ -48,7 +47,6 @@ export const NAV_CONFIG = {
       type: 'myPage',
       title: 'My Page',
       icon: Icons.user,
-      // disabled: true,
     },
   ] as NavItem[],
 };

@@ -60,11 +60,11 @@ const nextConfig = {
   },
   redirects() {
     return [
-      {
-        source: '/search',
-        destination: '/',
-        permanent: false,
-      },
+      // {
+      //   source: '/search',
+      //   destination: '/',
+      //   permanent: false,
+      // },
       // {
       //   source: '/profile/:path*',
       //   destination: '/',

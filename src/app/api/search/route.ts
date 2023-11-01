@@ -27,18 +27,7 @@ export async function GET(request: Request) {
       q: searchParams.get('q') ?? undefined,
     });
 
-    if (!query.q) {
-      const defaultValues = searchService.getDefaultItems();
-      return NextResponse.json(
-        {
-          ...defaultValues,
-          error: null,
-        },
-        { status: 200 },
-      );
-    }
-
-    const data = await searchService.getSearch(session.user.id, query);
+    const data = await searchService.getSearch(query);
     return NextResponse.json({
       ...data,
       error: null,

@@ -5,6 +5,16 @@ export const QUERIES_KEY = {
     comments: (id: string) => ['threads', 'comment', id],
     reposts: (id: string) => ['threads', 'reposts', id],
   },
+  users: {
+    root: ['users'],
+    search: (keyword?: string) => {
+      const keys = ['users', 'search'];
+      if (keyword) {
+        keys.push(keyword);
+      }
+      return keys;
+    },
+  },
 };
 
 export const MUTATIONS_KEY = {};
