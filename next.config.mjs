@@ -70,11 +70,11 @@ const nextConfig = {
       //   destination: '/',
       //   permanent: false,
       // },
-      {
-        source: '/activity',
-        destination: '/',
-        permanent: false,
-      },
+      // {
+      //   source: '/activity',
+      //   destination: '/',
+      //   permanent: false,
+      // },
     ];
   },
 };

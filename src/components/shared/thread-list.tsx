@@ -10,6 +10,7 @@ import useBeforeUnload from '~/libs/hooks/useBeforeUnload';
 import useIsHydrating from '~/libs/hooks/useIsHydrating';
 import { isBrowser } from '~/libs/browser/dom';
 import { isEmpty } from '~/utils/assertion';
+import { KeyProvider } from '~/libs/providers/key';
 
 const useSSRLayoutEffect = !isBrowser ? () => {} : useLayoutEffect;
 
@@ -148,25 +149,30 @@ export default function ThreadList({ userId, type = 'root' }: ThreadListProps) {
   const lastItem = last(data?.pages ?? []);
 
   return (
-    <Virtuoso
-      ref={$virtuoso}
-      data-hydrating-signal
-      useWindowScroll
-      style={{ height: '100%' }}
-      data={list}
-      totalCount={lastItem?.totalCount ?? 0}
-      computeItemKey={(index, item) => {
-        return `${type}-threads-${item.id}-${index}`;
-      }}
-      overscan={10}
-      initialItemCount={list.length - 1}
-      itemContent={(_, item) => {
-        return <ThreadItem item={item} />;
-      }}
-      components={{
-        Footer: () => <div className="h-20"></div>,
-      }}
-      endReached={loadMore}
-    />
+    <KeyProvider queryKey={queryKey}>
+      <Virtuoso
+        ref={$virtuoso}
+        data-hydrating-signal
+        useWindowScroll
+        style={{ height: '100%' }}
+        data={list}
+        totalCount={lastItem?.totalCount ?? 0}
+        computeItemKey={(index, item) => {
+          if (!item) {
+            return `${type}-threads-${index}`;
+          }
+          return `${type}-threads-${item.id}-${index}`;
+        }}
+        overscan={10}
+        initialItemCount={list.length - 1}
+        itemContent={(_, item) => {
+          return <ThreadItem item={item} />;
+        }}
+        components={{
+          Footer: () => <div className="h-20"></div>,
+        }}
+        endReached={loadMore}
+      />
+    </KeyProvider>
   );
 }

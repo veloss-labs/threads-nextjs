@@ -29,6 +29,8 @@ import {
   PenSquare,
   AlignLeft,
   MoreHorizontal,
+  Repeat,
+  MessageSquare,
 } from 'lucide-react';
 
 export const Icons = {
@@ -59,6 +61,8 @@ export const Icons = {
   heart: Heart,
   alignLeft: AlignLeft,
   moreHorizontal: MoreHorizontal,
+  repeat: Repeat,
+  messageSquare: MessageSquare,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden="true"

@@ -1,6 +1,5 @@
 'use server';
 import { redirect } from 'next/navigation';
-import { db } from '~/server/db/prisma';
 import { generateHash, generateSalt } from '~/server/utils/password';
 import {
   API_ENDPOINTS,
@@ -9,6 +8,7 @@ import {
 } from '~/constants/constants';
 import { generatorName } from '~/utils/utils';
 import { revalidatePath } from 'next/cache';
+import { userService } from '~/services/users/user.server';
 
 type FormData = {
   username: string;
@@ -25,12 +25,7 @@ export const createUser = async (
   formData: FormData,
 ): Promise<Result> => {
   try {
-    const exists = await db.user.findUnique({
-      where: {
-        username: formData.username,
-      },
-    });
-
+    const exists = await userService.getItemByUsername(formData.username);
     if (exists) {
       return {
         resultCode: RESULT_CODE.ALREADY_EXIST,
@@ -47,17 +42,15 @@ export const createUser = async (
 
     const name = generatorName(formData.username);
 
-    await db.user.create({
-      data: {
-        name,
-        username: formData.username,
-        password: hash,
-        salt,
-        image: defaultImage,
-        profile: {
-          create: {
-            bio: undefined,
-          },
+    await userService.createItem({
+      name,
+      username: formData.username,
+      password: hash,
+      salt,
+      image: defaultImage,
+      profile: {
+        create: {
+          bio: undefined,
         },
       },
     });

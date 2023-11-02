@@ -26,6 +26,7 @@ model User {
   sessions      Session[]
   profile       UserProfile?
   threads       Thread[]
+  ThreadLike    ThreadLike[]
 
   @@map(name: "users")
 }
@@ -84,18 +85,20 @@ model VerificationToken {
 }
 
 model Thread {
-  id          String   @id @default(cuid())
+  id          String        @id @default(cuid())
   text        String
-  hasReposts  Boolean? @default(false) @map(name: "has_reposts")
-  hasChildren Boolean? @default(false) @map(name: "has_children")
-  parentId    String?  @map(name: "parent_id")
-  repostId    String?  @map(name: "repost_id")
-  level       Int?     @default(0)
-  deleted     Boolean? @default(false)
-  createdAt   DateTime @default(now()) @map(name: "created_at")
-  updatedAt   DateTime @updatedAt @map(name: "updated_at")
-  userId      String   @map(name: "user_id")
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hasReposts  Boolean?      @default(false) @map(name: "has_reposts")
+  hasChildren Boolean?      @default(false) @map(name: "has_children")
+  parentId    String?       @map(name: "parent_id")
+  repostId    String?       @map(name: "repost_id")
+  level       Int?          @default(0)
+  deleted     Boolean?      @default(false)
+  createdAt   DateTime      @default(now()) @map(name: "created_at")
+  updatedAt   DateTime      @updatedAt @map(name: "updated_at")
+  userId      String        @map(name: "user_id")
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assets      ThreadAsset[]
+  likes       ThreadLike[]
 
   @@index([createdAt], map: "threads_created_at")
   @@index([deleted])
@@ -105,12 +108,43 @@ model Thread {
   @@map(name: "threads")
 }
 
-model Asset {
+model ThreadLike {
   id        String   @id @default(cuid())
-  type      String
+  threadId  String   @map(name: "thread_id")
+  userId    String   @map(name: "user_id")
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  @@index([type])
-  @@map(name: "assets")
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, userId])
+  @@index(createdAt)
+  @@index(userId)
+  @@map(name: "thread_likes")
+}
+
+model ThreadAsset {
+  id        String   @id @default(cuid())
+  threadId  String   @map(name: "thread_id")
+  fileId    String   @map(name: "file_id")
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  thread    Thread   @relation(fields: [threadId], references: [id])
+
+  @@unique([threadId, fileId])
+  @@map(name: "thread_assets")
+}
+
+model File {
+  id         String   @id @default(cuid())
+  filename   String
+  filesize   Int
+  filetype   String   @map(name: "file_type")
+  publicUrl  String   @map(name: "public_url")
+  uploadType String   @map(name: "upload_type")
+  createdAt  DateTime @default(now()) @map(name: "created_at")
+  updatedAt  DateTime @updatedAt @map(name: "updated_at")
+
+  @@map(name: "files")
 }

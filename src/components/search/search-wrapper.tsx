@@ -8,7 +8,7 @@ export default function SearchWapper({ children }: SearchWapperProps) {
   return (
     <div className="flex w-full grow">
       <div className="mt-3 flex w-full grow">
-        <div className=" relative z-0 flex h-full w-full flex-col overflow-y-auto overflow-x-hidden overscroll-y-contain pb-1">
+        <div className=" relative z-0 flex h-full w-full flex-col pb-1">
           <div className="relative flex grow flex-col space-y-4">
             {children}
           </div>
