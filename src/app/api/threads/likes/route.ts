@@ -19,7 +19,6 @@ const searchParamsSchema = z.object({
     .optional()
     .default('false')
     .transform((val) => val === 'true'),
-  userId: z.string().optional(),
 });
 
 export async function GET(request: Request) {
@@ -36,12 +35,11 @@ export async function GET(request: Request) {
       pageNo: searchParams.get('pageNo') ?? undefined,
       limit: searchParams.get('limit') ?? undefined,
       deleted: searchParams.get('deleted') ?? undefined,
-      userId: searchParams.get('userId') ?? undefined,
       hasParent: searchParams.get('hasParent') ?? undefined,
       hasRepost: searchParams.get('hasRepost') ?? undefined,
     });
 
-    const data = await threadService.getItems(query, session.user.id);
+    const data = await threadService.getLikes(session.user.id, query);
     return NextResponse.json({
       ...data,
       error: null,

@@ -1,19 +1,77 @@
 'server-only';
 import { db } from '~/server/db/prisma';
-import { isString } from '~/utils/assertion';
+import { isEmpty, isString } from '~/utils/assertion';
 import { THREADS_SELECT } from '~/services/threads/threads.selector';
 import type {
   ThreadQuery,
   SearchThreadQuery,
 } from '~/services/threads/threads.query';
+import { Prisma } from '@prisma/client';
+import { ThreadSelectSchema } from './threads.model';
 
 export class ThreadService {
-  getItems(query: ThreadQuery) {
-    return this._getItemsByCursor(query);
+  createItme(
+    data: Prisma.XOR<
+      Prisma.ThreadCreateInput,
+      Prisma.ThreadUncheckedCreateInput
+    >,
+  ) {
+    return db.thread.create({
+      data,
+    });
   }
 
-  getSearch(query: SearchThreadQuery) {
-    return this._getSearchByCursor(query);
+  async unlikeItem(threadId: string, userId: string) {
+    try {
+      await db.threadLike.delete({
+        where: {
+          threadId_userId: {
+            threadId,
+            userId,
+          },
+        },
+      });
+    } catch (e) {}
+
+    return await this.countLikes(threadId);
+  }
+
+  async likeItem(threadId: string, userId: string) {
+    const alreadyLiked = await db.threadLike.findFirst({
+      where: {
+        threadId,
+        userId,
+      },
+    });
+
+    if (!alreadyLiked) {
+      try {
+        await db.threadLike.create({
+          data: {
+            threadId,
+            userId,
+          },
+        });
+      } catch (e) {}
+    }
+
+    return await this.countLikes(threadId);
+  }
+
+  countLikes(threadId: string) {
+    return db.threadLike.count({
+      where: {
+        threadId,
+      },
+    });
+  }
+
+  getItems(query: ThreadQuery, currentUserId?: string) {
+    return this._getItemsByCursor(query, currentUserId);
+  }
+
+  getLikes(userId: string, query: ThreadQuery) {
+    return this._getLikesByCursor(userId, query);
   }
 
   getDefaultItems<Data = any>() {
@@ -25,14 +83,27 @@ export class ThreadService {
     };
   }
 
-  private async _getItemsByCursor({
-    cursor,
-    limit,
-    userId,
-    hasRepost = false,
-    hasParent = false,
-    deleted = false,
-  }: ThreadQuery) {
+  private _serializeItems(list: ThreadSelectSchema[]) {
+    return list.map((item) => {
+      const { likes, ...reset } = item;
+      return {
+        ...reset,
+        isLiked: !isEmpty(likes),
+      };
+    });
+  }
+
+  private async _getItemsByCursor(
+    {
+      cursor,
+      limit,
+      userId,
+      hasRepost = false,
+      hasParent = false,
+      deleted = false,
+    }: ThreadQuery,
+    currentUserId?: string,
+  ) {
     if (isString(cursor)) {
       cursor = cursor;
     }
@@ -90,7 +161,7 @@ export class ThreadService {
           deleted,
         },
         take: limit,
-        select: THREADS_SELECT,
+        select: THREADS_SELECT(currentUserId),
       }),
     ]);
 
@@ -126,20 +197,16 @@ export class ThreadService {
 
     return {
       totalCount,
-      list,
+      list: this._serializeItems(list),
       endCursor,
       hasNextPage,
     };
   }
 
-  private async _getSearchByCursor({
-    cursor,
-    limit,
-    userId,
-    hasRepost = false,
-    hasParent = false,
-    deleted = false,
-  }: ThreadQuery) {
+  private async _getLikesByCursor(
+    userId: string,
+    { cursor, limit, deleted = false }: ThreadQuery,
+  ) {
     if (isString(cursor)) {
       cursor = cursor;
     }
@@ -151,25 +218,15 @@ export class ThreadService {
     }
 
     const [totalCount, list] = await Promise.all([
-      db.thread.count({
+      db.threadLike.count({
         where: {
-          deleted,
-          ...(userId && {
-            userId,
-          }),
-          ...(hasParent && {
-            parentId: {
-              not: null,
-            },
-          }),
-          ...(hasRepost && {
-            repostId: {
-              not: null,
-            },
-          }),
+          userId,
+          thread: {
+            deleted,
+          },
         },
       }),
-      db.thread.findMany({
+      db.threadLike.findMany({
         orderBy: [
           {
             id: 'desc',
@@ -181,47 +238,32 @@ export class ThreadService {
                 lt: cursor,
               }
             : undefined,
-          ...(userId && {
-            userId,
-          }),
-          ...(hasParent && {
-            parentId: {
-              not: null,
-            },
-          }),
-          ...(hasRepost && {
-            repostId: {
-              not: null,
-            },
-          }),
-          deleted,
+          userId,
+          thread: {
+            deleted,
+          },
         },
         take: limit,
-        select: THREADS_SELECT,
+        select: {
+          id: true,
+          thread: {
+            select: THREADS_SELECT(userId),
+          },
+        },
       }),
     ]);
 
     const endCursor = list.at(-1)?.id ?? null;
     const hasNextPage = endCursor
-      ? (await db.thread.count({
+      ? (await db.threadLike.count({
           where: {
             id: {
               lt: endCursor,
             },
-            deleted,
-            ...(userId && {
-              userId,
-            }),
-            ...(hasParent && {
-              parentId: {
-                not: null,
-              },
-            }),
-            ...(hasRepost && {
-              repostId: {
-                not: null,
-              },
-            }),
+            userId,
+            thread: {
+              deleted,
+            },
           },
           orderBy: [
             {
@@ -233,7 +275,7 @@ export class ThreadService {
 
     return {
       totalCount,
-      list,
+      list: this._serializeItems(list.map((item) => item.thread)),
       endCursor,
       hasNextPage,
     };

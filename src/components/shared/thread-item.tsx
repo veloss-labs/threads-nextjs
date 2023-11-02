@@ -4,7 +4,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
@@ -14,13 +13,34 @@ import { cn, getDateFormatted } from '~/utils/utils';
 import type { ThreadItemSchema } from '~/services/threads/threads.model';
 import { Icons } from '../icons';
 import { Button } from '../ui/button';
+import { useTransition } from 'react';
+import { likeThread } from '~/server/actions/threads';
+import { useQueryClient } from '@tanstack/react-query';
+import { useKeyContext } from '~/libs/providers/key';
 
 interface ThreadItemProps {
   item: ThreadItemSchema;
 }
 
 export default function ThreadItem({ item }: ThreadItemProps) {
-  const date = getDateFormatted(item.createdAt);
+  const date = item ? getDateFormatted(item.createdAt) : null;
+  const [isPending, startTransition] = useTransition();
+  const queryClient = useQueryClient();
+  const { queryKey } = useKeyContext();
+
+  const onClickLike = () => {
+    startTransition(async () => {
+      await likeThread({
+        threadId: item.id,
+        isLike: item.isLiked,
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey,
+      });
+    });
+  };
+
   return (
     <Card className="m-3 mx-auto overflow-hidden rounded-none border-x-0 border-b border-t-0 shadow-none">
       <div className="md:flex">
@@ -33,16 +53,16 @@ export default function ThreadItem({ item }: ThreadItemProps) {
               <Avatars
                 // src={item.user?.image ?? undefined}
                 src={undefined}
-                alt={`${item.user?.username} profile picture`}
+                alt={`${item?.user?.username} profile picture`}
                 fallback="T"
               />
               <div className="ml-4 flex w-full flex-row">
                 <div>
                   <div className="text-base font-semibold tracking-wide text-black dark:text-white">
-                    {item.user?.username}
+                    {item?.user?.username}
                   </div>
                   <div className="text-xs text-gray-400 dark:text-gray-300">
-                    @{item.user?.name}
+                    @{item?.user?.name}
                   </div>
                 </div>
                 <div className="flex flex-1 items-center justify-end space-x-3">
@@ -80,14 +100,37 @@ export default function ThreadItem({ item }: ThreadItemProps) {
             <TipTapEditor
               editable={false}
               debouncedUpdatesEnabled={false}
-              name={`thraed-text-${item.id}`}
-              value={item.text}
+              name={`thraed-text-${item?.id}`}
+              value={item?.text}
               noBorder
               className={cn(
                 'prose prose-brand prose-headings:font-display font-default focus:outline-none',
               )}
               customClassName="p-0 mt-4"
             />
+          </div>
+          <div className="flex items-center justify-end space-x-4 py-4">
+            <div className="flex items-center space-x-1">
+              <Button size="sm" variant="link">
+                <Icons.messageSquare className="h-4 w-4" />
+              </Button>
+              <Button size="sm" variant="link">
+                <Icons.repeat className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="link"
+                onClick={onClickLike}
+                disabled={isPending}
+              >
+                <Icons.heart
+                  className={cn(
+                    'h-4 w-4',
+                    item?.isLiked ? 'text-red-500 dark:text-red-400' : '',
+                  )}
+                />
+              </Button>
+            </div>
           </div>
         </div>
       </div>

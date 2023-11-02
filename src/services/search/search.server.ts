@@ -1,6 +1,6 @@
 'server-only';
 import { db } from '~/server/db/prisma';
-import { isString } from '~/utils/assertion';
+import { isEmpty, isString } from '~/utils/assertion';
 import { SEARCH_SELECT } from '~/services/search/search.selector';
 import type { SearchQuery } from '~/services/search/search.query';
 
@@ -29,21 +29,35 @@ export class SearchService {
       limit = limit ?? 25;
     }
 
+    const selector = isEmpty(q)
+      ? {}
+      : {
+          OR: [
+            {
+              username: {
+                contains: q,
+              },
+            },
+            {
+              name: {
+                contains: q,
+              },
+            },
+            {
+              email: {
+                contains: q,
+              },
+            },
+          ],
+        };
+
     const [totalCount, list] = await Promise.all([
       db.user.count({
         where: {
           // id: {
           //   not: userId,
           // },
-          username: {
-            contains: q,
-          },
-          name: {
-            contains: q,
-          },
-          email: {
-            contains: q,
-          },
+          ...selector,
         },
       }),
       db.user.findMany({
@@ -59,15 +73,7 @@ export class SearchService {
                 // not: userId,
               }
             : undefined,
-          username: {
-            contains: q,
-          },
-          name: {
-            contains: q,
-          },
-          email: {
-            contains: q,
-          },
+          ...selector,
         },
         take: limit,
         select: SEARCH_SELECT,
@@ -82,15 +88,7 @@ export class SearchService {
               lt: endCursor,
               // not: userId,
             },
-            username: {
-              contains: q,
-            },
-            name: {
-              contains: q,
-            },
-            email: {
-              contains: q,
-            },
+            ...selector,
           },
           orderBy: [
             {

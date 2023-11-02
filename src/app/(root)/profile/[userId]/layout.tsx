@@ -23,7 +23,7 @@ export default async function Layout({
     notFound();
   }
 
-  const data = await userService.get(params.userId);
+  const data = await userService.getItem(params.userId);
   if (!data) {
     notFound();
   }

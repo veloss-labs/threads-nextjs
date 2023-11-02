@@ -3,9 +3,9 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import React, { useRef, useLayoutEffect, useCallback, useMemo } from 'react';
 import last from 'lodash-es/last';
 import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso';
-import UserItem from '~/components/shared/user-item';
+import ThreadItem from '~/components/shared/thread-item';
 import { QUERIES_KEY } from '~/constants/constants';
-import { getSearchApi } from '~/services/search/search.api';
+import { getThreadLikesApi } from '~/services/threads/threads.api';
 import useBeforeUnload from '~/libs/hooks/useBeforeUnload';
 import useIsHydrating from '~/libs/hooks/useIsHydrating';
 import { isBrowser } from '~/libs/browser/dom';
@@ -14,23 +14,18 @@ import { KeyProvider } from '~/libs/providers/key';
 
 const useSSRLayoutEffect = !isBrowser ? () => {} : useLayoutEffect;
 
-interface UserListProps {
-  type: 'root';
-  q?: string;
-}
-
 type Cache = {
   top: number;
   pages: string[];
 };
 
-export default function UserList({ q, type = 'root' }: UserListProps) {
+export default function ThreadLikesList() {
   const $virtuoso = useRef<VirtuosoHandle>(null);
   const $cache = useRef<Cache | null>(null);
 
   const key = useMemo(() => {
-    return `@users::scroll::${type}`;
-  }, [type]);
+    return `@threads-likes::scroll`;
+  }, []);
 
   const getCache = useCallback(() => {
     return $cache.current;
@@ -43,14 +38,13 @@ export default function UserList({ q, type = 'root' }: UserListProps) {
   const hydrating = useIsHydrating('[data-hydrating-signal]');
 
   const queryKey = useMemo(() => {
-    return QUERIES_KEY.users.search(q);
-  }, [q]);
+    return QUERIES_KEY.threads.likes.root;
+  }, []);
 
   const { data, fetchNextPage } = useInfiniteQuery({
     queryKey: queryKey,
     queryFn: async ({ pageParam }) => {
-      return await getSearchApi({
-        ...(q ? { q } : {}),
+      return await getThreadLikesApi({
         limit: 10,
         cursor: pageParam ? pageParam : undefined,
       });
@@ -142,12 +136,15 @@ export default function UserList({ q, type = 'root' }: UserListProps) {
         data={list}
         totalCount={lastItem?.totalCount ?? 0}
         computeItemKey={(index, item) => {
-          return `${type}-users-${item.id}-${index}`;
+          if (!item) {
+            return `threads-likes-${index}`;
+          }
+          return `threads-likes-${item.id}-${index}`;
         }}
         overscan={10}
         initialItemCount={list.length - 1}
         itemContent={(_, item) => {
-          return <UserItem item={item} />;
+          return <ThreadItem item={item} />;
         }}
         components={{
           Footer: () => <div className="h-20"></div>,

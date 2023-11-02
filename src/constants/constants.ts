@@ -4,6 +4,9 @@ export const QUERIES_KEY = {
     owners: (id: string) => ['threads', 'owner', id],
     comments: (id: string) => ['threads', 'comment', id],
     reposts: (id: string) => ['threads', 'reposts', id],
+    likes: {
+      root: ['threads-likes'],
+    },
   },
   users: {
     root: ['users'],
@@ -42,6 +45,7 @@ export const PAGE_ENDPOINTS = {
   },
   THREADS: {
     ROOT: '/threads',
+    LIKES: '/threads/likes',
   },
 } as const;
 
