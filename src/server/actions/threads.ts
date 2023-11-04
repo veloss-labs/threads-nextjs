@@ -1,8 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-import { RedirectType, redirect } from 'next/navigation';
-import { PAGE_ENDPOINTS, RESULT_CODE } from '~/constants/constants';
+import { RESULT_CODE } from '~/constants/constants';
 import { getSession } from '~/server/auth';
 import { threadService } from '~/services/threads/threads.server';
 
@@ -13,6 +11,11 @@ type Result = {
 
 type CreateFormData = {
   text: string;
+  revalidatePath?: string;
+};
+
+type RepostFormData = {
+  threadId: string;
   revalidatePath?: string;
 };
 
@@ -59,6 +62,99 @@ export const likeThread = async (
   }
 };
 
+export const repostThread = async (
+  formData: RepostFormData,
+): Promise<Result> => {
+  try {
+    const session = await getSession();
+    if (!session) {
+      return {
+        resultCode: RESULT_CODE.LOGIN_REQUIRED,
+        resultMessage: 'Login required',
+      };
+    }
+
+    const thread = await threadService.getItemsById(formData.threadId);
+    if (!thread) {
+      return {
+        resultCode: RESULT_CODE.NOT_EXIST,
+        resultMessage: 'Not found',
+      };
+    }
+
+    if (thread.hasReposts) {
+      return {
+        resultCode: RESULT_CODE.INVALID,
+        resultMessage: 'Invalid',
+      };
+    }
+
+    const { id } = session.user;
+
+    await threadService.createItme({
+      userId: id,
+      text: thread.text,
+      repostId: thread.id,
+    });
+
+    await threadService.updateItem(formData.threadId, {
+      hasReposts: true,
+    });
+
+    return {
+      resultCode: RESULT_CODE.OK,
+      resultMessage: null,
+    };
+  } catch (error) {
+    console.log('error', error);
+    throw error;
+  }
+};
+
+export const unrepostThread = async (
+  formData: RepostFormData,
+): Promise<Result> => {
+  try {
+    const session = await getSession();
+    if (!session) {
+      return {
+        resultCode: RESULT_CODE.LOGIN_REQUIRED,
+        resultMessage: 'Login required',
+      };
+    }
+
+    const thread = await threadService.getItemsById(formData.threadId);
+    if (!thread) {
+      return {
+        resultCode: RESULT_CODE.NOT_EXIST,
+        resultMessage: 'Not found',
+      };
+    }
+
+    if (!thread.hasReposts) {
+      return {
+        resultCode: RESULT_CODE.INVALID,
+        resultMessage: 'Invalid',
+      };
+    }
+
+    await threadService.updateItem(thread.id, {
+      hasReposts: false,
+      repostId: null,
+    });
+
+    await threadService.deleteRepost(thread.id);
+
+    return {
+      resultCode: RESULT_CODE.OK,
+      resultMessage: null,
+    };
+  } catch (error) {
+    console.log('error', error);
+    throw error;
+  }
+};
+
 export const createThreads = async (
   formData: CreateFormData,
 ): Promise<Result> => {
@@ -86,29 +182,4 @@ export const createThreads = async (
     console.log('error', error);
     throw error;
   }
-};
-
-export const likeThreadsWithRevalidate = async (
-  prevState: Result,
-  formData: LikeFormData,
-) => {
-  await likeThread(formData);
-  if (formData.revalidatePath) {
-    revalidatePath(formData.revalidatePath);
-  } else {
-    revalidatePath(PAGE_ENDPOINTS.ROOT);
-  }
-};
-
-export const createThreadsWithRedirect = async (
-  prevState: Result,
-  formData: CreateFormData,
-): Promise<Result> => {
-  await createThreads(formData);
-  if (formData.revalidatePath) {
-    revalidatePath(formData.revalidatePath);
-  } else {
-    revalidatePath(PAGE_ENDPOINTS.ROOT);
-  }
-  redirect(PAGE_ENDPOINTS.ROOT, RedirectType.replace);
 };

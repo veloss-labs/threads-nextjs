@@ -21,6 +21,71 @@ export class ThreadService {
     });
   }
 
+  updateItem(
+    threadId: string,
+    data: Prisma.XOR<
+      Prisma.ThreadUpdateInput,
+      Prisma.ThreadUncheckedUpdateInput
+    >,
+  ) {
+    return db.thread.update({
+      where: {
+        id: threadId,
+      },
+      data,
+    });
+  }
+
+  deleteItem(threadId: string) {
+    return db.thread.delete({
+      where: {
+        id: threadId,
+      },
+    });
+  }
+
+  deleteRepost(threadId: string) {
+    return db.thread.deleteMany({
+      where: {
+        repostId: threadId,
+      },
+    });
+  }
+
+  countLikes(threadId: string) {
+    return db.threadLike.count({
+      where: {
+        threadId,
+      },
+    });
+  }
+
+  getItemsById(id: string, currentUserId?: string) {
+    return db.thread.findUnique({
+      where: {
+        id,
+      },
+      select: THREADS_SELECT(currentUserId),
+    });
+  }
+
+  getItems(query: ThreadQuery, currentUserId?: string) {
+    return this._getItemsByCursor(query, currentUserId);
+  }
+
+  getLikes(userId: string, query: ThreadQuery) {
+    return this._getLikesByCursor(userId, query);
+  }
+
+  getDefaultItems<Data = any>() {
+    return {
+      totalCount: 0,
+      list: [] as Data[],
+      endCursor: null,
+      hasNextPage: false,
+    };
+  }
+
   async unlikeItem(threadId: string, userId: string) {
     try {
       await db.threadLike.delete({
@@ -56,31 +121,6 @@ export class ThreadService {
     }
 
     return await this.countLikes(threadId);
-  }
-
-  countLikes(threadId: string) {
-    return db.threadLike.count({
-      where: {
-        threadId,
-      },
-    });
-  }
-
-  getItems(query: ThreadQuery, currentUserId?: string) {
-    return this._getItemsByCursor(query, currentUserId);
-  }
-
-  getLikes(userId: string, query: ThreadQuery) {
-    return this._getLikesByCursor(userId, query);
-  }
-
-  getDefaultItems<Data = any>() {
-    return {
-      totalCount: 0,
-      list: [] as Data[],
-      endCursor: null,
-      hasNextPage: false,
-    };
   }
 
   private _serializeItems(list: ThreadSelectSchema[]) {
@@ -127,9 +167,7 @@ export class ThreadService {
             },
           }),
           ...(hasRepost && {
-            repostId: {
-              not: null,
-            },
+            hasReposts: true,
           }),
         },
       }),
@@ -154,9 +192,7 @@ export class ThreadService {
             },
           }),
           ...(hasRepost && {
-            repostId: {
-              not: null,
-            },
+            hasReposts: true,
           }),
           deleted,
         },
@@ -182,9 +218,7 @@ export class ThreadService {
               },
             }),
             ...(hasRepost && {
-              repostId: {
-                not: null,
-              },
+              hasReposts: true,
             }),
           },
           orderBy: [

@@ -20,7 +20,6 @@ export default async function Pages({ params }: Props) {
     queryFn: async () => {
       return await threadService.getItems({
         limit: 10,
-        hasParent: true,
         hasRepost: true,
         userId: params.userId,
       });
