@@ -71,33 +71,41 @@ interface RoutesProps {
 
 export default function Layout(props: RoutesProps) {
   return (
-    <Providers>
-      <html lang="ko" dir="ltr">
-        <PreloadResources />
-        <head>
-          <meta
-            name="viewport"
-            content="width=device-width,initial-scale=1,maximum-scale=2,shrink-to-fit=no"
-          />
-          <meta
-            name="referrer"
-            content="origin-when-cross-origin"
-            id="meta_referrer"
-          />
-          <meta name="color-scheme" content="light" />
-          <meta name="theme-color" content="#FFFFFF" />
-        </head>
-        <body
-          className={cn(
-            'bg-background font-sans antialiased',
-            fontSans.variable,
-            fontHeading.variable,
-          )}
+    <html lang="ko" dir="ltr" suppressHydrationWarning>
+      <PreloadResources />
+      <head>
+        <meta
+          name="viewport"
+          content="width=device-width,initial-scale=1,maximum-scale=2,shrink-to-fit=no"
+        />
+        <meta
+          name="referrer"
+          content="origin-when-cross-origin"
+          id="meta_referrer"
+        />
+        <meta name="color-scheme" content="light" />
+        <meta name="theme-color" content="#FFFFFF" />
+      </head>
+
+      <body
+        className={cn(
+          'bg-background font-sans antialiased',
+          fontSans.variable,
+          fontHeading.variable,
+        )}
+      >
+        <Providers
+          theme={{
+            attribute: 'class',
+            defaultTheme: 'system',
+            enableSystem: true,
+            disableTransitionOnChange: true,
+          }}
         >
           {props.children}
-        </body>
-        {props.modal}
-      </html>
-    </Providers>
+          {props.modal}
+        </Providers>
+      </body>
+    </html>
   );
 }

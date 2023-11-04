@@ -1,5 +1,5 @@
 'use client';
-import React, { useTransition } from 'react';
+import React, { useCallback, useState, useTransition } from 'react';
 import * as z from 'zod';
 import Avatars from '~/components/shared/avatars';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,13 +8,10 @@ import { Form, FormControl, FormField, FormItem } from '~/components/ui/form';
 import { Button } from '~/components/ui/button';
 import { TipTapEditor } from '~/components/editor/tiptap-editor';
 import { useSession } from 'next-auth/react';
-import {
-  createThreadsWithRedirect,
-  createThreads,
-} from '~/server/actions/threads';
+import { createThreads } from '~/server/actions/threads';
 import { Icons } from '../icons';
 import { cn } from '~/utils/utils';
-import { useFormState, useFormStatus } from '~/libs/react/form';
+import { useFormStatus } from '~/libs/react/form';
 import {
   PAGE_ENDPOINTS,
   QUERIES_KEY,
@@ -38,20 +35,12 @@ type FormState = {
   resultMessage: string | null;
 };
 
-const initialFormState: FormState = {
-  resultCode: RESULT_CODE.OK,
-  resultMessage: null,
-};
-
 export default function ThreadsForm({ isDialog }: ThreadsFormProps) {
   const { data } = useSession();
 
-  const router = useRouter();
+  const [remoteError, setRemoteError] = useState<string | null>(null);
 
-  const [state, formAction] = useFormState<FormState, FormFields>(
-    createThreadsWithRedirect,
-    initialFormState,
-  );
+  const router = useRouter();
 
   const form = useForm<FormFields>({
     resolver: zodResolver(formSchema),
@@ -65,23 +54,23 @@ export default function ThreadsForm({ isDialog }: ThreadsFormProps) {
   const queryClient = useQueryClient();
 
   const onSubmit = (values: FormFields) => {
-    if (isDialog) {
-      /**
-       * intercepting route server action 리다이렉트시 에러가 발생하는 이슈가 있어서
-       * 클라이언트 사이드에서 리다이렉트를 처리하도록 수정
-       * @sse https://nextjs.org/docs/app/building-your-application/routing/intercepting-routes
-       * @sse https://medium.com/@rezahedi/next-js-issue-of-redirect-in-server-actions-with-unmounting-intercepting-route-or-modal-from-the-ui-62b7a9702b7f
-       */
-      startTransition(async () => {
-        await createThreads(values);
-        await queryClient.invalidateQueries({
-          queryKey: QUERIES_KEY.threads.root,
-        });
-        router.replace(PAGE_ENDPOINTS.ROOT);
+    /**
+     * intercepting route server action 리다이렉트시 에러가 발생하는 이슈가 있어서
+     * 클라이언트 사이드에서 리다이렉트를 처리하도록 수정
+     * @sse https://nextjs.org/docs/app/building-your-application/routing/intercepting-routes
+     * @sse https://medium.com/@rezahedi/next-js-issue-of-redirect-in-server-actions-with-unmounting-intercepting-route-or-modal-from-the-ui-62b7a9702b7f
+     */
+    startTransition(async () => {
+      const result = await createThreads(values);
+      if (result.resultCode !== RESULT_CODE.OK) {
+        setRemoteError(result.resultMessage);
+        return;
+      }
+      await queryClient.invalidateQueries({
+        queryKey: QUERIES_KEY.threads.root,
       });
-      return;
-    }
-    formAction(values);
+      router.replace(PAGE_ENDPOINTS.ROOT);
+    });
   };
 
   const {
@@ -102,8 +91,11 @@ export default function ThreadsForm({ isDialog }: ThreadsFormProps) {
         </div>
       </div>
 
-      <ThreadsForm.EditorMessage errors={errors} id="text" />
-      <ThreadsForm.ServerMessage error={state?.resultMessage ?? null} />
+      <ThreadsForm.EditorMessage
+        errors={errors}
+        remoteError={remoteError}
+        id="text"
+      />
 
       <div className={cn('grid gap-6', isDialog ? undefined : 'my-4')}>
         <Form {...form}>
@@ -159,7 +151,7 @@ interface SubmitProps {
 ThreadsForm.Submit = function Item({ isDialog, isPending }: SubmitProps) {
   const { pending } = useFormStatus();
 
-  const loading = isDialog ? isPending : pending;
+  const loading = isPending;
 
   return (
     <Button
@@ -177,9 +169,26 @@ ThreadsForm.Submit = function Item({ isDialog, isPending }: SubmitProps) {
 interface EditorMessageProps {
   errors: FieldErrors<FormFields>;
   id: FieldPath<FormFields>;
+  remoteError?: string | null;
 }
 
-ThreadsForm.EditorMessage = function Item({ errors, id }: EditorMessageProps) {
+ThreadsForm.EditorMessage = function Item({
+  errors,
+  id,
+  remoteError,
+}: EditorMessageProps) {
+  const errorMsgFn = useCallback((text: string) => {
+    return (
+      <p className={cn('text-sm font-medium text-red-500 dark:text-red-900')}>
+        {text}
+      </p>
+    );
+  }, []);
+
+  if (remoteError) {
+    return errorMsgFn(remoteError);
+  }
+
   const error = get(errors, id);
 
   const body = error ? String(error?.message) : null;
@@ -188,21 +197,5 @@ ThreadsForm.EditorMessage = function Item({ errors, id }: EditorMessageProps) {
     return null;
   }
 
-  return (
-    <p className={cn('text-sm font-medium text-red-500 dark:text-red-900')}>
-      {body}
-    </p>
-  );
-};
-
-ThreadsForm.ServerMessage = function Item({ error }: { error: string | null }) {
-  if (!error) {
-    return null;
-  }
-
-  return (
-    <p className={cn('text-sm font-medium text-red-500 dark:text-red-900')}>
-      {error}
-    </p>
-  );
+  return errorMsgFn(body);
 };

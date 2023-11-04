@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { useSelectedLayoutSegment } from 'next/navigation';
 import { Icons } from '~/components/icons';
@@ -15,16 +15,13 @@ import {
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
 import { signOut } from 'next-auth/react';
+import { useTheme } from 'next-themes';
+import SkipRenderOnClient from './skip-render-on-client';
 
 export default function MainNav() {
   return (
     <>
-      <Link
-        href={PAGE_ENDPOINTS.ROOT}
-        className="items-center space-x-2 md:flex"
-      >
-        <Icons.threads className="h-8 w-8" />
-      </Link>
+      <MainNav.Logo />
       <div className="flex gap-6 md:gap-10">
         <nav className="hidden gap-6 md:flex">
           {NAV_CONFIG.mainNav.map((item, index) => (
@@ -121,6 +118,11 @@ MainNav.MyPage = function Item({ item }: ItemProps) {
 
 MainNav.Menu = function Item() {
   const [open, setOpen] = useState(false);
+  const { setTheme, theme } = useTheme();
+
+  const onClick = useCallback(() => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  }, [setTheme, theme]);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -133,10 +135,25 @@ MainNav.Menu = function Item() {
         <Icons.alignLeft />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" sideOffset={20}>
-        <DropdownMenuItem>모드전환</DropdownMenuItem>
+        <DropdownMenuItem onClick={onClick}>모드전환</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => signOut()}>로그아웃</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+};
+
+MainNav.Logo = function Item() {
+  const { theme } = useTheme();
+
+  return (
+    <Link href={PAGE_ENDPOINTS.ROOT} className="items-center space-x-2 md:flex">
+      <SkipRenderOnClient shouldRenderOnClient={() => theme === 'dark'}>
+        <Icons.threadsWhite className="hidden h-8 w-8 dark:block" />
+      </SkipRenderOnClient>
+      <SkipRenderOnClient shouldRenderOnClient={() => theme === 'light'}>
+        <Icons.threads className="block h-8 w-8 dark:hidden" />
+      </SkipRenderOnClient>
+    </Link>
   );
 };
