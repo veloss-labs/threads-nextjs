@@ -1,5 +1,4 @@
 import React from 'react';
-import ThreadsInput from '~/components/write/threads-input';
 import MainLayout from '~/components/layout/main-layout';
 
 interface Props {

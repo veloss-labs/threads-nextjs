@@ -20,10 +20,7 @@ type Result = {
   resultMessage: string | null;
 };
 
-export const createUser = async (
-  prevState: Result,
-  formData: FormData,
-): Promise<Result> => {
+export const createUserAction = async (formData: FormData): Promise<Result> => {
   try {
     const exists = await userService.getItemByUsername(formData.username);
     if (exists) {
@@ -54,10 +51,22 @@ export const createUser = async (
         },
       },
     });
+
+    return {
+      resultCode: RESULT_CODE.OK,
+      resultMessage: null,
+    };
   } catch (error) {
     console.error(error);
     throw error;
   }
+};
+
+export const createUserWithRevalidateAction = async (
+  prevState: Result,
+  formData: FormData,
+): Promise<Result> => {
+  await createUserAction(formData);
 
   revalidatePath(PAGE_ENDPOINTS.ROOT);
   redirect(PAGE_ENDPOINTS.ROOT);

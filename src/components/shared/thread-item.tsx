@@ -14,11 +14,8 @@ import type { ThreadItemSchema } from '~/services/threads/threads.model';
 import { Icons } from '../icons';
 import { Button } from '../ui/button';
 import { useTransition } from 'react';
-import {
-  likeThread,
-  repostThread,
-  unrepostThread,
-} from '~/server/actions/threads';
+import { repostThreadAction } from '~/server/actions/threads/threads.repost';
+import { likeThreadAction } from '~/server/actions/threads/threads.likes';
 import { useQueryClient } from '@tanstack/react-query';
 import { useKeyContext } from '~/libs/providers/key';
 
@@ -34,31 +31,24 @@ export default function ThreadItem({ item }: ThreadItemProps) {
 
   const onClickLike = () => {
     startTransition(async () => {
-      await likeThread({
+      await likeThreadAction({
         threadId: item.id,
         isLike: item.isLiked,
       });
 
+      console.log('queryKey', queryKey);
+
       await queryClient.invalidateQueries({
         queryKey,
       });
+
+      console.log('queryKey ed', queryKey);
     });
   };
 
   const onClickRepost = () => {
-    if (item.hasReposts) {
-      startTransition(async () => {
-        await unrepostThread({
-          threadId: item.id,
-        });
-        await queryClient.invalidateQueries({
-          queryKey,
-        });
-      });
-      return;
-    }
     startTransition(async () => {
-      await repostThread({
+      await repostThreadAction({
         threadId: item.id,
       });
       await queryClient.invalidateQueries({
@@ -144,7 +134,7 @@ export default function ThreadItem({ item }: ThreadItemProps) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button size="sm" variant="link">
-                    {item.hasReposts ? (
+                    {item.isReposted ? (
                       <Icons.repostCheck className="h-4 w-4" />
                     ) : (
                       <Icons.repeat className="h-4 w-4" />
@@ -155,13 +145,13 @@ export default function ThreadItem({ item }: ThreadItemProps) {
                   <DropdownMenuItem
                     onClick={onClickRepost}
                     className={cn(
-                      item.hasReposts ? 'text-red-500 dark:text-red-400' : '',
+                      item.isReposted ? 'text-red-500 dark:text-red-400' : '',
                     )}
                   >
                     {isPending && (
                       <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
                     )}
-                    {item.hasReposts ? '삭제' : '리포스트'}
+                    {item.isReposted ? '삭제' : '리포스트'}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>인용하기</DropdownMenuItem>

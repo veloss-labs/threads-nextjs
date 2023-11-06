@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useTransition } from 'react';
+import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
@@ -14,7 +14,7 @@ import { Input } from '~/components/ui/input';
 import { Button } from '~/components/ui/button';
 import { Icons } from '~/components/icons';
 
-import { createUser } from '~/server/actions/users';
+import { createUserWithRevalidateAction } from '~/server/actions/users/users';
 import { RESULT_CODE } from '~/constants/constants';
 import { useFormState, useFormStatus } from '~/libs/react/form';
 import { cn } from '~/utils/utils';
@@ -38,7 +38,7 @@ const initialFormState: FormState = {
 
 export default function SignupForm() {
   const [state, formAction] = useFormState<FormState, FormFields>(
-    createUser,
+    createUserWithRevalidateAction,
     initialFormState,
   );
 
@@ -50,14 +50,10 @@ export default function SignupForm() {
     },
   });
 
-  const onSubmit = (values: FormFields) => {
-    formAction(values);
-  };
-
   return (
     <div className="grid gap-6">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={form.handleSubmit(formAction)}>
           <div className="grid gap-5">
             <FormField
               control={form.control}

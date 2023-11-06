@@ -85,25 +85,26 @@ model VerificationToken {
 }
 
 model Thread {
-  id          String        @id @default(cuid())
+  id          String   @id @default(cuid())
+  type        String?  @default("thread") // repost, comment, thread
   text        String
-  hasReposts  Boolean?      @default(false) @map(name: "has_reposts")
-  hasChildren Boolean?      @default(false) @map(name: "has_children")
-  parentId    String?       @map(name: "parent_id")
-  repostId    String?       @map(name: "repost_id")
-  level       Int?          @default(0)
-  deleted     Boolean?      @default(false)
-  createdAt   DateTime      @default(now()) @map(name: "created_at")
-  updatedAt   DateTime      @updatedAt @map(name: "updated_at")
-  userId      String        @map(name: "user_id")
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  assets      ThreadAsset[]
-  likes       ThreadLike[]
+  hasReposts  Boolean? @default(false) @map(name: "has_reposts")
+  hasComments Boolean? @default(false) @map(name: "has_comments")
+  level       Int?     @default(0)
+  deleted     Boolean? @default(false)
+  createdAt   DateTime @default(now()) @map(name: "created_at")
+  updatedAt   DateTime @updatedAt @map(name: "updated_at")
+  userId      String   @map(name: "user_id")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  assets   ThreadAsset[]
+  likes    ThreadLike[]
+  reposts  ThreadRepost[]
+  comments ThreadComment[]
 
   @@index([createdAt], map: "threads_created_at")
   @@index([deleted])
-  @@index([parentId], map: "threads_parent_id")
-  @@index([repostId], map: "threads_repost_id")
   @@index([userId, deleted], map: "threads_user_id_deleted")
   @@map(name: "threads")
 }
@@ -122,6 +123,34 @@ model ThreadLike {
   @@index(createdAt)
   @@index(userId)
   @@map(name: "thread_likes")
+}
+
+model ThreadRepost {
+  id        String   @id @default(cuid())
+  threadId  String   @map(name: "thread_id")
+  repostId  String   @map(name: "repost_id")
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  repost Thread @relation(fields: [repostId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, repostId])
+  @@index(createdAt)
+  @@map(name: "thread_reposts")
+}
+
+model ThreadComment {
+  id        String   @id @default(cuid())
+  threadId  String   @map(name: "thread_id")
+  commentId String   @map(name: "comment_id")
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  comment Thread @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, commentId])
+  @@index([createdAt])
+  @@map(name: "thread_comments")
 }
 
 model ThreadAsset {

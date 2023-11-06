@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem } from '~/components/ui/form';
 import { Button } from '~/components/ui/button';
 import { TipTapEditor } from '~/components/editor/tiptap-editor';
 import { useSession } from 'next-auth/react';
-import { createThreads } from '~/server/actions/threads';
+import { createThreadAction } from '~/server/actions/threads/threads';
 import { Icons } from '../icons';
 import { cn } from '~/utils/utils';
 import { useFormStatus } from '~/libs/react/form';
@@ -61,7 +61,7 @@ export default function ThreadsForm({ isDialog }: ThreadsFormProps) {
      * @sse https://medium.com/@rezahedi/next-js-issue-of-redirect-in-server-actions-with-unmounting-intercepting-route-or-modal-from-the-ui-62b7a9702b7f
      */
     startTransition(async () => {
-      const result = await createThreads(values);
+      const result = await createThreadAction(values);
       if (result.resultCode !== RESULT_CODE.OK) {
         setRemoteError(result.resultMessage);
         return;

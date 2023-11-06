@@ -15,7 +15,7 @@ import { KeyProvider } from '~/libs/providers/key';
 const useSSRLayoutEffect = !isBrowser ? () => {} : useLayoutEffect;
 
 interface ThreadListProps {
-  type: 'root' | 'threads' | 'comments' | 'reposts';
+  type: 'root' | 'owner' | 'comment' | 'repost';
   userId?: string;
 }
 
@@ -44,15 +44,15 @@ export default function ThreadList({ userId, type = 'root' }: ThreadListProps) {
 
   const queryKey = useMemo(() => {
     if (userId) {
-      if (type === 'threads') {
+      if (type === 'owner') {
         return QUERIES_KEY.threads.owners(userId);
       }
 
-      if (type === 'comments') {
+      if (type === 'comment') {
         return QUERIES_KEY.threads.comments(userId);
       }
 
-      if (type === 'reposts') {
+      if (type === 'repost') {
         return QUERIES_KEY.threads.reposts(userId);
       }
     }
@@ -65,8 +65,8 @@ export default function ThreadList({ userId, type = 'root' }: ThreadListProps) {
     queryFn: async ({ pageParam }) => {
       return await getThreadsApi({
         ...(userId ? { userId: userId } : {}),
-        ...(type === 'comments' ? { hasParent: true } : {}),
-        ...(type === 'reposts' ? { hasRepost: true } : {}),
+        ...(type === 'comment' ? { type: 'comment' } : {}),
+        ...(type === 'repost' ? { type: 'repost' } : {}),
         limit: 10,
         cursor: pageParam ? pageParam : undefined,
       });

@@ -1,15 +1,65 @@
 'server-only';
 import { db } from '~/server/db/prisma';
 import { isEmpty, isString } from '~/utils/assertion';
-import { THREADS_SELECT } from '~/services/threads/threads.selector';
-import type {
-  ThreadQuery,
-  SearchThreadQuery,
-} from '~/services/threads/threads.query';
+import {
+  THREADS_SELECT,
+  THREADS_REPOST_SELECT,
+  THREADS_COMMENT_SELECT,
+} from '~/services/threads/threads.selector';
+import type { ThreadQuery } from '~/services/threads/threads.query';
 import { Prisma } from '@prisma/client';
 import { ThreadSelectSchema } from './threads.model';
 
 export class ThreadService {
+  countLikes(threadId: string) {
+    return db.threadLike.count({
+      where: {
+        threadId,
+      },
+    });
+  }
+
+  async unlikeItem(threadId: string, userId: string) {
+    try {
+      await db.threadLike.delete({
+        where: {
+          threadId_userId: {
+            threadId,
+            userId,
+          },
+        },
+      });
+    } catch (e) {
+      console.log('e', e);
+    }
+
+    return await this.countLikes(threadId);
+  }
+
+  async likeItem(threadId: string, userId: string) {
+    const alreadyLiked = await db.threadLike.findFirst({
+      where: {
+        threadId,
+        userId,
+      },
+    });
+
+    if (!alreadyLiked) {
+      try {
+        await db.threadLike.create({
+          data: {
+            threadId,
+            userId,
+          },
+        });
+      } catch (e) {
+        console.log('e', e);
+      }
+    }
+
+    return await this.countLikes(threadId);
+  }
+
   createItme(
     data: Prisma.XOR<
       Prisma.ThreadCreateInput,
@@ -17,6 +67,17 @@ export class ThreadService {
     >,
   ) {
     return db.thread.create({
+      data,
+    });
+  }
+
+  createRepost(
+    data: Prisma.XOR<
+      Prisma.ThreadRepostCreateInput,
+      Prisma.ThreadRepostUncheckedCreateInput
+    >,
+  ) {
+    return db.threadRepost.create({
       data,
     });
   }
@@ -44,18 +105,10 @@ export class ThreadService {
     });
   }
 
-  deleteRepost(threadId: string) {
+  deleteItems(threadId: string) {
     return db.thread.deleteMany({
       where: {
-        repostId: threadId,
-      },
-    });
-  }
-
-  countLikes(threadId: string) {
-    return db.threadLike.count({
-      where: {
-        threadId,
+        id: threadId,
       },
     });
   }
@@ -69,8 +122,27 @@ export class ThreadService {
     });
   }
 
+  getItemRepostsById(id: string, currentUserId?: string) {
+    return db.threadRepost.findUnique({
+      where: {
+        id,
+      },
+      select: THREADS_REPOST_SELECT(currentUserId),
+    });
+  }
+
   getItems(query: ThreadQuery, currentUserId?: string) {
-    return this._getItemsByCursor(query, currentUserId);
+    switch (query.type) {
+      case 'repost': {
+        return this._getItemRepostsByCursor(query, currentUserId);
+      }
+      case 'comment': {
+        return this._getItemCommentsByCursor(query, currentUserId);
+      }
+      default: {
+        return this._getItemsByCursor(query, currentUserId);
+      }
+    }
   }
 
   getLikes(userId: string, query: ThreadQuery) {
@@ -86,62 +158,8 @@ export class ThreadService {
     };
   }
 
-  async unlikeItem(threadId: string, userId: string) {
-    try {
-      await db.threadLike.delete({
-        where: {
-          threadId_userId: {
-            threadId,
-            userId,
-          },
-        },
-      });
-    } catch (e) {}
-
-    return await this.countLikes(threadId);
-  }
-
-  async likeItem(threadId: string, userId: string) {
-    const alreadyLiked = await db.threadLike.findFirst({
-      where: {
-        threadId,
-        userId,
-      },
-    });
-
-    if (!alreadyLiked) {
-      try {
-        await db.threadLike.create({
-          data: {
-            threadId,
-            userId,
-          },
-        });
-      } catch (e) {}
-    }
-
-    return await this.countLikes(threadId);
-  }
-
-  private _serializeItems(list: ThreadSelectSchema[]) {
-    return list.map((item) => {
-      const { likes, ...reset } = item;
-      return {
-        ...reset,
-        isLiked: !isEmpty(likes),
-      };
-    });
-  }
-
   private async _getItemsByCursor(
-    {
-      cursor,
-      limit,
-      userId,
-      hasRepost = false,
-      hasParent = false,
-      deleted = false,
-    }: ThreadQuery,
+    { cursor, limit, userId, deleted = false }: ThreadQuery,
     currentUserId?: string,
   ) {
     if (isString(cursor)) {
@@ -161,14 +179,6 @@ export class ThreadService {
           ...(userId && {
             userId,
           }),
-          ...(hasParent && {
-            parentId: {
-              not: null,
-            },
-          }),
-          ...(hasRepost && {
-            hasReposts: true,
-          }),
         },
       }),
       db.thread.findMany({
@@ -185,14 +195,6 @@ export class ThreadService {
             : undefined,
           ...(userId && {
             userId,
-          }),
-          ...(hasParent && {
-            parentId: {
-              not: null,
-            },
-          }),
-          ...(hasRepost && {
-            hasReposts: true,
           }),
           deleted,
         },
@@ -212,14 +214,6 @@ export class ThreadService {
             ...(userId && {
               userId,
             }),
-            ...(hasParent && {
-              parentId: {
-                not: null,
-              },
-            }),
-            ...(hasRepost && {
-              hasReposts: true,
-            }),
           },
           orderBy: [
             {
@@ -232,6 +226,178 @@ export class ThreadService {
     return {
       totalCount,
       list: this._serializeItems(list),
+      endCursor,
+      hasNextPage,
+    };
+  }
+
+  private async _getItemRepostsByCursor(
+    { cursor, type, limit, userId, deleted = false }: ThreadQuery,
+    currentUserId?: string,
+  ) {
+    if (isString(cursor)) {
+      cursor = cursor;
+    }
+
+    if (isString(limit)) {
+      limit = Number(limit);
+    } else {
+      limit = limit ?? 25;
+    }
+
+    const [totalCount, list] = await Promise.all([
+      db.threadRepost.count({
+        where: {
+          repost: {
+            type,
+            deleted,
+            ...(userId && {
+              userId,
+            }),
+          },
+        },
+      }),
+      db.threadRepost.findMany({
+        orderBy: [
+          {
+            repost: {
+              id: 'desc',
+            },
+          },
+        ],
+        where: {
+          repost: {
+            id: cursor
+              ? {
+                  lt: cursor,
+                }
+              : undefined,
+            type,
+            deleted,
+            ...(userId && {
+              userId,
+            }),
+          },
+        },
+        take: limit,
+        select: THREADS_REPOST_SELECT(currentUserId),
+      }),
+    ]);
+
+    const endCursor = list.at(-1)?.id ?? null;
+    const hasNextPage = endCursor
+      ? (await db.threadRepost.count({
+          where: {
+            repost: {
+              id: {
+                lt: endCursor,
+              },
+              type,
+              deleted,
+              ...(userId && {
+                userId,
+              }),
+            },
+          },
+          orderBy: [
+            {
+              repost: {
+                id: 'desc',
+              },
+            },
+          ],
+        })) > 0
+      : false;
+
+    return {
+      totalCount,
+      list: this._serializeItems(list.map((item) => item.repost)),
+      endCursor,
+      hasNextPage,
+    };
+  }
+
+  private async _getItemCommentsByCursor(
+    { cursor, type, limit, userId, deleted = false }: ThreadQuery,
+    currentUserId?: string,
+  ) {
+    if (isString(cursor)) {
+      cursor = cursor;
+    }
+
+    if (isString(limit)) {
+      limit = Number(limit);
+    } else {
+      limit = limit ?? 25;
+    }
+
+    const [totalCount, list] = await Promise.all([
+      db.threadComment.count({
+        where: {
+          comment: {
+            type,
+            deleted,
+            ...(userId && {
+              userId,
+            }),
+          },
+        },
+      }),
+      db.threadComment.findMany({
+        orderBy: [
+          {
+            comment: {
+              id: 'desc',
+            },
+          },
+        ],
+        where: {
+          comment: {
+            id: cursor
+              ? {
+                  lt: cursor,
+                }
+              : undefined,
+            type,
+            deleted,
+            ...(userId && {
+              userId,
+            }),
+          },
+        },
+        take: limit,
+        select: THREADS_COMMENT_SELECT(currentUserId),
+      }),
+    ]);
+
+    const endCursor = list.at(-1)?.id ?? null;
+    const hasNextPage = endCursor
+      ? (await db.threadComment.count({
+          where: {
+            comment: {
+              id: {
+                lt: endCursor,
+              },
+              type,
+              deleted,
+              ...(userId && {
+                userId,
+              }),
+            },
+          },
+          orderBy: [
+            {
+              comment: {
+                id: 'desc',
+              },
+            },
+          ],
+        })) > 0
+      : false;
+
+    return {
+      totalCount,
+      list: this._serializeItems(list.map((item) => item.comment)),
       endCursor,
       hasNextPage,
     };
@@ -313,6 +479,18 @@ export class ThreadService {
       endCursor,
       hasNextPage,
     };
+  }
+
+  private _serializeItems(list: ThreadSelectSchema[]) {
+    return list.map((item) => {
+      const { likes, comments, reposts, ...reset } = item;
+      return {
+        ...reset,
+        isLiked: !isEmpty(likes),
+        isCommented: !isEmpty(comments),
+        isReposted: !isEmpty(reposts),
+      };
+    });
   }
 }
 

@@ -7,8 +7,7 @@ export type BaseThreadQuery = {
 export type ThreadQuery = BaseThreadQuery & {
   deleted?: boolean;
   userId?: string;
-  hasParent?: boolean;
-  hasRepost?: boolean;
+  type?: 'repost' | 'comment' | 'thread' | 'like';
 };
 
 export type SearchThreadQuery = BaseThreadQuery & {

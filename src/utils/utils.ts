@@ -6,6 +6,7 @@ import {
   adjectives,
   type Config,
 } from 'unique-username-generator';
+import { isEmpty } from '~/utils/assertion';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -37,6 +38,29 @@ export const generatorName = (seed: string) => {
 
   const username: string = uniqueUsernameGenerator(config); // Hulk12
   return username;
+};
+
+export const createSearchParams = (params?: Record<string, any>) => {
+  const searchParams = new URLSearchParams();
+  if (!params || isEmpty(params)) return searchParams;
+  Object.keys(params).forEach((key) => {
+    if (params[key] !== undefined || params[key] !== null) {
+      if (Array.isArray(params[key])) {
+        searchParams.append(key, params[key].join(','));
+      } else {
+        const hasToString = Object.prototype.hasOwnProperty.call(
+          params[key],
+          'toString',
+        );
+        if (hasToString) {
+          searchParams.append(key, params[key].toString());
+        } else {
+          searchParams.append(key, params[key]);
+        }
+      }
+    }
+  });
+  return searchParams;
 };
 
 export const getDateFormatted = (date: Date | string) => {

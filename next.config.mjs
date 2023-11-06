@@ -58,25 +58,6 @@ const nextConfig = {
       },
     ];
   },
-  redirects() {
-    return [
-      // {
-      //   source: '/search',
-      //   destination: '/',
-      //   permanent: false,
-      // },
-      // {
-      //   source: '/profile/:path*',
-      //   destination: '/',
-      //   permanent: false,
-      // },
-      // {
-      //   source: '/activity',
-      //   destination: '/',
-      //   permanent: false,
-      // },
-    ];
-  },
 };
 
 export default nextConfig;
