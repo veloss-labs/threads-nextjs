@@ -119,10 +119,6 @@ export default function ThreadList({ userId, type = 'root' }: ThreadListProps) {
   }, [hydrating]);
 
   const fetchScrollRestoration = async () => {
-    const el = document
-      .querySelector('[data-hydrating-signal]')
-      ?.querySelector('[data-test-id="virtuoso-item-list"]');
-
     const _data = getCache();
     if (_data && !isEmpty(_data)) {
       const _pages = data?.pages ?? [];

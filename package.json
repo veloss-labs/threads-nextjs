@@ -78,7 +78,6 @@
     "react-hook-form": "^7.48.2",
     "react-virtuoso": "^4.6.2",
     "server-only": "^0.0.1",
-    "superjson": "^2.2.0",
     "tailwind-merge": "^2.0.0",
     "unique-username-generator": "^1.2.0",
     "use-debounce": "^10.0.0",
