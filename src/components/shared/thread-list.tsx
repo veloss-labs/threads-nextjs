@@ -60,7 +60,7 @@ export default function ThreadList({ userId, type = 'root' }: ThreadListProps) {
     return QUERIES_KEY.threads.root;
   }, [userId, type]);
 
-  const { data, fetchNextPage } = useInfiniteQuery({
+  const { data, fetchNextPage, isRefetching } = useInfiniteQuery({
     queryKey: queryKey,
     queryFn: async ({ pageParam }) => {
       return await getThreadsApi({
@@ -78,6 +78,8 @@ export default function ThreadList({ userId, type = 'root' }: ThreadListProps) {
         : null;
     },
   });
+
+  console.log('[isRefetching]', isRefetching);
 
   const list = data?.pages?.map((page) => page?.list).flat() ?? [];
 

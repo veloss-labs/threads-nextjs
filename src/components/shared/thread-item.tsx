@@ -1,3 +1,4 @@
+'use client';
 import { Card } from '~/components/ui/card';
 import Avatars from '~/components/shared/avatars';
 import {
@@ -24,34 +25,32 @@ interface ThreadItemProps {
 }
 
 export default function ThreadItem({ item }: ThreadItemProps) {
+  const updateLikeFn = likeThreadAction.bind(null, {
+    threadId: item.id,
+    isLike: item.isLiked,
+  });
+  const updateRepostFn = repostThreadAction.bind(null, {
+    threadId: item.id,
+  });
+
   const date = item ? getDateFormatted(item.createdAt) : null;
   const [isPending, startTransition] = useTransition();
   const queryClient = useQueryClient();
   const { queryKey } = useKeyContext();
 
-  const onClickLike = () => {
+  const onClickLike = async () => {
     startTransition(async () => {
-      await likeThreadAction({
-        threadId: item.id,
-        isLike: item.isLiked,
-      });
-
-      console.log('queryKey', queryKey);
-
-      await queryClient.invalidateQueries({
+      await updateLikeFn();
+      await queryClient.refetchQueries({
         queryKey,
       });
-
-      console.log('queryKey ed', queryKey);
     });
   };
 
   const onClickRepost = () => {
     startTransition(async () => {
-      await repostThreadAction({
-        threadId: item.id,
-      });
-      await queryClient.invalidateQueries({
+      await updateRepostFn();
+      await queryClient.refetchQueries({
         queryKey,
       });
     });
