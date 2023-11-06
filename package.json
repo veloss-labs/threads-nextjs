@@ -56,6 +56,7 @@
     "@sentry/nextjs": "^7.77.0",
     "@t3-oss/env-nextjs": "^0.7.1",
     "@tanstack/react-query": "^5.7.2",
+    "@tanstack/react-query-devtools": "^5.7.2",
     "@tiptap/extension-character-count": "^2.1.12",
     "@tiptap/extension-placeholder": "^2.1.12",
     "@tiptap/html": "^2.1.12",

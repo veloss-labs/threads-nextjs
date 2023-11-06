@@ -60,13 +60,14 @@ export default function ThreadList({ userId, type = 'root' }: ThreadListProps) {
     return QUERIES_KEY.threads.root;
   }, [userId, type]);
 
-  const { data, fetchNextPage, isRefetching } = useInfiniteQuery({
+  const { data, fetchNextPage } = useInfiniteQuery({
     queryKey: queryKey,
     queryFn: async ({ pageParam }) => {
       return await getThreadsApi({
         ...(userId ? { userId: userId } : {}),
         ...(type === 'comment' ? { type: 'comment' } : {}),
         ...(type === 'repost' ? { type: 'repost' } : {}),
+        ...(type === 'root' ? { type: 'thread' } : {}),
         limit: 10,
         cursor: pageParam ? pageParam : undefined,
       });
@@ -78,8 +79,6 @@ export default function ThreadList({ userId, type = 'root' }: ThreadListProps) {
         : null;
     },
   });
-
-  console.log('[isRefetching]', isRefetching);
 
   const list = data?.pages?.map((page) => page?.list).flat() ?? [];
 

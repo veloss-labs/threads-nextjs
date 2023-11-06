@@ -19,6 +19,7 @@ export default async function Pages() {
       return await threadService.getItems(
         {
           limit: 10,
+          type: 'thread',
         },
         session?.user.id,
       );

@@ -1,6 +1,7 @@
 'use client';
 import { SessionProvider } from 'next-auth/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useState } from 'react';
 import { AppProvider } from '~/libs/providers/app';
 import { ThemeProvider } from 'next-themes';
@@ -20,6 +21,7 @@ export function Providers({ children, theme }: Props) {
         <ThemeProvider {...theme}>
           <AppProvider>{children}</AppProvider>
         </ThemeProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </SessionProvider>
   );

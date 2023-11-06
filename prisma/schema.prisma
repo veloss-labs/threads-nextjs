@@ -12,21 +12,23 @@ datasource db {
 }
 
 model User {
-  id            String       @id @default(cuid())
-  name          String?
-  username      String?      @unique
-  password      String?
-  salt          String?
-  email         String?      @unique
-  emailVerified DateTime?    @map(name: "email_verified")
-  image         String?
-  createdAt     DateTime     @default(now()) @map(name: "created_at")
-  updatedAt     DateTime     @updatedAt @map(name: "updated_at")
-  accounts      Account[]
-  sessions      Session[]
-  profile       UserProfile?
-  threads       Thread[]
-  ThreadLike    ThreadLike[]
+  id             String          @id @default(cuid())
+  name           String?
+  username       String?         @unique
+  password       String?
+  salt           String?
+  email          String?         @unique
+  emailVerified  DateTime?       @map(name: "email_verified")
+  image          String?
+  createdAt      DateTime        @default(now()) @map(name: "created_at")
+  updatedAt      DateTime        @updatedAt @map(name: "updated_at")
+  accounts       Account[]
+  sessions       Session[]
+  profile        UserProfile?
+  threads        Thread[]
+  threadLikes    ThreadLike[]
+  threadReposts  ThreadRepost[]
+  threadComments ThreadComment[]
 
   @@map(name: "users")
 }
@@ -129,12 +131,14 @@ model ThreadRepost {
   id        String   @id @default(cuid())
   threadId  String   @map(name: "thread_id")
   repostId  String   @map(name: "repost_id")
+  userId    String   @map(name: "user_id")
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   repost Thread @relation(fields: [repostId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([threadId, repostId])
+  @@unique([threadId, repostId, userId])
   @@index(createdAt)
   @@map(name: "thread_reposts")
 }
@@ -143,10 +147,12 @@ model ThreadComment {
   id        String   @id @default(cuid())
   threadId  String   @map(name: "thread_id")
   commentId String   @map(name: "comment_id")
+  userId    String   @map(name: "user_id")
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   comment Thread @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([threadId, commentId])
   @@index([createdAt])

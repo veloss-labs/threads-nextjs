@@ -185,6 +185,7 @@ export class ThreadService {
         db.$queryRaw<ThreadRawQuerySchema[]>`
       SELECT threads.id, threads.type, threads.text, threads.level, threads.deleted, threads.created_at,
       (SELECT COUNT(*) FROM thread_likes WHERE thread_id = threads.id AND user_id = ${currentUserId}) as is_liked,
+      (SELECT COUNT(*) FROM thread_reposts WHERE thread_id = threads.id AND user_id = ${currentUserId}) as is_reposted,
       (SELECT COUNT(*) FROM thread_likes WHERE thread_id = threads.id) as likes,
       (SELECT COUNT(*) FROM thread_comments WHERE thread_id = threads.id) as comments,
       (SELECT COUNT(*) FROM thread_reposts WHERE thread_id = threads.id) as reposts,
@@ -442,48 +443,55 @@ export class ThreadService {
     const [totalCount, list] = await Promise.all([
       db.threadLike.count({
         where: {
-          userId,
           thread: {
+            userId,
             deleted,
           },
         },
       }),
-      db.threadLike.findMany({
-        orderBy: [
-          {
-            id: 'desc',
-          },
-        ],
-        where: {
-          id: cursor
-            ? {
-                lt: cursor,
-              }
-            : undefined,
-          userId,
-          thread: {
-            deleted,
-          },
-        },
-        take: limit,
-        select: {
-          id: true,
-          thread: {
-            select: THREADS_SELECT(userId),
-          },
-        },
-      }),
+      db.$queryRaw<ThreadRawQuerySchema[]>`
+      SELECT thread_likes.id, thread_likes.created_at,
+      threads.id, threads.type, threads.text, threads.level, threads.deleted, threads.created_at,
+      (SELECT COUNT(*) FROM thread_likes WHERE thread_id = threads.id AND user_id = ${userId}) as is_liked,
+      (SELECT COUNT(*) FROM thread_reposts WHERE thread_id = threads.id AND user_id = ${userId}) as is_reposted,
+      (SELECT COUNT(*) FROM thread_likes WHERE thread_id = threads.id) as likes,
+      (SELECT COUNT(*) FROM thread_comments WHERE thread_id = threads.id) as comments,
+      (SELECT COUNT(*) FROM thread_reposts WHERE thread_id = threads.id) as reposts,
+      users.id as user_id, users.name, users.username, users.email, users.image,
+      (SELECT bio FROM user_profiles WHERE user_id = users.id) as user_profiles_bio,
+      (
+        SELECT json_group_array(JSON_OBJECT('id', thread_likes.id, 'created_at', thread_likes.created_at))
+        FROM thread_likes WHERE thread_id = threads.id ORDER BY created_at DESC LIMIT 3
+      ) as recent_likes,
+      (
+        SELECT json_group_array(JSON_OBJECT('id', thread_comments.id, 'created_at', thread_comments.created_at))
+        FROM thread_comments WHERE thread_id = threads.id ORDER BY created_at DESC LIMIT 3
+      ) as recent_comments,
+      (
+        SELECT json_group_array(JSON_OBJECT('id', thread_reposts.id, 'created_at', thread_reposts.created_at))
+        FROM thread_reposts WHERE thread_id = threads.id ORDER BY created_at DESC LIMIT 3
+      ) as recent_reposts
+      FROM thread_likes
+      INNER JOIN threads ON thread_likes.thread_id = threads.id
+      INNER JOIN users ON threads.user_id = users.id
+      ${
+        cursor
+          ? Prisma.sql`WHERE threads.id < ${cursor} AND threads.deleted = ${deleted} AND threads.user_id = ${userId}`
+          : Prisma.sql`WHERE threads.deleted = ${deleted} AND threads.user_id = ${userId}`
+      }
+      ORDER BY threads.id DESC
+      LIMIT ${limit}`,
     ]);
 
     const endCursor = list.at(-1)?.id ?? null;
     const hasNextPage = endCursor
       ? (await db.threadLike.count({
           where: {
-            id: {
-              lt: endCursor,
-            },
-            userId,
             thread: {
+              id: {
+                lt: endCursor,
+              },
+              userId,
               deleted,
             },
           },
@@ -497,7 +505,7 @@ export class ThreadService {
 
     return {
       totalCount,
-      list: this._serializeItems(list.map((item) => item.thread)),
+      list: this._serializeRawQueryItem(list),
       endCursor,
       hasNextPage,
     };
@@ -519,6 +527,7 @@ export class ThreadService {
     return list.map((item) => {
       const {
         is_liked,
+        is_reposted,
         created_at,
         user_id,
         name,
@@ -550,8 +559,7 @@ export class ThreadService {
         isLiked: Boolean(Number(is_liked)),
         isCommented:
           'is_commented' in item ? Boolean(Number(item.is_commented)) : false,
-        isReposted:
-          'is_reposted' in item ? Boolean(Number(item.is_reposted)) : false,
+        isReposted: Boolean(Number(is_reposted)),
         count: {
           likes: Number(likes),
           comments: Number(comments),

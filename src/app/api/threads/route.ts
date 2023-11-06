@@ -29,9 +29,6 @@ export async function GET(request: Request) {
       type: searchParams.get('type') ?? undefined,
     });
 
-    console.log('[threads request url] ====>', request.url);
-    console.log('[threads query] ====>', query);
-
     const data = await threadService.getItems(query, session.user.id);
     return NextResponse.json({
       ...data,

@@ -57,6 +57,7 @@ export const repostThreadAction = async (
     await threadService.createRepost({
       threadId: formData.threadId,
       repostId: newData.id,
+      userId: id,
     });
 
     return {
