@@ -144,14 +144,14 @@ MainNav.Menu = function Item() {
 };
 
 MainNav.Logo = function Item() {
-  const { theme } = useTheme();
+  const { systemTheme } = useTheme();
 
   return (
     <Link href={PAGE_ENDPOINTS.ROOT} className="items-center space-x-2 md:flex">
-      <SkipRenderOnClient shouldRenderOnClient={() => theme === 'dark'}>
+      <SkipRenderOnClient shouldRenderOnClient={() => systemTheme === 'dark'}>
         <Icons.threadsWhite className="hidden h-8 w-8 dark:block" />
       </SkipRenderOnClient>
-      <SkipRenderOnClient shouldRenderOnClient={() => theme === 'light'}>
+      <SkipRenderOnClient shouldRenderOnClient={() => systemTheme === 'light'}>
         <Icons.threads className="block h-8 w-8 dark:hidden" />
       </SkipRenderOnClient>
     </Link>
