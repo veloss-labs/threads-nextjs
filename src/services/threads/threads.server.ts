@@ -1,14 +1,13 @@
 'server-only';
 import { db } from '~/server/db/prisma';
-import { isEmpty, isString } from '~/utils/assertion';
+import { isString } from '~/utils/assertion';
 import {
   THREADS_SELECT,
   THREADS_REPOST_SELECT,
-  THREADS_COMMENT_SELECT,
 } from '~/services/threads/threads.selector';
 import type { ThreadQuery } from '~/services/threads/threads.query';
 import { Prisma } from '@prisma/client';
-import { ThreadSelectSchema, ThreadRawQuerySchema } from './threads.model';
+import { ThreadRawQuerySchema } from './threads.model';
 
 export class ThreadService {
   countLikes(threadId: string) {
@@ -234,11 +233,6 @@ export class ThreadService {
                 userId,
               }),
             },
-            orderBy: [
-              {
-                id: 'desc',
-              },
-            ],
           })) > 0
         : false;
 
@@ -249,13 +243,12 @@ export class ThreadService {
         hasNextPage,
       };
     } catch (error) {
-      console.log('error', error);
       return this.getDefaultItems();
     }
   }
 
   private async _getItemCommentsByCursor(
-    { cursor, type, limit, userId, deleted = false }: ThreadQuery,
+    { cursor, limit, userId, deleted = false }: ThreadQuery,
     currentUserId?: string,
   ) {
     if (isString(cursor)) {
@@ -272,7 +265,7 @@ export class ThreadService {
       db.threadComment.count({
         where: {
           comment: {
-            type,
+            type: 'comment',
             deleted,
             ...(userId && {
               userId,
@@ -307,12 +300,12 @@ export class ThreadService {
       INNER JOIN users ON threads.user_id = users.id
       ${
         cursor
-          ? Prisma.sql`WHERE threads.id < ${cursor} AND threads.deleted = ${deleted} AND threads.type = ${type} ${
+          ? Prisma.sql`WHERE threads.id < ${cursor} AND threads.deleted = ${deleted} AND threads.type = 'comment' ${
               userId
                 ? Prisma.sql`AND threads.user_id = ${userId}`
                 : Prisma.empty
             }`
-          : Prisma.sql`WHERE threads.deleted = ${deleted} AND threads.type = ${type} ${
+          : Prisma.sql`WHERE threads.deleted = ${deleted} AND threads.type = 'comment' ${
               userId
                 ? Prisma.sql`AND threads.user_id = ${userId}`
                 : Prisma.empty
@@ -330,20 +323,13 @@ export class ThreadService {
               id: {
                 lt: endCursor,
               },
-              type,
+              type: 'comment',
               deleted,
               ...(userId && {
                 userId,
               }),
             },
           },
-          orderBy: [
-            {
-              comment: {
-                id: 'desc',
-              },
-            },
-          ],
         })) > 0
       : false;
 
@@ -436,7 +422,7 @@ export class ThreadService {
   }
 
   private async _getItemRepostsByCursor(
-    { cursor, type, limit, userId, deleted = false }: ThreadQuery,
+    { cursor, limit, userId, deleted = false }: ThreadQuery,
     currentUserId?: string,
   ) {
     if (isString(cursor)) {
@@ -453,7 +439,7 @@ export class ThreadService {
       db.threadRepost.count({
         where: {
           repost: {
-            type,
+            type: 'repost',
             deleted,
             ...(userId && {
               userId,
@@ -488,12 +474,12 @@ export class ThreadService {
       INNER JOIN users ON threads.user_id = users.id
       ${
         cursor
-          ? Prisma.sql`WHERE threads.id < ${cursor} AND threads.deleted = ${deleted} AND threads.type = ${type} ${
+          ? Prisma.sql`WHERE threads.id < ${cursor} AND threads.deleted = ${deleted} AND threads.type = 'repost' ${
               userId
                 ? Prisma.sql`AND threads.user_id = ${userId}`
                 : Prisma.empty
             }`
-          : Prisma.sql`WHERE threads.deleted = ${deleted} AND threads.type = ${type} ${
+          : Prisma.sql`WHERE threads.deleted = ${deleted} AND threads.type = 'repost' ${
               userId
                 ? Prisma.sql`AND threads.user_id = ${userId}`
                 : Prisma.empty
@@ -512,7 +498,7 @@ export class ThreadService {
               id: {
                 lt: endCursor,
               },
-              type,
+              type: 'repost',
               deleted,
               ...(userId && {
                 userId,
@@ -528,18 +514,6 @@ export class ThreadService {
       endCursor,
       hasNextPage,
     };
-  }
-
-  private _serializeItems(list: ThreadSelectSchema[]) {
-    return list.map((item) => {
-      const { likes, comments, reposts, ...reset } = item;
-      return {
-        ...reset,
-        isLiked: !isEmpty(likes),
-        isCommented: !isEmpty(comments),
-        isReposted: !isEmpty(reposts),
-      };
-    });
   }
 
   private _serializeRawQueryItem(list: ThreadRawQuerySchema[]) {
