@@ -62,7 +62,6 @@ export default function ThreadsForm({ isDialog }: ThreadsFormProps) {
      */
     startTransition(async () => {
       const result = await createThreadAction(values);
-      console.log(result);
       if (result.resultCode !== RESULT_CODE.OK) {
         setRemoteError(result.resultMessage);
         return;

@@ -29,6 +29,7 @@ export default function ThreadItem({ item }: ThreadItemProps) {
     threadId: item.id,
     isLike: item.isLiked,
   });
+
   const updateRepostFn = repostThreadAction.bind(null, {
     threadId: item.id,
   });
@@ -41,7 +42,7 @@ export default function ThreadItem({ item }: ThreadItemProps) {
   const onClickLike = async () => {
     startTransition(async () => {
       await updateLikeFn();
-      await queryClient.refetchQueries({
+      await queryClient.invalidateQueries({
         queryKey,
       });
     });
@@ -50,7 +51,7 @@ export default function ThreadItem({ item }: ThreadItemProps) {
   const onClickRepost = () => {
     startTransition(async () => {
       await updateRepostFn();
-      await queryClient.refetchQueries({
+      await queryClient.invalidateQueries({
         queryKey,
       });
     });

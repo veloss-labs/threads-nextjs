@@ -254,92 +254,6 @@ export class ThreadService {
     }
   }
 
-  private async _getItemRepostsByCursor(
-    { cursor, type, limit, userId, deleted = false }: ThreadQuery,
-    currentUserId?: string,
-  ) {
-    if (isString(cursor)) {
-      cursor = cursor;
-    }
-
-    if (isString(limit)) {
-      limit = Number(limit);
-    } else {
-      limit = limit ?? 25;
-    }
-
-    const [totalCount, list] = await Promise.all([
-      db.threadRepost.count({
-        where: {
-          repost: {
-            type,
-            deleted,
-            ...(userId && {
-              userId,
-            }),
-          },
-        },
-      }),
-      db.threadRepost.findMany({
-        orderBy: [
-          {
-            repost: {
-              id: 'desc',
-            },
-          },
-        ],
-        where: {
-          repost: {
-            id: cursor
-              ? {
-                  lt: cursor,
-                }
-              : undefined,
-            type,
-            deleted,
-            ...(userId && {
-              userId,
-            }),
-          },
-        },
-        take: limit,
-        select: THREADS_REPOST_SELECT(currentUserId),
-      }),
-    ]);
-
-    const endCursor = list.at(-1)?.id ?? null;
-    const hasNextPage = endCursor
-      ? (await db.threadRepost.count({
-          where: {
-            repost: {
-              id: {
-                lt: endCursor,
-              },
-              type,
-              deleted,
-              ...(userId && {
-                userId,
-              }),
-            },
-          },
-          orderBy: [
-            {
-              repost: {
-                id: 'desc',
-              },
-            },
-          ],
-        })) > 0
-      : false;
-
-    return {
-      totalCount,
-      list: this._serializeItems(list.map((item) => item.repost)),
-      endCursor,
-      hasNextPage,
-    };
-  }
-
   private async _getItemCommentsByCursor(
     { cursor, type, limit, userId, deleted = false }: ThreadQuery,
     currentUserId?: string,
@@ -366,31 +280,46 @@ export class ThreadService {
           },
         },
       }),
-      db.threadComment.findMany({
-        orderBy: [
-          {
-            comment: {
-              id: 'desc',
-            },
-          },
-        ],
-        where: {
-          comment: {
-            id: cursor
-              ? {
-                  lt: cursor,
-                }
-              : undefined,
-            type,
-            deleted,
-            ...(userId && {
-              userId,
-            }),
-          },
-        },
-        take: limit,
-        select: THREADS_COMMENT_SELECT(currentUserId),
-      }),
+      db.$queryRaw<ThreadRawQuerySchema[]>`
+      SELECT thread_comments.id, thread_comments.created_at,
+      threads.id, threads.type, threads.text, threads.level, threads.deleted, threads.created_at,
+      (SELECT COUNT(*) FROM thread_likes WHERE thread_id = threads.id AND user_id = ${currentUserId}) as is_liked,
+      (SELECT COUNT(*) FROM thread_reposts WHERE thread_id = threads.id AND user_id = ${currentUserId}) as is_reposted,
+      (SELECT COUNT(*) FROM thread_likes WHERE thread_id = threads.id) as likes,
+      (SELECT COUNT(*) FROM thread_comments WHERE thread_id = threads.id) as comments,
+      (SELECT COUNT(*) FROM thread_reposts WHERE thread_id = threads.id) as reposts,
+      users.id as user_id, users.name, users.username, users.email, users.image,
+      (SELECT bio FROM user_profiles WHERE user_id = users.id) as user_profiles_bio,
+      (
+        SELECT json_group_array(JSON_OBJECT('id', thread_likes.id, 'created_at', thread_likes.created_at))
+        FROM thread_likes WHERE thread_id = threads.id ORDER BY created_at DESC LIMIT 3
+      ) as recent_likes,
+      (
+        SELECT json_group_array(JSON_OBJECT('id', thread_comments.id, 'created_at', thread_comments.created_at))
+        FROM thread_comments WHERE thread_id = threads.id ORDER BY created_at DESC LIMIT 3
+      ) as recent_comments,
+      (
+        SELECT json_group_array(JSON_OBJECT('id', thread_reposts.id, 'created_at', thread_reposts.created_at))
+        FROM thread_reposts WHERE thread_id = threads.id ORDER BY created_at DESC LIMIT 3
+      ) as recent_reposts
+      FROM thread_comments
+      INNER JOIN threads ON thread_comments.thread_id = threads.id
+      INNER JOIN users ON threads.user_id = users.id
+      ${
+        cursor
+          ? Prisma.sql`WHERE threads.id < ${cursor} AND threads.deleted = ${deleted} AND threads.type = ${type} ${
+              userId
+                ? Prisma.sql`AND threads.user_id = ${userId}`
+                : Prisma.empty
+            }`
+          : Prisma.sql`WHERE threads.deleted = ${deleted} AND threads.type = ${type} ${
+              userId
+                ? Prisma.sql`AND threads.user_id = ${userId}`
+                : Prisma.empty
+            }`
+      }
+      ORDER BY threads.id DESC
+      LIMIT ${limit}`,
     ]);
 
     const endCursor = list.at(-1)?.id ?? null;
@@ -420,7 +349,7 @@ export class ThreadService {
 
     return {
       totalCount,
-      list: this._serializeItems(list.map((item) => item.comment)),
+      list: this._serializeRawQueryItem(list),
       endCursor,
       hasNextPage,
     };
@@ -495,11 +424,101 @@ export class ThreadService {
               deleted,
             },
           },
-          orderBy: [
-            {
-              id: 'desc',
+        })) > 0
+      : false;
+
+    return {
+      totalCount,
+      list: this._serializeRawQueryItem(list),
+      endCursor,
+      hasNextPage,
+    };
+  }
+
+  private async _getItemRepostsByCursor(
+    { cursor, type, limit, userId, deleted = false }: ThreadQuery,
+    currentUserId?: string,
+  ) {
+    if (isString(cursor)) {
+      cursor = cursor;
+    }
+
+    if (isString(limit)) {
+      limit = Number(limit);
+    } else {
+      limit = limit ?? 25;
+    }
+
+    const [totalCount, list] = await Promise.all([
+      db.threadRepost.count({
+        where: {
+          repost: {
+            type,
+            deleted,
+            ...(userId && {
+              userId,
+            }),
+          },
+        },
+      }),
+      db.$queryRaw<ThreadRawQuerySchema[]>`
+      SELECT thread_reposts.id, thread_reposts.created_at,
+      threads.id, threads.type, threads.text, threads.level, threads.deleted, threads.created_at,
+      (SELECT COUNT(*) FROM thread_likes WHERE thread_id = threads.id AND user_id = ${currentUserId}) as is_liked,
+      (SELECT COUNT(*) FROM thread_reposts WHERE thread_id = threads.id AND user_id = ${currentUserId}) as is_reposted,
+      (SELECT COUNT(*) FROM thread_likes WHERE thread_id = threads.id) as likes,
+      (SELECT COUNT(*) FROM thread_comments WHERE thread_id = threads.id) as comments,
+      (SELECT COUNT(*) FROM thread_reposts WHERE thread_id = threads.id) as reposts,
+      users.id as user_id, users.name, users.username, users.email, users.image,
+      (SELECT bio FROM user_profiles WHERE user_id = users.id) as user_profiles_bio,
+      (
+        SELECT json_group_array(JSON_OBJECT('id', thread_likes.id, 'created_at', thread_likes.created_at))
+        FROM thread_likes WHERE thread_id = threads.id ORDER BY created_at DESC LIMIT 3
+      ) as recent_likes,
+      (
+        SELECT json_group_array(JSON_OBJECT('id', thread_comments.id, 'created_at', thread_comments.created_at))
+        FROM thread_comments WHERE thread_id = threads.id ORDER BY created_at DESC LIMIT 3
+      ) as recent_comments,
+      (
+        SELECT json_group_array(JSON_OBJECT('id', thread_reposts.id, 'created_at', thread_reposts.created_at))
+        FROM thread_reposts WHERE thread_id = threads.id ORDER BY created_at DESC LIMIT 3
+      ) as recent_reposts
+      FROM thread_reposts
+      INNER JOIN threads ON thread_reposts.thread_id = threads.id
+      INNER JOIN users ON threads.user_id = users.id
+      ${
+        cursor
+          ? Prisma.sql`WHERE threads.id < ${cursor} AND threads.deleted = ${deleted} AND threads.type = ${type} ${
+              userId
+                ? Prisma.sql`AND threads.user_id = ${userId}`
+                : Prisma.empty
+            }`
+          : Prisma.sql`WHERE threads.deleted = ${deleted} AND threads.type = ${type} ${
+              userId
+                ? Prisma.sql`AND threads.user_id = ${userId}`
+                : Prisma.empty
+            }`
+      }
+      ORDER BY threads.id DESC
+      LIMIT ${limit}
+      `,
+    ]);
+
+    const endCursor = list.at(-1)?.id ?? null;
+    const hasNextPage = endCursor
+      ? (await db.threadRepost.count({
+          where: {
+            repost: {
+              id: {
+                lt: endCursor,
+              },
+              type,
+              deleted,
+              ...(userId && {
+                userId,
+              }),
             },
-          ],
+          },
         })) > 0
       : false;
 
