@@ -29,6 +29,7 @@ model User {
   threadLikes    ThreadLike[]
   threadReposts  ThreadRepost[]
   threadComments ThreadComment[]
+  reports        Report[]
 
   @@map(name: "users")
 }
@@ -102,6 +103,7 @@ model Thread {
   likes    ThreadLike[]
   reposts  ThreadRepost[]
   comments ThreadComment[]
+  reports  ReportThread[]
 
   @@index([createdAt], map: "threads_created_at")
   @@index([deleted])
@@ -180,4 +182,31 @@ model File {
   updatedAt  DateTime @updatedAt @map(name: "updated_at")
 
   @@map(name: "files")
+}
+
+model Report {
+  id      String         @id @default(cuid())
+  type    String         @default("thread") // thread, comment, user
+  text    String?
+  userId  String         @map(name: "user_id")
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reports ReportThread[]
+
+  @@index([type])
+  @@index([userId])
+  @@map(name: "reports")
+}
+
+model ReportThread {
+  id        String   @id @default(cuid())
+  threadId  String   @map(name: "thread_id")
+  reportId  String   @map(name: "report_id")
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, reportId])
+  @@map(name: "report_threads")
 }
