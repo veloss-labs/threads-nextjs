@@ -20,7 +20,7 @@ export default async function Pages({ params }: Props) {
     queryFn: async () => {
       return await threadService.getItems({
         limit: 10,
-        hasParent: true,
+        type: 'comment',
         userId: params.userId,
       });
     },
@@ -43,7 +43,7 @@ export default async function Pages({ params }: Props) {
       {isEmptyData ? (
         <>Empty</>
       ) : (
-        <ThreadList userId={params.userId} type="comments" />
+        <ThreadList userId={params.userId} type="comment" />
       )}
     </HydrationBoundary>
   );

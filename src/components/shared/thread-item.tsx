@@ -1,3 +1,4 @@
+'use client';
 import { Card } from '~/components/ui/card';
 import Avatars from '~/components/shared/avatars';
 import {
@@ -14,7 +15,8 @@ import type { ThreadItemSchema } from '~/services/threads/threads.model';
 import { Icons } from '../icons';
 import { Button } from '../ui/button';
 import { useTransition } from 'react';
-import { likeThread } from '~/server/actions/threads';
+import { repostThreadAction } from '~/server/actions/threads/threads.repost';
+import { likeThreadAction } from '~/server/actions/threads/threads.likes';
 import { useQueryClient } from '@tanstack/react-query';
 import { useKeyContext } from '~/libs/providers/key';
 
@@ -23,18 +25,32 @@ interface ThreadItemProps {
 }
 
 export default function ThreadItem({ item }: ThreadItemProps) {
+  const updateLikeFn = likeThreadAction.bind(null, {
+    threadId: item.id,
+    isLike: item.isLiked,
+  });
+
+  const updateRepostFn = repostThreadAction.bind(null, {
+    threadId: item.id,
+  });
+
   const date = item ? getDateFormatted(item.createdAt) : null;
   const [isPending, startTransition] = useTransition();
   const queryClient = useQueryClient();
   const { queryKey } = useKeyContext();
 
-  const onClickLike = () => {
+  const onClickLike = async () => {
     startTransition(async () => {
-      await likeThread({
-        threadId: item.id,
-        isLike: item.isLiked,
+      await updateLikeFn();
+      await queryClient.invalidateQueries({
+        queryKey,
       });
+    });
+  };
 
+  const onClickRepost = () => {
+    startTransition(async () => {
+      await updateRepostFn();
       await queryClient.invalidateQueries({
         queryKey,
       });
@@ -111,12 +127,36 @@ export default function ThreadItem({ item }: ThreadItemProps) {
           </div>
           <div className="flex items-center justify-end space-x-4 py-4">
             <div className="flex items-center space-x-1">
-              <Button size="sm" variant="link">
+              {/* <Button size="sm" variant="link">
                 <Icons.messageSquare className="h-4 w-4" />
-              </Button>
-              <Button size="sm" variant="link">
-                <Icons.repeat className="h-4 w-4" />
-              </Button>
+              </Button> */}
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="link">
+                    {item.isReposted ? (
+                      <Icons.repostCheck className="h-4 w-4" />
+                    ) : (
+                      <Icons.repeat className="h-4 w-4" />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem
+                    onClick={onClickRepost}
+                    className={cn(
+                      item.isReposted ? 'text-red-500 dark:text-red-400' : '',
+                    )}
+                  >
+                    {isPending && (
+                      <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    {item.isReposted ? '삭제' : '리포스트'}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>인용하기</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 size="sm"
                 variant="link"

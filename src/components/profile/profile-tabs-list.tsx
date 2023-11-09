@@ -36,10 +36,10 @@ export default function ProfileTabsList({
         <TabsTrigger value="threads" className="flex-1">
           스레드
         </TabsTrigger>
-        <TabsTrigger value="comments" className="flex-1" disabled>
+        {/* <TabsTrigger value="comments" className="flex-1" disabled>
           답글
-        </TabsTrigger>
-        <TabsTrigger value="reposts" className="flex-1" disabled>
+        </TabsTrigger> */}
+        <TabsTrigger value="reposts" className="flex-1">
           리포스트
         </TabsTrigger>
       </TabsList>

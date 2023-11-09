@@ -12,21 +12,24 @@ datasource db {
 }
 
 model User {
-  id            String       @id @default(cuid())
-  name          String?
-  username      String?      @unique
-  password      String?
-  salt          String?
-  email         String?      @unique
-  emailVerified DateTime?    @map(name: "email_verified")
-  image         String?
-  createdAt     DateTime     @default(now()) @map(name: "created_at")
-  updatedAt     DateTime     @updatedAt @map(name: "updated_at")
-  accounts      Account[]
-  sessions      Session[]
-  profile       UserProfile?
-  threads       Thread[]
-  ThreadLike    ThreadLike[]
+  id             String          @id @default(cuid())
+  name           String?
+  username       String?         @unique
+  password       String?
+  salt           String?
+  email          String?         @unique
+  emailVerified  DateTime?       @map(name: "email_verified")
+  image          String?
+  createdAt      DateTime        @default(now()) @map(name: "created_at")
+  updatedAt      DateTime        @updatedAt @map(name: "updated_at")
+  accounts       Account[]
+  sessions       Session[]
+  profile        UserProfile?
+  threads        Thread[]
+  threadLikes    ThreadLike[]
+  threadReposts  ThreadRepost[]
+  threadComments ThreadComment[]
+  reports        Report[]
 
   @@map(name: "users")
 }
@@ -85,25 +88,25 @@ model VerificationToken {
 }
 
 model Thread {
-  id          String        @id @default(cuid())
-  text        String
-  hasReposts  Boolean?      @default(false) @map(name: "has_reposts")
-  hasChildren Boolean?      @default(false) @map(name: "has_children")
-  parentId    String?       @map(name: "parent_id")
-  repostId    String?       @map(name: "repost_id")
-  level       Int?          @default(0)
-  deleted     Boolean?      @default(false)
-  createdAt   DateTime      @default(now()) @map(name: "created_at")
-  updatedAt   DateTime      @updatedAt @map(name: "updated_at")
-  userId      String        @map(name: "user_id")
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  assets      ThreadAsset[]
-  likes       ThreadLike[]
+  id        String   @id @default(cuid())
+  type      String?  @default("thread") // repost, comment, thread
+  text      String
+  level     Int?     @default(0)
+  deleted   Boolean? @default(false)
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  userId    String   @map(name: "user_id")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  assets   ThreadAsset[]
+  likes    ThreadLike[]
+  reposts  ThreadRepost[]
+  comments ThreadComment[]
+  reports  ReportThread[]
 
   @@index([createdAt], map: "threads_created_at")
   @@index([deleted])
-  @@index([parentId], map: "threads_parent_id")
-  @@index([repostId], map: "threads_repost_id")
   @@index([userId, deleted], map: "threads_user_id_deleted")
   @@map(name: "threads")
 }
@@ -122,6 +125,38 @@ model ThreadLike {
   @@index(createdAt)
   @@index(userId)
   @@map(name: "thread_likes")
+}
+
+model ThreadRepost {
+  id        String   @id @default(cuid())
+  threadId  String   @map(name: "thread_id")
+  repostId  String   @map(name: "repost_id")
+  userId    String   @map(name: "user_id")
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  repost Thread @relation(fields: [repostId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, repostId, userId])
+  @@index(createdAt)
+  @@map(name: "thread_reposts")
+}
+
+model ThreadComment {
+  id        String   @id @default(cuid())
+  threadId  String   @map(name: "thread_id")
+  commentId String   @map(name: "comment_id")
+  userId    String   @map(name: "user_id")
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  comment Thread @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, commentId])
+  @@index([createdAt])
+  @@map(name: "thread_comments")
 }
 
 model ThreadAsset {
@@ -147,4 +182,31 @@ model File {
   updatedAt  DateTime @updatedAt @map(name: "updated_at")
 
   @@map(name: "files")
+}
+
+model Report {
+  id      String         @id @default(cuid())
+  type    String         @default("thread") // thread, comment, user
+  text    String?
+  userId  String         @map(name: "user_id")
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reports ReportThread[]
+
+  @@index([type])
+  @@index([userId])
+  @@map(name: "reports")
+}
+
+model ReportThread {
+  id        String   @id @default(cuid())
+  threadId  String   @map(name: "thread_id")
+  reportId  String   @map(name: "report_id")
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, reportId])
+  @@map(name: "report_threads")
 }

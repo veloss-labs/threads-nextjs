@@ -23,6 +23,7 @@ declare module 'next-auth/jwt' {
       profile: {
         bio: string | undefined;
       };
+      isActive: boolean;
     };
   }
 }
@@ -101,6 +102,12 @@ export const authOptions = {
       return token;
     },
     session: async ({ session, token }) => {
+      let isActive = false;
+      if (token && token.sub) {
+        const existingUser = await userService.getItem(token.sub);
+        isActive = !!existingUser;
+      }
+
       session.user = {
         ...session.user,
         // @ts-expect-error
@@ -108,6 +115,7 @@ export const authOptions = {
         username: token?.user?.username,
         emailVerified: token?.user?.emailVerified || false,
         profile: token?.user?.profile || {},
+        isActive,
       };
       return session;
     },
@@ -127,6 +135,7 @@ export function getSession() {
       profile: {
         bio: string | undefined;
       };
+      isActive: boolean;
     };
   } | null>;
 }

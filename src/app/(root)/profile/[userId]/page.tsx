@@ -42,7 +42,7 @@ export default async function Pages({ params }: Props) {
       {isEmptyData ? (
         <>Empty</>
       ) : (
-        <ThreadList userId={params.userId} type="threads" />
+        <ThreadList userId={params.userId} type="owner" />
       )}
     </HydrationBoundary>
   );

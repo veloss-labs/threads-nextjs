@@ -29,10 +29,7 @@ export default async function middleware(req: NextRequest) {
   }`;
 
   // rewrites for app pages
-  if (
-    hostname === 'localhost:3000' ||
-    hostname == process.env.NEXT_PUBLIC_ROOT_DOMAIN
-  ) {
+  if (hostname == process.env.NEXT_PUBLIC_ROOT_DOMAIN) {
     const session = await getToken({ req });
     if (!session && !publicRoutes.includes(path)) {
       return NextResponse.redirect(new URL('/signin', req.url));

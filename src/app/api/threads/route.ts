@@ -6,19 +6,9 @@ import { PrismaClientValidationError } from '@prisma/client/runtime/library';
 
 const searchParamsSchema = z.object({
   cursor: z.string().optional(),
-  pageNo: z.number().optional(),
   limit: z.string().optional(),
   deleted: z.boolean().optional().default(false),
-  hasParent: z
-    .enum(['true', 'false'])
-    .optional()
-    .default('false')
-    .transform((val) => val === 'true'),
-  hasRepost: z
-    .enum(['true', 'false'])
-    .optional()
-    .default('false')
-    .transform((val) => val === 'true'),
+  type: z.enum(['repost', 'comment', 'thread']).optional().default('thread'),
   userId: z.string().optional(),
 });
 
@@ -33,12 +23,10 @@ export async function GET(request: Request) {
 
     const query = await searchParamsSchema.parseAsync({
       cursor: searchParams.get('cursor') ?? undefined,
-      pageNo: searchParams.get('pageNo') ?? undefined,
       limit: searchParams.get('limit') ?? undefined,
       deleted: searchParams.get('deleted') ?? undefined,
       userId: searchParams.get('userId') ?? undefined,
-      hasParent: searchParams.get('hasParent') ?? undefined,
-      hasRepost: searchParams.get('hasRepost') ?? undefined,
+      type: searchParams.get('type') ?? undefined,
     });
 
     const data = await threadService.getItems(query, session.user.id);
@@ -47,6 +35,7 @@ export async function GET(request: Request) {
       error: null,
     });
   } catch (error) {
+    console.log('error', error);
     if (error instanceof z.ZodError) {
       const err = {
         code: 'invalid_query_params',

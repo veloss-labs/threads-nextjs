@@ -20,9 +20,8 @@ export default async function Pages({ params }: Props) {
     queryFn: async () => {
       return await threadService.getItems({
         limit: 10,
-        hasParent: true,
-        hasRepost: true,
         userId: params.userId,
+        type: 'repost',
       });
     },
   });
@@ -44,7 +43,7 @@ export default async function Pages({ params }: Props) {
       {isEmptyData ? (
         <>Empty</>
       ) : (
-        <ThreadList userId={params.userId} type="reposts" />
+        <ThreadList userId={params.userId} type="repost" />
       )}
     </HydrationBoundary>
   );
