@@ -184,7 +184,7 @@ export class ThreadService {
         db.$queryRaw<ThreadRawQuerySchema[]>`
       SELECT threads.id, threads.type, threads.text, threads.level, threads.deleted, threads.created_at,
       (SELECT COUNT(*) FROM thread_likes WHERE thread_id = threads.id AND user_id = ${currentUserId}) as is_liked,
-      (SELECT COUNT(*) FROM thread_reposts WHERE thread_id = threads.id AND user_id = ${currentUserId}) as is_reposted,
+      (SELECT COUNT(*) FROM thread_reposts WHERE repost_id = threads.id AND user_id = ${currentUserId}) as is_reposted,
       (SELECT COUNT(*) FROM thread_likes WHERE thread_id = threads.id) as likes,
       (SELECT COUNT(*) FROM thread_comments WHERE thread_id = threads.id) as comments,
       (SELECT COUNT(*) FROM thread_reposts WHERE thread_id = threads.id) as reposts,
@@ -277,7 +277,7 @@ export class ThreadService {
       SELECT thread_comments.id, thread_comments.created_at,
       threads.id, threads.type, threads.text, threads.level, threads.deleted, threads.created_at,
       (SELECT COUNT(*) FROM thread_likes WHERE thread_id = threads.id AND user_id = ${currentUserId}) as is_liked,
-      (SELECT COUNT(*) FROM thread_reposts WHERE thread_id = threads.id AND user_id = ${currentUserId}) as is_reposted,
+      (SELECT COUNT(*) FROM thread_reposts WHERE repost_id = threads.id AND user_id = ${currentUserId}) as is_reposted,
       (SELECT COUNT(*) FROM thread_likes WHERE thread_id = threads.id) as likes,
       (SELECT COUNT(*) FROM thread_comments WHERE thread_id = threads.id) as comments,
       (SELECT COUNT(*) FROM thread_reposts WHERE thread_id = threads.id) as reposts,
@@ -451,7 +451,7 @@ export class ThreadService {
       SELECT thread_reposts.id, thread_reposts.created_at,
       threads.id, threads.type, threads.text, threads.level, threads.deleted, threads.created_at,
       (SELECT COUNT(*) FROM thread_likes WHERE thread_id = threads.id AND user_id = ${currentUserId}) as is_liked,
-      (SELECT COUNT(*) FROM thread_reposts WHERE thread_id = threads.id AND user_id = ${currentUserId}) as is_reposted,
+      (SELECT COUNT(*) FROM thread_reposts WHERE repost_id = threads.id AND user_id = ${currentUserId}) as is_reposted,
       (SELECT COUNT(*) FROM thread_likes WHERE thread_id = threads.id) as likes,
       (SELECT COUNT(*) FROM thread_comments WHERE thread_id = threads.id) as comments,
       (SELECT COUNT(*) FROM thread_reposts WHERE thread_id = threads.id) as reposts,
@@ -470,7 +470,7 @@ export class ThreadService {
         FROM thread_reposts WHERE thread_id = threads.id ORDER BY created_at DESC LIMIT 3
       ) as recent_reposts
       FROM thread_reposts
-      INNER JOIN threads ON thread_reposts.thread_id = threads.id
+      INNER JOIN threads ON thread_reposts.repost_id = threads.id
       INNER JOIN users ON threads.user_id = users.id
       ${
         cursor

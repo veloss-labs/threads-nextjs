@@ -28,14 +28,13 @@ type FormFields = z.infer<typeof formSchema>;
 
 interface ThreadsFormProps {
   isDialog?: boolean;
+  type: 'comment' | 'thread' | 'repost';
 }
 
-type FormState = {
-  resultCode: number;
-  resultMessage: string | null;
-};
-
-export default function ThreadsForm({ isDialog }: ThreadsFormProps) {
+export default function ThreadsForm({
+  isDialog,
+  type = 'thread',
+}: ThreadsFormProps) {
   const { data } = useSession();
 
   const [remoteError, setRemoteError] = useState<string | null>(null);
@@ -77,6 +76,21 @@ export default function ThreadsForm({ isDialog }: ThreadsFormProps) {
     formState: { errors },
   } = form;
 
+  const renderTest = () => {
+    return (
+      <TipTapEditor
+        editable={true}
+        value=""
+        debouncedUpdatesEnabled={false}
+        noBorder
+        className={cn(
+          'prose prose-brand prose-headings:font-display font-default focus:outline-none',
+        )}
+        customClassName={cn(isDialog ? 'max-w-[462px] p-0' : 'p-0')}
+      />
+    );
+  };
+
   return (
     <>
       <div className="flex items-center space-x-4">
@@ -90,12 +104,6 @@ export default function ThreadsForm({ isDialog }: ThreadsFormProps) {
           <ThreadsForm.Submit isDialog={!!isDialog} isPending={isPending} />
         </div>
       </div>
-
-      <ThreadsForm.EditorMessage
-        errors={errors}
-        remoteError={remoteError}
-        id="text"
-      />
 
       <div className={cn('grid gap-6', isDialog ? undefined : 'my-4')}>
         <Form {...form}>

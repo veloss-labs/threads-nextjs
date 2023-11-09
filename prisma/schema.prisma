@@ -87,16 +87,14 @@ model VerificationToken {
 }
 
 model Thread {
-  id          String   @id @default(cuid())
-  type        String?  @default("thread") // repost, comment, thread
-  text        String
-  hasReposts  Boolean? @default(false) @map(name: "has_reposts")
-  hasComments Boolean? @default(false) @map(name: "has_comments")
-  level       Int?     @default(0)
-  deleted     Boolean? @default(false)
-  createdAt   DateTime @default(now()) @map(name: "created_at")
-  updatedAt   DateTime @updatedAt @map(name: "updated_at")
-  userId      String   @map(name: "user_id")
+  id        String   @id @default(cuid())
+  type      String?  @default("thread") // repost, comment, thread
+  text      String
+  level     Int?     @default(0)
+  deleted   Boolean? @default(false)
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  userId    String   @map(name: "user_id")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

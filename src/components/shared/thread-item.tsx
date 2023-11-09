@@ -127,9 +127,9 @@ export default function ThreadItem({ item }: ThreadItemProps) {
           </div>
           <div className="flex items-center justify-end space-x-4 py-4">
             <div className="flex items-center space-x-1">
-              <Button size="sm" variant="link">
+              {/* <Button size="sm" variant="link">
                 <Icons.messageSquare className="h-4 w-4" />
-              </Button>
+              </Button> */}
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
