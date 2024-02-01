@@ -107,7 +107,6 @@ export const authOptions = {
         const existingUser = await userService.getItem(token.sub);
         isActive = !!existingUser;
       }
-
       session.user = {
         ...session.user,
         // @ts-expect-error

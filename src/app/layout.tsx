@@ -1,58 +1,14 @@
 import '~/assets/css/globals.css';
-import { env } from '../../env.mjs';
-import { PreloadResources } from '~/libs/react/preload';
+import { env } from 'env.mjs';
+import { cache } from 'react';
 import { Inter as FontSans } from 'next/font/google';
+import { headers } from 'next/headers';
 import localFont from 'next/font/local';
 import { Providers } from './providers';
 import { cn } from '~/utils/utils';
-import { SITE_CONFIG } from '~/constants/constants';
+import { getHeaderInDomainInfo } from '~/utils/url';
+import { SITE_CONFIG, PAGE_ENDPOINTS } from '~/constants/constants';
 import type { Metadata } from 'next';
-
-const url = new URL(env.NEXT_PUBLIC_SITE_URL);
-
-export const metadata: Metadata = {
-  title: SITE_CONFIG.title,
-  description: SITE_CONFIG.description,
-  keywords: [
-    'Next.js',
-    'React',
-    'Tailwind CSS',
-    'Server Components',
-    'Radix UI',
-  ],
-  icons: {
-    icon: SITE_CONFIG.favicon,
-    apple: SITE_CONFIG.apple57x57,
-    other: [
-      {
-        url: SITE_CONFIG.apple180x180,
-        sizes: '180x180',
-      },
-      {
-        url: SITE_CONFIG.apple256x256,
-        sizes: '256x256',
-      },
-    ],
-  },
-  metadataBase: url,
-  manifest: SITE_CONFIG.manifest,
-  alternates: {
-    canonical: '/',
-  },
-  openGraph: {
-    title: SITE_CONFIG.title,
-    description: SITE_CONFIG.description,
-    url: url.href,
-    siteName: SITE_CONFIG.title,
-    images: [
-      {
-        url: SITE_CONFIG.ogImage,
-      },
-    ],
-    locale: 'ko_KR',
-    type: 'article',
-  },
-};
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -64,19 +20,65 @@ const fontHeading = localFont({
   variable: '--font-heading',
 });
 
+// Lazy load headers
+const getHeaders = cache(() => Promise.resolve(headers()));
+
+export async function generateMetadata(): Promise<Metadata> {
+  const headersList = await getHeaders();
+  const info = getHeaderInDomainInfo(headersList);
+  const metadataBase = new URL(info.domainUrl);
+  return {
+    title: SITE_CONFIG.title,
+    description: SITE_CONFIG.description,
+    icons: {
+      icon: SITE_CONFIG.favicon,
+      apple: SITE_CONFIG.apple57x57,
+      other: [
+        {
+          url: SITE_CONFIG.apple180x180,
+          sizes: '180x180',
+        },
+        {
+          url: SITE_CONFIG.apple256x256,
+          sizes: '256x256',
+        },
+      ],
+    },
+    metadataBase,
+    manifest: SITE_CONFIG.manifest,
+    alternates: {
+      canonical: PAGE_ENDPOINTS.ROOT,
+    },
+    openGraph: {
+      title: SITE_CONFIG.title,
+      description: SITE_CONFIG.description,
+      url: metadataBase.href,
+      siteName: SITE_CONFIG.title,
+      images: [
+        {
+          url: SITE_CONFIG.ogImage,
+        },
+      ],
+      locale: 'ko_KR',
+      type: 'article',
+    },
+  };
+}
+
 interface RoutesProps {
   children: React.ReactNode;
   modal: React.ReactNode;
 }
 
-export default function Layout(props: RoutesProps) {
+export default async function Layout(props: RoutesProps) {
+  const headersList = await getHeaders();
+  const info = getHeaderInDomainInfo(headersList);
   return (
     <html lang="ko" dir="ltr" suppressHydrationWarning>
-      <PreloadResources />
       <head>
         <meta
           name="viewport"
-          content="width=device-width,initial-scale=1,maximum-scale=2,shrink-to-fit=no"
+          content="width=device-width, initial-scale=1, maximum-scale=2, shrink-to-fit=no"
         />
         <meta
           name="referrer"
@@ -94,14 +96,17 @@ export default function Layout(props: RoutesProps) {
           fontHeading.variable,
         )}
       >
-        <Providers
-          theme={{
-            attribute: 'class',
-            defaultTheme: 'system',
-            enableSystem: true,
-            disableTransitionOnChange: true,
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+            window.__ENV__ = ${JSON.stringify({
+              SITE_URL: env.SITE_URL,
+              API_PREFIX: env.API_PREFIX,
+            })};
+            window.__DOMAIN_INFO__ = ${JSON.stringify(info)}`,
           }}
-        >
+        />
+        <Providers>
           {props.children}
           {props.modal}
         </Providers>

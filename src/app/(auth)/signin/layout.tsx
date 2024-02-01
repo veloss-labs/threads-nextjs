@@ -20,13 +20,13 @@ export default function Layout({ children }: Props) {
         )}
       >
         <>
-          <Icons.chevronLeft className="mr-2 h-4 w-4" />
+          <Icons.chevronLeft className="mr-2 size-4" />
           뒤로가기
         </>
       </Link>
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
         <div className="flex flex-col space-y-2 text-center">
-          <Icons.threads className="mx-auto h-8 w-8" />
+          <Icons.threads className="mx-auto size-8" />
         </div>
         {children}
         <p className={cn('px-8 text-center text-sm text-muted-foreground')}>

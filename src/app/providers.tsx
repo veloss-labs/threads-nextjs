@@ -9,17 +9,20 @@ import { type ThemeProviderProps } from 'next-themes/dist/types';
 
 interface Props {
   children: React.ReactNode;
-  theme?: ThemeProviderProps;
 }
 
-export function Providers({ children, theme }: Props) {
+export function Providers({ children }: Props) {
   const [queryClient] = useState(() => new QueryClient());
 
   return (
     <SessionProvider>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider {...theme}>
-          <AppProvider>{children}</AppProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          disableTransitionOnChange
+        >
+          {children}
         </ThemeProvider>
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>

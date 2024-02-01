@@ -13,7 +13,6 @@ import {
 import { Input } from '~/components/ui/input';
 import { Button } from '~/components/ui/button';
 import { Icons } from '~/components/icons';
-
 import { createUserWithRevalidateAction } from '~/server/actions/users/users';
 import { RESULT_CODE } from '~/constants/constants';
 import { useFormState, useFormStatus } from '~/libs/react/form';
@@ -121,7 +120,7 @@ SignupForm.Submit = function Item() {
 
   return (
     <Button type="submit" disabled={pending} aria-disabled={pending}>
-      {pending && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
+      {pending && <Icons.spinner className="mr-2 size-4 animate-spin" />}
       회원가입
     </Button>
   );

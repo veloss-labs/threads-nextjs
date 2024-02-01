@@ -51,6 +51,7 @@ export const PAGE_ENDPOINTS = {
 
 export const SITE_CONFIG = {
   title: 'Threads',
+  keywords: [],
   description:
     'Instagram의 새로운 텍스트 앱, Threads에서 더 많은 대화를 나누어보세요',
   ogImage: '/og/seo.png',

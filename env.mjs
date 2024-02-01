@@ -2,9 +2,13 @@ import { createEnv } from '@t3-oss/env-nextjs';
 import { z } from 'zod';
 
 export const env = createEnv({
-  server: {
+  shared: {
+    SITE_URL: z.string().min(1).default('http://localhost:3000'),
+    API_PREFIX: z.string().min(1).default('/api'),
     NODE_ENV: z.enum(['development', 'test', 'production']),
     DEPLOY_GROUP: z.enum(['development', 'local', 'production']),
+  },
+  server: {
     NEXTAUTH_URL: z.preprocess(
       // This makes Vercel deployments not fail if you don't set NEXTAUTH_URL
       // Since NextAuth.js automatically uses the VERCEL_URL if present.
@@ -54,13 +58,6 @@ export const env = createEnv({
     GITHUB_CLIENT_ID: z.string().min(1),
     GITHUB_CLIENT_SECRET: z.string().min(1),
   },
-  client: {
-    NEXT_PUBLIC_SITE_URL: z.string(),
-    NEXT_PUBLIC_API_HOST: z.string(),
-    NEXT_PUBLIC_ROOT_DOMAIN: z.string(),
-    NEXT_PUBLIC_DEPLOY_GROUP: z.enum(['development', 'local', 'production']),
-    NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
-  },
   runtimeEnv: {
     // server
     NODE_ENV: process.env.NODE_ENV,
@@ -82,9 +79,7 @@ export const env = createEnv({
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     AUTH_SECRET: process.env.AUTH_SECRET,
     // client
-    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
-    NEXT_PUBLIC_API_HOST: process.env.NEXT_PUBLIC_API_HOST,
-    NEXT_PUBLIC_DEPLOY_GROUP: process.env.NEXT_PUBLIC_DEPLOY_GROUP,
-    NEXT_PUBLIC_ROOT_DOMAIN: process.env.NEXT_PUBLIC_ROOT_DOMAIN,
+    SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+    API_PREFIX: process.env.NEXT_PUBLIC_API_PREFIX,
   },
 });
