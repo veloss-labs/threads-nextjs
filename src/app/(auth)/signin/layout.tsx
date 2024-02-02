@@ -3,6 +3,7 @@ import React from 'react';
 import { Icons } from '~/components/icons';
 import { buttonVariants } from '~/components/ui/button';
 import { PAGE_ENDPOINTS } from '~/constants/constants';
+import { auth } from '~/services/auth';
 import { cn } from '~/utils/utils';
 
 interface Props {

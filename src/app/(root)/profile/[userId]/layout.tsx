@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import React from 'react';
 import ProfileHeader from '~/components/profile/profile-header';
-import { userService } from '~/services/users/user.server';
+import { userService } from '~/services/users/users.service';
 import ProfileTabsList from '~/components/profile/profile-tabs-list';
 
 interface Props {

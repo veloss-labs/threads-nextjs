@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSession } from '~/server/auth';
+// import { getSession } from '~/services/auth';
 import { threadService } from '~/services/threads/threads.server';
 import * as z from 'zod';
 import { PrismaClientValidationError } from '@prisma/client/runtime/library';
@@ -14,10 +14,10 @@ const searchParamsSchema = z.object({
 
 export async function GET(request: Request) {
   try {
-    const session = await getSession();
-    if (!session) {
-      return new Response('Unauthorized', { status: 403 });
-    }
+    // const session = await getSession();
+    // if (!session) {
+    //   return new Response('Unauthorized', { status: 403 });
+    // }
 
     const { searchParams } = new URL(request.url);
 
@@ -29,7 +29,10 @@ export async function GET(request: Request) {
       type: searchParams.get('type') ?? undefined,
     });
 
-    const data = await threadService.getItems(query, session.user.id);
+    const data = await threadService.getItems(
+      query,
+      // session.user.id
+    );
     return NextResponse.json({
       ...data,
       error: null,

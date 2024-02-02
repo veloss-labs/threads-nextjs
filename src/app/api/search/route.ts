@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSession } from '~/server/auth';
+import { getSession } from '~/services/auth';
 import { searchService } from '~/services/search/search.server';
 import * as z from 'zod';
 import { PrismaClientValidationError } from '@prisma/client/runtime/library';

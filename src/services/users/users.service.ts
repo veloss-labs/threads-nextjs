@@ -5,10 +5,12 @@ import { db } from '~/server/db/prisma';
 import {
   USER_SELECT,
   AUTH_CRDENTIALS_USER_SELECT,
-} from '~/services/users/user.selector';
+} from '~/services/users/users.selector';
 import { Prisma } from '@prisma/client';
+import type { AuthFormData } from './users.input';
 
 export class UserService {
+  // 유저 생성
   async createItem(
     data: Prisma.XOR<Prisma.UserCreateInput, Prisma.UserUncheckedCreateInput>,
   ) {
@@ -17,6 +19,7 @@ export class UserService {
     });
   }
 
+  // 유저 아이디로 조회
   async getItem(userId: string) {
     const data = await db.user.findUnique({
       where: {
@@ -27,6 +30,7 @@ export class UserService {
     return data;
   }
 
+  // 유저 이름으로 조회
   async getItemByUsername(username: string) {
     const data = await db.user.findUnique({
       where: {
@@ -36,10 +40,8 @@ export class UserService {
     return data;
   }
 
-  async getAuthCredentials(credentials: {
-    username: string;
-    password: string;
-  }) {
+  // 인증된 유저 정보 조회
+  async getAuthCredentials(credentials: AuthFormData) {
     const user = await db.user.findUnique({
       where: {
         username: credentials.username,

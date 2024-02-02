@@ -17,7 +17,7 @@ export const env = createEnv({
       process.env.VERCEL ? z.string() : z.string().url(),
     ),
     NEXTAUTH_SECRET: z.string().min(1),
-    AUTH_SECRET: z.string().min(1),
+    // AUTH_SECRET: z.string().min(1),
     AWS_SST_NAME:
       process.env.NODE_ENV === 'production'
         ? z.string().min(1)

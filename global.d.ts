@@ -19,12 +19,8 @@ declare global {
       AWS_S3_BUCKET: string;
       AWS_CLOUD_FRONT_DISTRIBUTION_ID: string;
 
-      NEXT_PUBLIC_SITE_URL: string;
-      NEXT_PUBLIC_API_HOST: string;
-      NEXT_PUBLIC_GA_TRACKING_ID: string;
-      NEXT_PUBLIC_SENTRY_DSN: string;
-      NEXT_PUBLIC_DEPLOY_GROUP: 'local' | 'development' | 'production';
-      NEXT_PUBLIC_ROOT_DOMAIN: string;
+      SITE_URL: string;
+      API_PREFIX: string;
 
       GITHUB_CLIENT_ID: string;
       GITHUB_CLIENT_SECRET: string;
