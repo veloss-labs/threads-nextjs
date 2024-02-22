@@ -20,6 +20,9 @@ dependencies:
   '@dicebear/core':
     specifier: ^7.0.4
     version: 7.0.4
+  '@epic-web/remember':
+    specifier: ^1.0.2
+    version: 1.0.2
   '@hookform/resolvers':
     specifier: ^3.3.4
     version: 3.3.4(react-hook-form@7.50.1)
@@ -2182,6 +2185,10 @@ packages:
       lru-cache: 6.0.0
       tslib: 2.6.2
     dev: true
+
+  /@epic-web/remember@1.0.2:
+    resolution: {integrity: sha512-K7DcGoRPqVkjVhPEMQzqw7W/c3hq/3LuiI74he6SkXwR6A49aUmXpxmdb6o+NldY4FFtG42U7nL8PrqNGRxXuQ==}
+    dev: false
 
   /@esbuild/aix-ppc64@0.19.12:
     resolution: {integrity: sha512-bmoCYyWdEL3wDQIVbcyzRyeKLgk2WtWLTWz1ZIAZF/EGbNOwSA6ew3PftJ1PqMiOOGu0OyFMzG53L0zqIpPeNA==}

@@ -6,9 +6,14 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import getQueryClient from '~/services/query/get-query-client';
 import { QUERIES_KEY } from '~/constants/constants';
 import { auth } from '~/services/auth';
+import { api } from '~/services/trpc/server';
 
 export default async function Pages() {
   const session = await auth();
+
+  const result = await api.threads.getThreads();
+
+  console.log('result', result);
 
   const queryClient = getQueryClient();
 
