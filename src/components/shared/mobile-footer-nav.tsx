@@ -53,8 +53,8 @@ MobileFooterNav.Link = function Item({ item }: ItemProps) {
     segment === null && href === '/'
       ? true
       : segment && href.startsWith(`/${segment}`)
-      ? true
-      : false;
+        ? true
+        : false;
 
   return (
     <Link

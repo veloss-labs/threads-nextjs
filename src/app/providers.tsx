@@ -1,22 +1,19 @@
 'use client';
 import { SessionProvider } from 'next-auth/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { useState } from 'react';
-import { AppProvider } from '~/libs/providers/app';
 import { ThemeProvider } from 'next-themes';
-import { type ThemeProviderProps } from 'next-themes/dist/types';
+import type { Session } from 'next-auth';
+import { TRPCReactProvider } from '~/services/trpc/react';
 
 interface Props {
   children: React.ReactNode;
+  session?: Session | null;
 }
 
-export function Providers({ children }: Props) {
-  const [queryClient] = useState(() => new QueryClient());
-
+export function Providers({ children, session }: Props) {
+  console.log('session', session);
   return (
-    <SessionProvider>
-      <QueryClientProvider client={queryClient}>
+    <SessionProvider session={session}>
+      <TRPCReactProvider>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -24,8 +21,7 @@ export function Providers({ children }: Props) {
         >
           {children}
         </ThemeProvider>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
+      </TRPCReactProvider>
     </SessionProvider>
   );
 }

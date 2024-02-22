@@ -94,7 +94,11 @@ export default function ThreadsForm({
   return (
     <>
       <div className="flex items-center space-x-4">
-        <Avatars src={data?.user?.image} fallback={'T'} alt="thumbnail" />
+        <Avatars
+          src={data?.user?.image ?? undefined}
+          fallback={'T'}
+          alt="thumbnail"
+        />
         <div>
           <p className="text-sm font-medium leading-none">
             {data?.user?.username}

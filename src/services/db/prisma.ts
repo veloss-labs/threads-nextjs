@@ -1,6 +1,6 @@
 'server-only';
 import { PrismaClient } from '@prisma/client';
-import { env } from '../../../env.mjs';
+import { env } from '../../app/env';
 
 declare global {
   // eslint-disable-next-line no-var

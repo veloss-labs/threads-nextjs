@@ -1,5 +1,5 @@
 import '~/assets/css/globals.css';
-import { env } from 'env.mjs';
+import { env } from './env';
 import { cache } from 'react';
 import { Inter as FontSans } from 'next/font/google';
 import { headers } from 'next/headers';
@@ -9,6 +9,7 @@ import { cn } from '~/utils/utils';
 import { getHeaderInDomainInfo } from '~/utils/url';
 import { SITE_CONFIG, PAGE_ENDPOINTS } from '~/constants/constants';
 import type { Metadata } from 'next';
+import { auth } from '~/services/auth';
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -73,6 +74,7 @@ interface RoutesProps {
 export default async function Layout(props: RoutesProps) {
   const headersList = await getHeaders();
   const info = getHeaderInDomainInfo(headersList);
+  const session = await auth();
   return (
     <html lang="ko" dir="ltr" suppressHydrationWarning>
       <head>
@@ -106,7 +108,7 @@ export default async function Layout(props: RoutesProps) {
             window.__DOMAIN_INFO__ = ${JSON.stringify(info)}`,
           }}
         />
-        <Providers>
+        <Providers session={session}>
           {props.children}
           {props.modal}
         </Providers>

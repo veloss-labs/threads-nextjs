@@ -1,5 +1,5 @@
 'server-only';
-import { db } from '~/server/db/prisma';
+import { db } from '~/services/db/prisma';
 import { isString } from '~/utils/assertion';
 import {
   THREADS_SELECT,

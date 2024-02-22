@@ -1,15 +1,14 @@
 import React from 'react';
 import ThreadLikesList from '~/components/shared/thread-likes-list';
-import ThreadsInput from '~/components/write/threads-input';
 import { threadService } from '~/services/threads/threads.server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import getQueryClient from '~/services/query/get-query-client';
 import { QUERIES_KEY } from '~/constants/constants';
-import { getSession } from '~/services/auth';
+import { auth } from '~/services/auth';
 import { notFound } from 'next/navigation';
 
 export default async function Pages() {
-  const session = await getSession();
+  const session = await auth();
   if (!session) {
     notFound();
   }

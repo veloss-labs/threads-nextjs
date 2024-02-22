@@ -1,7 +1,7 @@
 'server-only';
 import omit from 'lodash-es/omit';
 import { generateHash, secureCompare } from '~/server/utils/password';
-import { db } from '~/server/db/prisma';
+import { db } from '~/services/db/prisma';
 import {
   USER_SELECT,
   AUTH_CRDENTIALS_USER_SELECT,

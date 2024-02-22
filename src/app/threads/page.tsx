@@ -6,7 +6,7 @@ export default function Page() {
   return (
     <div className="container max-w-3xl space-y-6 px-4 py-6 lg:py-10">
       <ThreadsTitle />
-      <ThreadsForm />
+      <ThreadsForm type="thread" />
     </div>
   );
 }

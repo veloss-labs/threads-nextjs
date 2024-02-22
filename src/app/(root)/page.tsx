@@ -5,10 +5,10 @@ import { threadService } from '~/services/threads/threads.server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import getQueryClient from '~/services/query/get-query-client';
 import { QUERIES_KEY } from '~/constants/constants';
-import { getSession } from '~/services/auth';
+import { auth } from '~/services/auth';
 
 export default async function Pages() {
-  // const session = await getSession();
+  const session = await auth();
 
   const queryClient = getQueryClient();
 
@@ -21,7 +21,7 @@ export default async function Pages() {
           limit: 10,
           type: 'thread',
         },
-        // session?.user.id,
+        session?.user.id,
       );
     },
   });

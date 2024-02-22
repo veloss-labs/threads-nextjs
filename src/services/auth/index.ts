@@ -1,17 +1,43 @@
 'server-only';
-import NextAuth from 'next-auth';
+import NextAuth, { type User } from 'next-auth';
+import { type DefaultJWT } from 'next-auth/jwt';
 import GitHub from 'next-auth/providers/github';
 import Credentials from 'next-auth/providers/credentials';
-import { env } from 'env.mjs';
+import { env } from '~/app/env';
 import { userService } from '~/services/users/users.service';
 import { authFormSchema } from '~/services/users/users.input';
 import { PrismaAdapter } from '@auth/prisma-adapter';
-import { Prisma } from '@prisma/client';
+import {
+  Prisma,
+  type User as UserSchema,
+  type UserProfile as UserProfileSchema,
+} from '@prisma/client';
 import { PAGE_ENDPOINTS } from '~/constants/constants';
 import { NextResponse } from 'next/server';
 
+declare module 'next-auth' {
+  interface Session {
+    user: {
+      id: string;
+      username: string | null;
+      profile: Omit<UserProfileSchema, 'bio'> | null;
+    } & Omit<User, 'id'>;
+  }
+}
+
+declare module 'next-auth/jwt' {
+  /** Returned by the `jwt` callback and `getToken`, when using JWT sessions */
+  interface JWT extends DefaultJWT {
+    sub: string;
+    user: Pick<UserSchema, 'id' | 'username' | 'name' | 'image' | 'email'> & {
+      profile?: Omit<UserProfileSchema, 'bio'>;
+    };
+  }
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  secret: env.NEXTAUTH_SECRET,
+  secret: env.AUTH_SECRET,
+  basePath: '/api/auth',
   adapter: PrismaAdapter(Prisma),
   providers: [
     GitHub({
@@ -61,22 +87,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   session: { strategy: 'jwt' },
   callbacks: {
-    async jwt({ token, user, ...rest }) {
+    async jwt({ token, user }) {
       if (user) {
         token.user = user as any;
       }
       return token;
     },
-    // @ts-expect-error - This is a valid callback
-    session: ({ session, token, ...opts }) => {
-      // console.log('session', { session, token, opts });
+    session: ({ session, token }) => {
       session.user = {
         ...session.user,
         id: token.sub,
-        // @ts-expect-error - This is a valid callback
         username: token?.user?.username,
-        emailVerified: token?.user?.emailVerified || false,
-        profile: token?.user?.profile || {},
+        profile: token?.user?.profile ?? null,
       };
       return session;
     },

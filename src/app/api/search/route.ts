@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSession } from '~/services/auth';
+import { auth } from '~/services/auth';
 import { searchService } from '~/services/search/search.server';
 import * as z from 'zod';
 import { PrismaClientValidationError } from '@prisma/client/runtime/library';
@@ -13,7 +13,7 @@ const searchParamsSchema = z.object({
 
 export async function GET(request: Request) {
   try {
-    const session = await getSession();
+    const session = await auth();
     if (!session) {
       return new Response('Unauthorized', { status: 403 });
     }

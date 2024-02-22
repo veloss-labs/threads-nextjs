@@ -54,8 +54,8 @@ export class FetchService {
     const _baseURL = _prefix
       ? new URL(_prefix, this.baseURL)
       : this.baseURL
-      ? new URL(this.baseURL)
-      : undefined;
+        ? new URL(this.baseURL)
+        : undefined;
 
     if (!_baseURL) {
       throw new Error('baseURL is undefined');
