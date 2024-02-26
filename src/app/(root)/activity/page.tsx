@@ -1,6 +1,6 @@
 import React from 'react';
 import ThreadLikesList from '~/components/shared/thread-likes-list';
-import { threadService } from '~/services/threads/threads.server';
+import { threadService } from '~/services/threads/threads.service';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import getQueryClient from '~/services/query/get-query-client';
 import { QUERIES_KEY } from '~/constants/constants';

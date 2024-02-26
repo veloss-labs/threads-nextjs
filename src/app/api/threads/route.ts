@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 // import { getSession } from '~/services/auth';
-import { threadService } from '~/services/threads/threads.server';
+import { threadService } from '~/services/threads/threads.service';
 import * as z from 'zod';
 import { PrismaClientValidationError } from '@prisma/client/runtime/library';
 

@@ -10,7 +10,6 @@ interface Props {
 }
 
 export function Providers({ children, session }: Props) {
-  console.log('session', session);
   return (
     <SessionProvider session={session}>
       <TRPCReactProvider>

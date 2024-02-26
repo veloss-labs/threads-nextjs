@@ -1,7 +1,7 @@
 'use server';
 import { RESULT_CODE } from '~/constants/constants';
 import { getSession } from '~/services/auth';
-import { threadService } from '~/services/threads/threads.server';
+import { threadService } from '~/services/threads/threads.service';
 
 type Result = {
   resultCode: number;

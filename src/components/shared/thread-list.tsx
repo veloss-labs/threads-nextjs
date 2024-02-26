@@ -1,175 +1,129 @@
 'use client';
-import { useInfiniteQuery } from '@tanstack/react-query';
-import React, { useRef, useLayoutEffect, useCallback, useMemo } from 'react';
-import last from 'lodash-es/last';
-import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso';
+import React, { useRef, useLayoutEffect, useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import ThreadItem from '~/components/shared/thread-item';
-import { QUERIES_KEY } from '~/constants/constants';
-import { getThreadsApi } from '~/services/threads/threads.api';
-import useBeforeUnload from '~/libs/hooks/useBeforeUnload';
 import useIsHydrating from '~/libs/hooks/useIsHydrating';
-import { isBrowser } from '~/libs/browser/dom';
-import { isEmpty } from '~/utils/assertion';
-import { KeyProvider } from '~/libs/providers/key';
+import { getTargetElement, isBrowser } from '~/libs/browser/dom';
+import { api } from '~/services/trpc/react';
+
+import { useWindowVirtualizer } from '@tanstack/react-virtual';
 
 const useSSRLayoutEffect = !isBrowser ? () => {} : useLayoutEffect;
 
 interface ThreadListProps {
-  type: 'root' | 'owner' | 'comment' | 'repost';
+  totalCount?: number;
   userId?: string;
+  initialData?: any;
 }
 
-type Cache = {
-  top: number;
-  pages: string[];
-};
+const CLIENT_LIMIT_SIZE = 30;
+const CLIENT_DATA_OVERSCAN = 10;
 
-export default function ThreadList({ userId, type = 'root' }: ThreadListProps) {
-  const $virtuoso = useRef<VirtuosoHandle>(null);
-  const $cache = useRef<Cache | null>(null);
+const getCursorLimit = (searchParams: URLSearchParams) => ({
+  start: Number(searchParams.get('start') || '0'),
+  cursor: searchParams.get('cursor') || null,
+  limit: Number(searchParams.get('limit') || CLIENT_LIMIT_SIZE.toString()),
+});
 
-  const key = useMemo(() => {
-    return `@threads::scroll::${type}`;
-  }, [type]);
-
-  const getCache = useCallback(() => {
-    return $cache.current;
-  }, []);
-
-  const setCache = useCallback((data: Cache | null) => {
-    $cache.current = data;
-  }, []);
-
+export default function ThreadList({ userId, initialData }: ThreadListProps) {
+  const total = initialData?.totalCount ?? 0;
+  const seachParams = useSearchParams();
   const hydrating = useIsHydrating('[data-hydrating-signal]');
 
-  const queryKey = useMemo(() => {
-    if (userId) {
-      if (type === 'owner') {
-        return QUERIES_KEY.threads.owners(userId);
-      }
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    api.threads.getThreads.useInfiniteQuery(
+      {
+        userId,
+      },
+      {
+        initialData: () => {
+          if (initialData) {
+            return {
+              pageParams: [undefined],
+              pages: [initialData],
+            };
+          }
+        },
+        getNextPageParam: (lastPage) => {
+          return lastPage?.hasNextPage && lastPage?.endCursor
+            ? lastPage?.endCursor
+            : null;
+        },
+      },
+    );
 
-      if (type === 'comment') {
-        return QUERIES_KEY.threads.comments(userId);
-      }
+  const flatList = data?.pages?.map((page) => page?.list).flat() ?? [];
 
-      if (type === 'repost') {
-        return QUERIES_KEY.threads.reposts(userId);
-      }
-    }
+  const { start, cursor, limit } = getCursorLimit(seachParams);
+  const [initialStart] = useState(() => start);
+  const isMountedRef = useRef(false);
 
-    return QUERIES_KEY.threads.root;
-  }, [userId, type]);
+  const $list = useRef<HTMLDivElement>(null);
 
-  const { data, fetchNextPage } = useInfiniteQuery({
-    queryKey: queryKey,
-    queryFn: async ({ pageParam }) => {
-      return await getThreadsApi({
-        ...(userId ? { userId: userId } : {}),
-        ...(type === 'comment' ? { type: 'comment' } : {}),
-        ...(type === 'repost' ? { type: 'repost' } : {}),
-        ...(type === 'root' ? { type: 'thread' } : {}),
-        limit: 10,
-        cursor: pageParam ? pageParam : undefined,
-      });
-    },
-    initialPageParam: null as string | null,
-    getNextPageParam: (lastPage) => {
-      return lastPage?.hasNextPage && lastPage?.endCursor
-        ? lastPage?.endCursor
-        : null;
-    },
+  const rowVirtualizer = useWindowVirtualizer({
+    count: total,
+    estimateSize: () => 250,
+    overscan: CLIENT_DATA_OVERSCAN,
+    scrollMargin: getTargetElement($list)?.offsetTop ?? 0,
   });
 
-  const list = data?.pages?.map((page) => page?.list).flat() ?? [];
+  useEffect(() => {
+    const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse();
 
-  const loadMore = (index: number) => {
-    if (index <= 0) return;
+    if (!lastItem) {
+      return;
+    }
 
-    const lastData = last(data?.pages ?? []);
-
-    if (lastData?.endCursor && lastData?.hasNextPage) {
+    if (
+      lastItem.index >= flatList.length - 1 &&
+      hasNextPage &&
+      !isFetchingNextPage
+    ) {
+      console.log('fetchNextPage');
       fetchNextPage();
     }
-  };
-
-  useBeforeUnload(() => {
-    const $api = $virtuoso.current;
-    if (!$api) return;
-    $api.getState((state) => {
-      sessionStorage.setItem(
-        key,
-        JSON.stringify({
-          top: state.scrollTop,
-          pages: data?.pages
-            ?.filter((page) => page?.endCursor)
-            ?.map((page) => page.endCursor)
-            ?.filter(Boolean),
-        }),
-      );
-    });
-  });
-
-  useSSRLayoutEffect(() => {
-    if (hydrating) {
-      const _data = JSON.parse(sessionStorage.getItem(key) || '{}') as Cache;
-      if (_data) setCache(_data);
-    }
-    return () => {
-      sessionStorage.removeItem(key);
-    };
-  }, [hydrating]);
-
-  const fetchScrollRestoration = async () => {
-    const _data = getCache();
-    if (_data && !isEmpty(_data)) {
-      const _pages = data?.pages ?? [];
-      const currentCursor = _pages.at(_pages.length - 1)?.endCursor;
-      const _cursorIndex = _data.pages.findIndex(
-        (page) => page === currentCursor,
-      );
-      const _pagesAfterCursor = _data.pages.slice(_cursorIndex + 1);
-      for (const page of _pagesAfterCursor) {
-        await fetchNextPage();
-      }
-      setCache(null);
-      $virtuoso.current?.scrollTo({
-        top: _data.top,
-        behavior: 'smooth',
-      });
-    }
-  };
-
-  useSSRLayoutEffect(() => {
-    if (hydrating) fetchScrollRestoration();
-  }, [hydrating]);
-
-  const lastItem = last(data?.pages ?? []);
+  }, [
+    hasNextPage,
+    fetchNextPage,
+    flatList.length,
+    isFetchingNextPage,
+    rowVirtualizer.getVirtualItems(),
+  ]);
 
   return (
-    <KeyProvider queryKey={queryKey}>
-      <Virtuoso
-        ref={$virtuoso}
-        data-hydrating-signal
-        useWindowScroll
-        style={{ height: '100%' }}
-        data={list}
-        totalCount={lastItem?.totalCount ?? 0}
-        computeItemKey={(index, item) => {
+    <div ref={$list}>
+      <div className="relative w-full">
+        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+          const isLoaderRow = virtualRow.index > flatList.length - 1;
+          const item = flatList.at(virtualRow.index);
           if (!item) {
-            return `${type}-threads-${index}`;
+            return null;
           }
-          return `${type}-threads-${item.id}-${index}`;
-        }}
-        overscan={10}
-        initialItemCount={list.length - 1}
-        itemContent={(_, item) => {
-          return <ThreadItem item={item} />;
-        }}
-        components={{
-          Footer: () => <div className="h-20"></div>,
-        }}
-        endReached={loadMore}
-      />
-    </KeyProvider>
+
+          if (isLoaderRow) {
+            return (
+              <div
+                key={`thrads:${item.id}:${item.type}`}
+                style={{
+                  height: virtualRow.size,
+                  position: 'absolute',
+                  top: virtualRow.start,
+                  left: 0,
+                  right: 0,
+                }}
+              >
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-gray-500">Loading...</div>
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <ThreadItem key={`thrads:${item.id}:${item.type}`} item={item} />
+          );
+        })}
+      </div>
+    </div>
   );
 }

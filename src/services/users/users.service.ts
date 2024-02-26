@@ -2,12 +2,11 @@
 import omit from 'lodash-es/omit';
 import { generateHash, secureCompare } from '~/server/utils/password';
 import { db } from '~/services/db/prisma';
-import {
-  USER_SELECT,
-  AUTH_CRDENTIALS_USER_SELECT,
-} from '~/services/users/users.selector';
+import { getUserSelector } from '~/services/db/selectors/users';
+import { AUTH_CRDENTIALS_USER_SELECT } from '~/services/db/selectors/auth';
 import { Prisma } from '@prisma/client';
 import type { AuthFormData } from './users.input';
+import { remember } from '@epic-web/remember';
 
 export class UserService {
   // 유저 생성
@@ -25,7 +24,7 @@ export class UserService {
       where: {
         id: userId,
       },
-      select: USER_SELECT,
+      select: getUserSelector(),
     });
     return data;
   }
@@ -68,4 +67,4 @@ export class UserService {
   }
 }
 
-export const userService = new UserService();
+export const userService = remember('userService', () => new UserService());
