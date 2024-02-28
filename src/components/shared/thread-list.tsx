@@ -1,19 +1,16 @@
 'use client';
-import React, { useRef, useLayoutEffect, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ThreadItem from '~/components/shared/thread-item';
 import useIsHydrating from '~/libs/hooks/useIsHydrating';
-import { getTargetElement, isBrowser } from '~/libs/browser/dom';
+import { getTargetElement } from '~/libs/browser/dom';
 import { api } from '~/services/trpc/react';
-
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
-
-const useSSRLayoutEffect = !isBrowser ? () => {} : useLayoutEffect;
 
 interface ThreadListProps {
   totalCount?: number;
-  userId?: string;
   initialData?: any;
+  userId?: string;
 }
 
 const CLIENT_LIMIT_SIZE = 30;
@@ -25,7 +22,7 @@ const getCursorLimit = (searchParams: URLSearchParams) => ({
   limit: Number(searchParams.get('limit') || CLIENT_LIMIT_SIZE.toString()),
 });
 
-export default function ThreadList({ userId, initialData }: ThreadListProps) {
+export default function ThreadList({ initialData, userId }: ThreadListProps) {
   const total = initialData?.totalCount ?? 0;
   const seachParams = useSearchParams();
   const hydrating = useIsHydrating('[data-hydrating-signal]');
@@ -67,8 +64,10 @@ export default function ThreadList({ userId, initialData }: ThreadListProps) {
     scrollMargin: getTargetElement($list)?.offsetTop ?? 0,
   });
 
+  const virtualizerList = rowVirtualizer.getVirtualItems();
+
   useEffect(() => {
-    const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse();
+    const [lastItem] = [...virtualizerList].reverse();
 
     if (!lastItem) {
       return;
@@ -82,18 +81,19 @@ export default function ThreadList({ userId, initialData }: ThreadListProps) {
       console.log('fetchNextPage');
       fetchNextPage();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     hasNextPage,
     fetchNextPage,
     flatList.length,
     isFetchingNextPage,
-    rowVirtualizer.getVirtualItems(),
+    virtualizerList,
   ]);
 
   return (
     <div ref={$list}>
       <div className="relative w-full">
-        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+        {virtualizerList.map((virtualRow) => {
           const isLoaderRow = virtualRow.index > flatList.length - 1;
           const item = flatList.at(virtualRow.index);
           if (!item) {
@@ -103,7 +103,7 @@ export default function ThreadList({ userId, initialData }: ThreadListProps) {
           if (isLoaderRow) {
             return (
               <div
-                key={`thrads:${item.id}:${item.type}`}
+                key={`items:loading:${item.id}:${item.type}`}
                 style={{
                   height: virtualRow.size,
                   position: 'absolute',
@@ -112,7 +112,7 @@ export default function ThreadList({ userId, initialData }: ThreadListProps) {
                   right: 0,
                 }}
               >
-                <div className="flex items-center justify-center h-full">
+                <div className="flex h-full items-center justify-center">
                   <div className="text-gray-500">Loading...</div>
                 </div>
               </div>
@@ -120,7 +120,7 @@ export default function ThreadList({ userId, initialData }: ThreadListProps) {
           }
 
           return (
-            <ThreadItem key={`thrads:${item.id}:${item.type}`} item={item} />
+            <ThreadItem key={`items:${item.id}:${item.type}`} item={item} />
           );
         })}
       </div>

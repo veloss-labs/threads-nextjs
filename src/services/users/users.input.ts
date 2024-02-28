@@ -6,6 +6,10 @@ export const authFormSchema = z.object({
   password: z.string().min(6, '비밀번호는 6글자 이상이어야 합니다.'),
 });
 
+export const userIdSchema = z.object({
+  userId: z.string(),
+});
+
 export const authResultSchema = z
   .object({
     ok: z.boolean(),
@@ -19,3 +23,5 @@ export const authResultSchema = z
 export type AuthFormData = z.infer<typeof authFormSchema>;
 
 export type AuthResult = z.infer<typeof authResultSchema>;
+
+export type UserIdInput = z.infer<typeof userIdSchema>;

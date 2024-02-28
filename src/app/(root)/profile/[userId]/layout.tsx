@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation';
 import React from 'react';
 import ProfileHeader from '~/components/profile/profile-header';
-import { userService } from '~/services/users/users.service';
 import ProfileTabsList from '~/components/profile/profile-tabs-list';
+import { api } from '~/services/trpc/server';
 
 interface Props {
   children: React.ReactNode;
@@ -23,7 +23,7 @@ export default async function Layout({
     notFound();
   }
 
-  const data = await userService.getItem(params.userId);
+  const data = await api.users.getUser({ userId: params.userId });
   if (!data) {
     notFound();
   }

@@ -18,9 +18,9 @@ export default function SearchInput({ defaultValue }: SearchInputProps) {
       const searchParams = new URLSearchParams(window.location.search);
 
       if (e.target.value) {
-        searchParams.set('q', e.target.value);
+        searchParams.set('keyword', e.target.value);
       } else {
-        searchParams.delete('q');
+        searchParams.delete('keyword');
       }
 
       startTransition(() => {
@@ -34,6 +34,7 @@ export default function SearchInput({ defaultValue }: SearchInputProps) {
     <div className="flex w-full flex-col">
       <Input
         type="search"
+        name="keyword"
         defaultValue={defaultValue}
         placeholder="검색"
         onChange={onChange}

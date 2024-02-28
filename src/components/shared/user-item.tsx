@@ -1,18 +1,14 @@
-import { useQueryClient } from '@tanstack/react-query';
 import React, { useTransition } from 'react';
 import Avatars from '~/components/shared/avatars';
 import { Button } from '~/components/ui/button';
-import { useKeyContext } from '~/libs/providers/key';
-import type { SearchItemSchema } from '~/services/search/search.model';
+import { UserSelectSchema } from '~/services/db/selectors/users';
 
 interface UserItemProps {
-  item: SearchItemSchema;
+  item: UserSelectSchema;
 }
 
 export default function UserItem({ item }: UserItemProps) {
   const [isPending, startTransition] = useTransition();
-  const queryClient = useQueryClient();
-  const { queryKey } = useKeyContext();
 
   const onClickFollow = () => {
     // TODO: follow

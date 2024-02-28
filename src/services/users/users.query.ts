@@ -6,16 +6,11 @@ export const cursorPaginationQuerySchema = z.object({
   cursor: z.string().optional(),
 });
 
-export type CursorPaginationQuerySchema = z.infer<
-  typeof cursorPaginationQuerySchema
->;
-
 export const listQuerySchema = z
   .object({
     keyword: z.string().optional(),
-    userId: z.string().optional(),
   })
   .merge(cursorPaginationQuerySchema)
   .optional();
 
-export type ThreadListQuerySchema = z.infer<typeof listQuerySchema>;
+export type UserListQuerySchema = z.infer<typeof listQuerySchema>;

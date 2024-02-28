@@ -4,7 +4,7 @@ import {
   PAGE_ENDPOINTS,
   STATUS_CODE,
 } from '~/constants/constants';
-import { generateHash, generateSalt } from '~/server/utils/password';
+import { generateHash, generateSalt } from '~/utils/password';
 import { userService } from '~/services/users/users.service';
 import { generatorName } from '~/utils/utils';
 import { signIn } from '~/services/auth';
