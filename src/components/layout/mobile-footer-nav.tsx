@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import { cn } from '~/utils/utils';
 import { NAV_CONFIG, NavItem } from '~/constants/nav';
 import { PAGE_ENDPOINTS } from '~/constants/constants';
-import SkipRenderOnClient from './skip-render-on-client';
+import SkipRenderOnClient from '../shared/skip-render-on-client';
 import { useMediaQuery } from '~/libs/hooks/useMediaQuery';
 
 export default function MobileFooterNav() {

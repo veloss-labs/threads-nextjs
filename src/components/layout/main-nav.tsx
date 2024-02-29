@@ -16,7 +16,6 @@ import {
 } from '~/components/ui/dropdown-menu';
 import { signOut } from 'next-auth/react';
 import { useTheme } from 'next-themes';
-import SkipRenderOnClient from './skip-render-on-client';
 
 export default function MainNav() {
   return (
@@ -144,16 +143,10 @@ MainNav.Menu = function Item() {
 };
 
 MainNav.Logo = function Item() {
-  const { systemTheme } = useTheme();
-
   return (
     <Link href={PAGE_ENDPOINTS.ROOT} className="items-center space-x-2 md:flex">
-      <SkipRenderOnClient shouldRenderOnClient={() => systemTheme === 'dark'}>
-        <Icons.threadsWhite className="hidden h-8 w-8 dark:block" />
-      </SkipRenderOnClient>
-      <SkipRenderOnClient shouldRenderOnClient={() => systemTheme === 'light'}>
-        <Icons.threads className="block h-8 w-8 dark:hidden" />
-      </SkipRenderOnClient>
+      <Icons.threadsWhite className="hidden size-8 dark:block" />
+      <Icons.threads className="block size-8 dark:hidden" />
     </Link>
   );
 };

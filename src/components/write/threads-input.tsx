@@ -1,16 +1,18 @@
 'use client';
 import React, { useCallback } from 'react';
 import Avatars from '~/components/shared/avatars';
-import { useSession } from 'next-auth/react';
-import { Button } from '../ui/button';
+import { Button } from '~/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { PAGE_ENDPOINTS } from '~/constants/constants';
+import Link from 'next/link';
+import { type Session } from 'next-auth';
 
-export default function ThreadsInput() {
+interface ThreadsInputProps {
+  session: Session;
+}
+
+export default function ThreadsInput({ session }: ThreadsInputProps) {
   const router = useRouter();
-  const { data } = useSession();
-
-  const item = data?.user;
 
   const onClick = useCallback(() => {
     router.push(PAGE_ENDPOINTS.THREADS.ROOT);
@@ -20,11 +22,13 @@ export default function ThreadsInput() {
     <div className="hidden w-full border-b py-8 md:block">
       <div className="flex items-center justify-between space-x-4">
         <div className="flex flex-auto items-center space-x-4">
-          <Avatars
-            src={item?.image ?? undefined}
-            alt={`${item?.username} profile picture`}
-            fallback="T"
-          />
+          <Link href={PAGE_ENDPOINTS.MY_PAGE.ID(session.user.id)}>
+            <Avatars
+              src={undefined}
+              alt={`${session.user.username} profile picture`}
+              fallback="T"
+            />
+          </Link>
           <div className="w-full cursor-text" onClick={onClick}>
             <p className="text-base text-muted-foreground">
               스레드를 시작하세요....

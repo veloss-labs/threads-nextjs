@@ -4,7 +4,7 @@ import {
   protectedProcedure,
 } from '~/services/trpc/core/trpc';
 import {
-  cursorPaginationQuerySchema,
+  likeListQuerySchema,
   listQuerySchema,
 } from '~/services/threads/threads.query';
 import { threadService } from '~/services/threads/threads.service';
@@ -41,14 +41,14 @@ export const threadsRouter = createTRPCRouter({
       }
     }),
   getLikeThreads: protectedProcedure
-    .input(cursorPaginationQuerySchema)
+    .input(likeListQuerySchema)
     .query(async ({ input, ctx }) => {
       const userId = ctx.session.user.id;
 
       try {
         const [totalCount, list] = await Promise.all([
           threadService.likeCount(userId),
-          threadService.getLikeItems(input, userId),
+          threadService.getLikeItems(userId, input),
         ]);
 
         const endCursor = list.at(-1)?.id ?? null;

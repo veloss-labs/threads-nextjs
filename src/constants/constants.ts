@@ -36,6 +36,7 @@ export const ASSET_URL = {};
 
 export const PAGE_ENDPOINTS = {
   ROOT: '/',
+  FOLLOWING: '/following',
   AUTH: {
     SIGNIN: '/signin',
     SIGNUP: '/signup',

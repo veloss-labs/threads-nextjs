@@ -1,7 +1,7 @@
 'server-only';
 import { db } from '~/services/db/prisma';
 import type {
-  CursorPaginationQuerySchema,
+  LikeListQuerySchema,
   ThreadListQuerySchema,
 } from '~/services/threads/threads.query';
 import { getThreadsSelector } from '~/services/db/selectors/threads';
@@ -31,7 +31,7 @@ export class ThreadService {
     });
   }
 
-  getLikeItems(input: CursorPaginationQuerySchema, userId: string) {
+  getLikeItems(userId: string, input: LikeListQuerySchema) {
     return db.thread.findMany({
       where: {
         deleted: false,
