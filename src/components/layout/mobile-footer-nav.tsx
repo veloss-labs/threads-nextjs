@@ -14,7 +14,7 @@ export default function MobileFooterNav() {
   const isMobile = useMediaQuery('(max-width: 768px)', false);
   return (
     <SkipRenderOnClient shouldRenderOnClient={() => isMobile}>
-      <nav className="fixed bottom-0 z-40 flex w-full items-center justify-around border-t bg-white py-2 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 md:hidden">
+      <nav className="fixed bottom-0 z-40 flex w-full items-center justify-around border-t bg-white py-2 dark:border-slate-800 dark:bg-background dark:text-slate-300 md:hidden">
         {NAV_CONFIG.mainNav.map((item, index) => (
           <div key={index} className="relative w-max">
             <MobileFooterNav.Item item={item} />

@@ -1,11 +1,12 @@
 'use client';
-import React, { useCallback } from 'react';
+import React, { useCallback, useTransition } from 'react';
 import Avatars from '~/components/shared/avatars';
 import { Button } from '~/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { PAGE_ENDPOINTS } from '~/constants/constants';
 import Link from 'next/link';
 import { type Session } from 'next-auth';
+import { Icons } from '~/components/icons';
 
 interface ThreadsInputProps {
   session: Session;
@@ -13,9 +14,12 @@ interface ThreadsInputProps {
 
 export default function ThreadsInput({ session }: ThreadsInputProps) {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
   const onClick = useCallback(() => {
-    router.push(PAGE_ENDPOINTS.THREADS.ROOT);
+    startTransition(() => {
+      router.push(PAGE_ENDPOINTS.THREADS.ROOT);
+    });
   }, [router]);
 
   return (
@@ -35,7 +39,17 @@ export default function ThreadsInput({ session }: ThreadsInputProps) {
             </p>
           </div>
         </div>
-        <Button variant="default" className="ml-auto" size="sm" disabled>
+        <Button
+          type="button"
+          variant="default"
+          className="ml-auto"
+          size="sm"
+          disabled={isPending}
+          onClick={onClick}
+        >
+          {isPending && (
+            <Icons.rotateCcw className="mr-2 size-4 animate-spin" />
+          )}
           게시
         </Button>
       </div>

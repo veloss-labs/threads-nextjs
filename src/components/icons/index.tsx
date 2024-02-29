@@ -32,6 +32,7 @@ import {
   MoreHorizontal,
   Repeat,
   MessageSquare,
+  RotateCcw,
 } from 'lucide-react';
 
 export const Icons = {
@@ -64,6 +65,7 @@ export const Icons = {
   moreHorizontal: MoreHorizontal,
   repeat: Repeat,
   messageSquare: MessageSquare,
+  rotateCcw: RotateCcw,
   repostCheck: ({ ...props }: LucideProps) => (
     <svg
       aria-label="리포스트"

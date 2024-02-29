@@ -52,7 +52,7 @@ export default function ThreadItem({ item }: ThreadItemProps) {
   // };
 
   return (
-    <Card className="m-3 mx-auto overflow-hidden rounded-none border-x-0 border-b border-t-0 shadow-none">
+    <Card className="m-3 mx-auto overflow-hidden rounded-none border-x-0 border-b border-t-0 shadow-none dark:bg-background">
       <div className="md:flex">
         <div className="md:shrink-0">
           <span className="size-[192px] rounded-md bg-muted object-cover md:w-48" />

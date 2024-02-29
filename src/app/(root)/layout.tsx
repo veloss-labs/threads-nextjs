@@ -13,5 +13,6 @@ export default async function Layout({ children }: Props) {
   if (!session) {
     redirect(PAGE_ENDPOINTS.AUTH.SIGNIN);
   }
+
   return <MainLayout>{children}</MainLayout>;
 }
