@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import Link from 'next/link';
-import { useSelectedLayoutSegment } from 'next/navigation';
+import { usePathname, useSelectedLayoutSegment } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { cn } from '~/utils/utils';
 import { NAV_CONFIG, NavItem } from '~/constants/nav';
@@ -47,14 +47,9 @@ interface ItemProps {
 }
 
 MobileFooterNav.Link = function Item({ item }: ItemProps) {
-  const segment = useSelectedLayoutSegment();
+  const pathname = usePathname();
   const href = item.href as string;
-  const isActive =
-    segment === null && href === '/'
-      ? true
-      : segment && href.startsWith(`/${segment}`)
-        ? true
-        : false;
+  const isActive = pathname === href ? true : false;
 
   return (
     <Link
@@ -76,27 +71,13 @@ MobileFooterNav.MyPage = function Item({ item }: ItemProps) {
   const segment = useSelectedLayoutSegment();
   const { data } = useSession();
 
-  if (!data || !data.user) {
-    return (
-      <Link
-        href={'#'}
-        className={cn(
-          'h-10 p-4 flex items-center text-lg font-medium transition-colors hover:bg-foreground/5 hover:rounded-md sm:text-sm',
-          'text-foreground/60',
-        )}
-      >
-        <item.icon />
-      </Link>
-    );
-  }
-
-  const href = PAGE_ENDPOINTS.MY_PAGE.ID(data.user.id);
+  const href = data ? PAGE_ENDPOINTS.MY_PAGE.ID(data.user.id) : '#';
 
   const isActive = segment && href.startsWith(`/${segment}`) ? true : false;
 
   return (
     <Link
-      href={item.disabled ? '#' : PAGE_ENDPOINTS.MY_PAGE.ID(data.user.id)}
+      href={item.disabled ? '#' : href}
       className={cn(
         'h-10 p-4 flex items-center text-lg font-medium transition-colors hover:bg-foreground/5 hover:rounded-md sm:text-sm',
         isActive ? 'text-foreground' : 'text-foreground/60',
