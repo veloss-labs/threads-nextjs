@@ -1,10 +1,14 @@
 import {
   createTRPCRouter,
   protectedProcedure,
+  publicProcedure,
 } from '~/services/trpc/core/trpc';
 
 export const authRouter = createTRPCRouter({
-  getSession: protectedProcedure.query(({ ctx }) => {
+  getRequireSession: protectedProcedure.query(({ ctx }) => {
+    return ctx.session;
+  }),
+  getSession: publicProcedure.query(({ ctx }) => {
     return ctx.session;
   }),
 });

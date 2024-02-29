@@ -6,7 +6,6 @@ import { Icons } from '~/components/icons';
 import { cn } from '~/utils/utils';
 import { NAV_CONFIG, NavItem } from '~/constants/nav';
 import { PAGE_ENDPOINTS } from '~/constants/constants';
-import { useSession } from 'next-auth/react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +15,7 @@ import {
 } from '~/components/ui/dropdown-menu';
 import { signOut } from 'next-auth/react';
 import { useTheme } from 'next-themes';
+import { api } from '~/services/trpc/react';
 
 export default function MainNav() {
   return (
@@ -77,7 +77,7 @@ MainNav.Link = function Item({ item }: ItemProps) {
 
 MainNav.MyPage = function Item({ item }: ItemProps) {
   const segment = useSelectedLayoutSegment();
-  const { data } = useSession();
+  const { data } = api.auth.getSession.useQuery();
 
   const href = data ? PAGE_ENDPOINTS.MY_PAGE.ID(data.user.id) : '#';
 

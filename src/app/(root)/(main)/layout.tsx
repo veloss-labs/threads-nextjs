@@ -9,7 +9,7 @@ interface Props {
 }
 
 export default async function Layout({ children }: Props) {
-  const session = await api.auth.getSession();
+  const session = await api.auth.getRequireSession();
   return (
     <>
       <MainTabs>

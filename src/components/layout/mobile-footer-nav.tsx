@@ -8,6 +8,7 @@ import { NAV_CONFIG, NavItem } from '~/constants/nav';
 import { PAGE_ENDPOINTS } from '~/constants/constants';
 import SkipRenderOnClient from '../shared/skip-render-on-client';
 import { useMediaQuery } from '~/libs/hooks/useMediaQuery';
+import { api } from '~/services/trpc/react';
 
 export default function MobileFooterNav() {
   const isMobile = useMediaQuery('(max-width: 768px)', false);
@@ -69,7 +70,7 @@ MobileFooterNav.Link = function Item({ item }: ItemProps) {
 
 MobileFooterNav.MyPage = function Item({ item }: ItemProps) {
   const segment = useSelectedLayoutSegment();
-  const { data } = useSession();
+  const { data } = api.auth.getSession.useQuery();
 
   const href = data ? PAGE_ENDPOINTS.MY_PAGE.ID(data.user.id) : '#';
 
