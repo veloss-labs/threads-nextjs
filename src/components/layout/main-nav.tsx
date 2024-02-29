@@ -41,6 +41,9 @@ interface ItemProps {
 
 MainNav.Item = function Item({ item }: ItemProps) {
   switch (item.type) {
+    case 'home': {
+      return <MainNav.Home item={item} />;
+    }
     case 'link': {
       return <MainNav.Link item={item} />;
     }
@@ -51,6 +54,34 @@ MainNav.Item = function Item({ item }: ItemProps) {
       return null;
     }
   }
+};
+
+MainNav.Home = function Item({ item }: ItemProps) {
+  const pathname = usePathname();
+
+  const relationHrefs = item.relationHrefs ?? [];
+  const relationIcons = item.relationIcons ?? [];
+
+  const href =
+    relationHrefs.find((href) => href === pathname) ?? PAGE_ENDPOINTS.ROOT;
+  const Icon =
+    href === PAGE_ENDPOINTS.FOLLOWING ? relationIcons.at(1) : item.icon;
+  const isActive = relationHrefs.includes(pathname);
+
+  return (
+    <Link
+      href={item.disabled ? '#' : href}
+      scroll={true}
+      replace={false}
+      className={cn(
+        'px-8 py-5 mx-[2px] my-1 flex items-center text-lg font-medium transition-colors hover:bg-foreground/5 hover:rounded-md sm:text-sm',
+        isActive ? 'text-foreground' : 'text-foreground/60',
+        item.disabled && 'cursor-not-allowed opacity-80',
+      )}
+    >
+      {Icon ? <Icon /> : <item.icon />}
+    </Link>
+  );
 };
 
 MainNav.Link = function Item({ item }: ItemProps) {

@@ -1,6 +1,5 @@
 import '~/assets/css/globals.css';
 import { env } from './env';
-import { cache } from 'react';
 import { Inter as FontSans } from 'next/font/google';
 import { headers } from 'next/headers';
 import localFont from 'next/font/local';
@@ -21,12 +20,8 @@ const fontHeading = localFont({
   variable: '--font-heading',
 });
 
-// Lazy load headers
-const getHeaders = cache(() => Promise.resolve(headers()));
-
 export async function generateMetadata(): Promise<Metadata> {
-  const headersList = await getHeaders();
-  const info = getHeaderInDomainInfo(headersList);
+  const info = getHeaderInDomainInfo(headers());
   const metadataBase = new URL(info.domainUrl);
   return {
     title: SITE_CONFIG.title,
@@ -72,8 +67,7 @@ interface RoutesProps {
 }
 
 export default async function Layout(props: RoutesProps) {
-  const headersList = await getHeaders();
-  const info = getHeaderInDomainInfo(headersList);
+  const info = getHeaderInDomainInfo(headers());
   const session = await auth();
   return (
     <html lang="ko" dir="ltr" suppressHydrationWarning>

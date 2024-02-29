@@ -2,7 +2,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname, useSelectedLayoutSegment } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { cn } from '~/utils/utils';
 import { NAV_CONFIG, NavItem } from '~/constants/nav';
 import { PAGE_ENDPOINTS } from '~/constants/constants';
@@ -31,6 +30,9 @@ interface ItemProps {
 
 MobileFooterNav.Item = function Item({ item }: ItemProps) {
   switch (item.type) {
+    case 'home': {
+      return <MobileFooterNav.Home item={item} />;
+    }
     case 'link': {
       return <MobileFooterNav.Link item={item} />;
     }
@@ -46,6 +48,34 @@ MobileFooterNav.Item = function Item({ item }: ItemProps) {
 interface ItemProps {
   item: NavItem;
 }
+
+MobileFooterNav.Home = function Item({ item }: ItemProps) {
+  const pathname = usePathname();
+
+  const relationHrefs = item.relationHrefs ?? [];
+  const relationIcons = item.relationIcons ?? [];
+
+  const href =
+    relationHrefs.find((href) => href === pathname) ?? PAGE_ENDPOINTS.ROOT;
+  const Icon =
+    href === PAGE_ENDPOINTS.FOLLOWING ? relationIcons.at(1) : item.icon;
+  const isActive = relationHrefs.includes(pathname);
+
+  return (
+    <Link
+      href={item.disabled ? '#' : href}
+      scroll={true}
+      replace={false}
+      className={cn(
+        'h-10 p-4 flex items-center text-lg font-medium transition-colors hover:bg-foreground/5 hover:rounded-md sm:text-sm',
+        isActive ? 'text-foreground' : 'text-foreground/60',
+        item.disabled && 'cursor-not-allowed opacity-80',
+      )}
+    >
+      {Icon ? <Icon /> : <item.icon />}
+    </Link>
+  );
+};
 
 MobileFooterNav.Link = function Item({ item }: ItemProps) {
   const pathname = usePathname();

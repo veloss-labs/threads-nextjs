@@ -66,7 +66,7 @@ export default function ThreadItem({ item }: ThreadItemProps) {
                 fallback="T"
               />
               <div className="ml-4 flex w-full flex-row">
-                <div>
+                <div className="space-y-1">
                   <div className="text-base font-semibold tracking-wide text-black dark:text-white">
                     {item?.user?.username}
                   </div>

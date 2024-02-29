@@ -6,6 +6,7 @@ import useIsHydrating from '~/libs/hooks/useIsHydrating';
 import { getTargetElement } from '~/libs/browser/dom';
 import { api } from '~/services/trpc/react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
+import SkeletonCard from '~/components/skeleton/card';
 
 interface ThreadListProps {
   totalCount?: number;
@@ -27,8 +28,8 @@ export default function ThreadList({ initialData, userId }: ThreadListProps) {
   const seachParams = useSearchParams();
   const hydrating = useIsHydrating('[data-hydrating-signal]');
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    api.threads.getThreads.useInfiniteQuery(
+  const [data, { fetchNextPage, hasNextPage, isFetchingNextPage }] =
+    api.threads.getThreads.useSuspenseInfiniteQuery(
       {
         userId,
       },
@@ -62,6 +63,10 @@ export default function ThreadList({ initialData, userId }: ThreadListProps) {
     estimateSize: () => 250,
     overscan: CLIENT_DATA_OVERSCAN,
     scrollMargin: getTargetElement($list)?.offsetTop ?? 0,
+    initialRect: {
+      width: 0,
+      height: 800,
+    },
   });
 
   const virtualizerList = rowVirtualizer.getVirtualItems();
@@ -101,21 +106,24 @@ export default function ThreadList({ initialData, userId }: ThreadListProps) {
           }
 
           if (isLoaderRow) {
+            // return (
+            //   <SkeletonCard
+            //     key={`items:loading:${item.id}:${item.type}`}
+            //     style={{
+            //       height: virtualRow.size,
+            //       position: 'absolute',
+            //       top: virtualRow.start,
+            //       left: 0,
+            //       right: 0,
+            //     }}
+            //   >
+            //     <div className="flex h-full items-center justify-center">
+            //       <div className="text-gray-500">Loading...</div>
+            //     </div>
+            //   </div>
+            // );
             return (
-              <div
-                key={`items:loading:${item.id}:${item.type}`}
-                style={{
-                  height: virtualRow.size,
-                  position: 'absolute',
-                  top: virtualRow.start,
-                  left: 0,
-                  right: 0,
-                }}
-              >
-                <div className="flex h-full items-center justify-center">
-                  <div className="text-gray-500">Loading...</div>
-                </div>
-              </div>
+              <SkeletonCard key={`items:loading:${item.id}:${item.type}`} />
             );
           }
 
