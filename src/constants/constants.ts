@@ -36,6 +36,7 @@ export const ASSET_URL = {};
 
 export const PAGE_ENDPOINTS = {
   ROOT: '/',
+  FOLLOWING: '/following',
   AUTH: {
     SIGNIN: '/signin',
     SIGNUP: '/signup',
@@ -51,6 +52,7 @@ export const PAGE_ENDPOINTS = {
 
 export const SITE_CONFIG = {
   title: 'Threads',
+  keywords: [],
   description:
     'Instagram의 새로운 텍스트 앱, Threads에서 더 많은 대화를 나누어보세요',
   ogImage: '/og/seo.png',
@@ -58,7 +60,7 @@ export const SITE_CONFIG = {
   apple57x57: '/icons/icon_57x57.png',
   apple180x180: '/icons/icon_180x180.png',
   apple256x256: '/icons/icon_256x256.png',
-  manifest: '/manifest.json',
+  manifest: '/manifest.webmanifest',
 };
 
 export const STATUS_CODE = {

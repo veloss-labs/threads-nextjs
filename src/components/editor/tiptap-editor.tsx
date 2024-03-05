@@ -45,6 +45,8 @@ const Tiptap = (props: ITipTapRichTextEditor) => {
     editorContentCustomClassNames,
   } = props;
 
+  console.log('value', value);
+
   const editor = useEditor({
     editable: editable ?? true,
     editorProps: TiptapEditorProps(setIsSubmitting, className),
@@ -97,7 +99,12 @@ const Tiptap = (props: ITipTapRichTextEditor) => {
     borderOnFocus ? 'focus:border border-custom-border-300' : 'focus:border-0'
   } ${customClassName}`;
 
-  if (!editor) return null;
+  console.log('editor', editor);
+
+  if (!editor) {
+    return <TiptapSkeleton />;
+  }
+
   editorRef.current = editor;
 
   return (
@@ -117,6 +124,16 @@ const Tiptap = (props: ITipTapRichTextEditor) => {
     </div>
   );
 };
+
+const TiptapSkeleton = () => (
+  <div className="flex max-h-[50px] animate-pulse flex-col space-y-4">
+    <div className="h-4 w-3/4 rounded bg-gray-200"></div>
+    <div className="space-y-2">
+      <div className="h-4 rounded bg-gray-200"></div>
+      <div className="h-4 w-5/6 rounded bg-gray-200"></div>
+    </div>
+  </div>
+);
 
 const TipTapEditor = forwardRef<ITipTapRichTextEditor, ITipTapRichTextEditor>(
   (props, ref) => <Tiptap {...props} forwardedRef={ref} />,

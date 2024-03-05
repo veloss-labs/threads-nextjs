@@ -21,6 +21,7 @@ import {
   SunMedium,
   Trash,
   Twitter,
+  ArrowLeftRight,
   User,
   X,
   Home,
@@ -31,6 +32,8 @@ import {
   MoreHorizontal,
   Repeat,
   MessageSquare,
+  RotateCcw,
+  Users,
 } from 'lucide-react';
 
 export const Icons = {
@@ -63,6 +66,8 @@ export const Icons = {
   moreHorizontal: MoreHorizontal,
   repeat: Repeat,
   messageSquare: MessageSquare,
+  rotateCcw: RotateCcw,
+  users: Users,
   repostCheck: ({ ...props }: LucideProps) => (
     <svg
       aria-label="리포스트"
@@ -118,5 +123,6 @@ export const Icons = {
     </svg>
   ),
   twitter: Twitter,
+  arrowLeftRight: ArrowLeftRight,
   check: Check,
 };

@@ -10,70 +10,63 @@ import {
 } from '~/components/ui/dropdown-menu';
 import { TipTapEditor } from '~/components/editor/tiptap-editor';
 import { cn, getDateFormatted } from '~/utils/utils';
-
-import type { ThreadItemSchema } from '~/services/threads/threads.model';
+import type { ThreadSelectSchema } from '~/services/db/selectors/threads';
 import { Icons } from '../icons';
 import { Button } from '../ui/button';
-import { useTransition } from 'react';
-import { repostThreadAction } from '~/server/actions/threads/threads.repost';
-import { likeThreadAction } from '~/server/actions/threads/threads.likes';
-import { useQueryClient } from '@tanstack/react-query';
-import { useKeyContext } from '~/libs/providers/key';
 
 interface ThreadItemProps {
-  item: ThreadItemSchema;
+  item: ThreadSelectSchema;
 }
 
 export default function ThreadItem({ item }: ThreadItemProps) {
-  const updateLikeFn = likeThreadAction.bind(null, {
-    threadId: item.id,
-    isLike: item.isLiked,
-  });
+  // const updateLikeFn = likeThreadAction.bind(null, {
+  //   threadId: item.id,
+  //   isLike: item.isLiked,
+  // });
 
-  const updateRepostFn = repostThreadAction.bind(null, {
-    threadId: item.id,
-  });
+  // const updateRepostFn = repostThreadAction.bind(null, {
+  //   threadId: item.id,
+  // });
 
   const date = item ? getDateFormatted(item.createdAt) : null;
-  const [isPending, startTransition] = useTransition();
-  const queryClient = useQueryClient();
-  const { queryKey } = useKeyContext();
+  // const [isPending, startTransition] = useTransition();
+  // const queryClient = useQueryClient();
+  // const { queryKey } = useKeyContext();
 
-  const onClickLike = async () => {
-    startTransition(async () => {
-      await updateLikeFn();
-      await queryClient.invalidateQueries({
-        queryKey,
-      });
-    });
-  };
+  // const onClickLike = async () => {
+  //   startTransition(async () => {
+  //     await updateLikeFn();
+  //     await queryClient.invalidateQueries({
+  //       queryKey,
+  //     });
+  //   });
+  // };
 
-  const onClickRepost = () => {
-    startTransition(async () => {
-      await updateRepostFn();
-      await queryClient.invalidateQueries({
-        queryKey,
-      });
-    });
-  };
+  // const onClickRepost = () => {
+  //   startTransition(async () => {
+  //     await updateRepostFn();
+  //     await queryClient.invalidateQueries({
+  //       queryKey,
+  //     });
+  //   });
+  // };
 
   return (
-    <Card className="m-3 mx-auto overflow-hidden rounded-none border-x-0 border-b border-t-0 shadow-none">
+    <Card className="m-3 mx-auto overflow-hidden rounded-none border-x-0 border-b border-t-0 shadow-none dark:bg-background">
       <div className="md:flex">
         <div className="md:shrink-0">
-          <span className="h-[192px] w-[192px] rounded-md bg-muted object-cover md:w-48" />
+          <span className="size-[192px] rounded-md bg-muted object-cover md:w-48" />
         </div>
         <div className="w-full py-2">
           <div className="flex items-center justify-between">
             <div className="flex w-full items-center">
               <Avatars
-                // src={item.user?.image ?? undefined}
                 src={undefined}
                 alt={`${item?.user?.username} profile picture`}
                 fallback="T"
               />
               <div className="ml-4 flex w-full flex-row">
-                <div>
+                <div className="space-y-1">
                   <div className="text-base font-semibold tracking-wide text-black dark:text-white">
                     {item?.user?.username}
                   </div>
@@ -91,7 +84,7 @@ export default function ThreadItem({ item }: ThreadItemProps) {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="link" size="icon" className="!mr-2">
-                        <Icons.moreHorizontal className="h-5 w-5" />
+                        <Icons.moreHorizontal className="size-5" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
@@ -113,7 +106,7 @@ export default function ThreadItem({ item }: ThreadItemProps) {
             </div>
           </div>
           <div className="py-4">
-            <TipTapEditor
+            {/* <TipTapEditor
               editable={false}
               debouncedUpdatesEnabled={false}
               name={`thraed-text-${item?.id}`}
@@ -123,7 +116,8 @@ export default function ThreadItem({ item }: ThreadItemProps) {
                 'prose prose-brand prose-headings:font-display font-default focus:outline-none',
               )}
               customClassName="p-0 mt-4"
-            />
+            /> */}
+            {item?.text}
           </div>
           <div className="flex items-center justify-end space-x-4 py-4">
             <div className="flex items-center space-x-1">
@@ -131,13 +125,13 @@ export default function ThreadItem({ item }: ThreadItemProps) {
                 <Icons.messageSquare className="h-4 w-4" />
               </Button> */}
 
-              <DropdownMenu>
+              {/* <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button size="sm" variant="link">
                     {item.isReposted ? (
-                      <Icons.repostCheck className="h-4 w-4" />
+                      <Icons.repostCheck className="size-4" />
                     ) : (
-                      <Icons.repeat className="h-4 w-4" />
+                      <Icons.repeat className="size-4" />
                     )}
                   </Button>
                 </DropdownMenuTrigger>
@@ -149,24 +143,24 @@ export default function ThreadItem({ item }: ThreadItemProps) {
                     )}
                   >
                     {isPending && (
-                      <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                      <Icons.spinner className="mr-2 size-4 animate-spin" />
                     )}
                     {item.isReposted ? '삭제' : '리포스트'}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>인용하기</DropdownMenuItem>
                 </DropdownMenuContent>
-              </DropdownMenu>
+              </DropdownMenu> */}
               <Button
                 size="sm"
                 variant="link"
-                onClick={onClickLike}
-                disabled={isPending}
+                // onClick={onClickLike}
+                // disabled={isPending}
               >
                 <Icons.heart
                   className={cn(
                     'h-4 w-4',
-                    item?.isLiked ? 'text-red-500 dark:text-red-400' : '',
+                    // item?.isLiked ? 'text-red-500 dark:text-red-400' : '',
                   )}
                 />
               </Button>

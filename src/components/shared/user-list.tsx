@@ -1,159 +1,130 @@
 'use client';
-import { useInfiniteQuery } from '@tanstack/react-query';
-import React, { useRef, useLayoutEffect, useCallback, useMemo } from 'react';
-import last from 'lodash-es/last';
-import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso';
-import UserItem from '~/components/shared/user-item';
-import { QUERIES_KEY } from '~/constants/constants';
-import { getSearchApi } from '~/services/search/search.api';
-import useBeforeUnload from '~/libs/hooks/useBeforeUnload';
+import React, { useRef, useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import useIsHydrating from '~/libs/hooks/useIsHydrating';
-import { isBrowser } from '~/libs/browser/dom';
-import { isEmpty } from '~/utils/assertion';
-import { KeyProvider } from '~/libs/providers/key';
-
-const useSSRLayoutEffect = !isBrowser ? () => {} : useLayoutEffect;
+import { getTargetElement } from '~/libs/browser/dom';
+import { api } from '~/services/trpc/react';
+import { useWindowVirtualizer } from '@tanstack/react-virtual';
+import UserItem from '~/components/shared/user-item';
 
 interface UserListProps {
-  type: 'root';
-  q?: string;
+  initialData?: any;
+  keyword?: string;
 }
 
-type Cache = {
-  top: number;
-  pages: string[];
-};
+const CLIENT_LIMIT_SIZE = 30;
+const CLIENT_DATA_OVERSCAN = 10;
 
-export default function UserList({ q, type = 'root' }: UserListProps) {
-  const $virtuoso = useRef<VirtuosoHandle>(null);
-  const $cache = useRef<Cache | null>(null);
+const getCursorLimit = (searchParams: URLSearchParams) => ({
+  start: Number(searchParams.get('start') || '0'),
+  cursor: searchParams.get('cursor') || null,
+  limit: Number(searchParams.get('limit') || CLIENT_LIMIT_SIZE.toString()),
+});
 
-  const key = useMemo(() => {
-    return `@users::scroll::${type}`;
-  }, [type]);
-
-  const getCache = useCallback(() => {
-    return $cache.current;
-  }, []);
-
-  const setCache = useCallback((data: Cache | null) => {
-    $cache.current = data;
-  }, []);
-
+export default function UserList({ keyword, initialData }: UserListProps) {
+  const total = initialData?.totalCount;
+  const seachParams = useSearchParams();
   const hydrating = useIsHydrating('[data-hydrating-signal]');
 
-  const queryKey = useMemo(() => {
-    return QUERIES_KEY.users.search(q);
-  }, [q]);
+  const [data, { fetchNextPage, hasNextPage, isFetchingNextPage }] =
+    api.users.getSearchUsers.useSuspenseInfiniteQuery(
+      {
+        keyword,
+      },
+      {
+        initialData: () => {
+          if (initialData) {
+            return {
+              pageParams: [undefined],
+              pages: [initialData],
+            };
+          }
+        },
+        getNextPageParam: (lastPage) => {
+          return lastPage?.hasNextPage && lastPage?.endCursor
+            ? lastPage?.endCursor
+            : null;
+        },
+      },
+    );
 
-  const { data, fetchNextPage } = useInfiniteQuery({
-    queryKey: queryKey,
-    queryFn: async ({ pageParam }) => {
-      return await getSearchApi({
-        ...(q ? { q } : {}),
-        limit: 10,
-        cursor: pageParam ? pageParam : undefined,
-      });
-    },
-    initialPageParam: null as string | null,
-    getNextPageParam: (lastPage) => {
-      return lastPage?.hasNextPage && lastPage?.endCursor
-        ? lastPage?.endCursor
-        : null;
+  const totalCount = data?.pages?.at(0)?.totalCount ?? 0;
+  const flatList = data?.pages?.map((page) => page?.list).flat() ?? [];
+
+  const { start, cursor, limit } = getCursorLimit(seachParams);
+  const [initialStart] = useState(() => start);
+  const isMountedRef = useRef(false);
+
+  const $list = useRef<HTMLDivElement>(null);
+
+  const rowVirtualizer = useWindowVirtualizer({
+    count: total ?? totalCount,
+    estimateSize: () => 40,
+    overscan: CLIENT_DATA_OVERSCAN,
+    scrollMargin: getTargetElement($list)?.offsetTop ?? 0,
+    initialRect: {
+      width: 0,
+      height: 400,
     },
   });
 
-  const list = data?.pages?.map((page) => page?.list).flat() ?? [];
+  const virtualizerList = rowVirtualizer.getVirtualItems();
 
-  const loadMore = (index: number) => {
-    if (index <= 0) return;
+  useEffect(() => {
+    const [lastItem] = [...virtualizerList].reverse();
 
-    const lastData = last(data?.pages ?? []);
+    if (!lastItem) {
+      return;
+    }
 
-    if (lastData?.endCursor && lastData?.hasNextPage) {
+    if (
+      lastItem.index >= flatList.length - 1 &&
+      hasNextPage &&
+      !isFetchingNextPage
+    ) {
       fetchNextPage();
     }
-  };
-
-  useBeforeUnload(() => {
-    const $api = $virtuoso.current;
-    if (!$api) return;
-    $api.getState((state) => {
-      sessionStorage.setItem(
-        key,
-        JSON.stringify({
-          top: state.scrollTop,
-          pages: data?.pages
-            ?.filter((page) => page?.endCursor)
-            ?.map((page) => page.endCursor)
-            ?.filter(Boolean),
-        }),
-      );
-    });
-  });
-
-  useSSRLayoutEffect(() => {
-    if (hydrating) {
-      const _data = JSON.parse(sessionStorage.getItem(key) || '{}') as Cache;
-      if (_data) setCache(_data);
-    }
-    return () => {
-      sessionStorage.removeItem(key);
-    };
-  }, [hydrating]);
-
-  const fetchScrollRestoration = async () => {
-    const el = document
-      .querySelector('[data-hydrating-signal]')
-      ?.querySelector('[data-test-id="virtuoso-item-list"]');
-
-    const _data = getCache();
-    if (_data && !isEmpty(_data)) {
-      const _pages = data?.pages ?? [];
-      const currentCursor = _pages.at(_pages.length - 1)?.endCursor;
-      const _cursorIndex = _data.pages.findIndex(
-        (page) => page === currentCursor,
-      );
-      const _pagesAfterCursor = _data.pages.slice(_cursorIndex + 1);
-      for (const page of _pagesAfterCursor) {
-        await fetchNextPage();
-      }
-      setCache(null);
-      $virtuoso.current?.scrollTo({
-        top: _data.top,
-        behavior: 'smooth',
-      });
-    }
-  };
-
-  useSSRLayoutEffect(() => {
-    if (hydrating) fetchScrollRestoration();
-  }, [hydrating]);
-
-  const lastItem = last(data?.pages ?? []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    hasNextPage,
+    fetchNextPage,
+    flatList.length,
+    isFetchingNextPage,
+    virtualizerList,
+  ]);
 
   return (
-    <KeyProvider queryKey={queryKey}>
-      <Virtuoso
-        ref={$virtuoso}
-        data-hydrating-signal
-        useWindowScroll
-        style={{ height: '100%' }}
-        data={list}
-        totalCount={lastItem?.totalCount ?? 0}
-        computeItemKey={(index, item) => {
-          return `${type}-users-${item.id}-${index}`;
-        }}
-        overscan={10}
-        initialItemCount={list.length - 1}
-        itemContent={(_, item) => {
-          return <UserItem item={item} />;
-        }}
-        components={{
-          Footer: () => <div className="h-20"></div>,
-        }}
-        endReached={loadMore}
-      />
-    </KeyProvider>
+    <div ref={$list}>
+      <div className="relative w-full space-y-6">
+        {virtualizerList.map((virtualRow) => {
+          const isLoaderRow = virtualRow.index > flatList.length - 1;
+          const item = flatList.at(virtualRow.index);
+          if (!item) {
+            return null;
+          }
+
+          if (isLoaderRow) {
+            return (
+              <div
+                key={`items:loading:${item.id}`}
+                style={{
+                  height: virtualRow.size,
+                  position: 'absolute',
+                  top: virtualRow.start,
+                  left: 0,
+                  right: 0,
+                }}
+              >
+                <div className="flex h-full items-center justify-center">
+                  <div className="text-gray-500">Loading...</div>
+                </div>
+              </div>
+            );
+          }
+
+          return <UserItem key={`items:${item.id}`} item={item} />;
+        })}
+      </div>
+    </div>
   );
 }

@@ -1,122 +1,53 @@
 'use client';
-import React, { useCallback, useState } from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { useForm } from 'react-hook-form';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from '~/components/ui/form';
+import React, { useCallback, useRef } from 'react';
+import { useFormState, useFormStatus } from 'react-dom';
+import { getTargetElement } from '~/libs/browser/dom';
 import { Input } from '~/components/ui/input';
 import { Button } from '~/components/ui/button';
 import { Icons } from '~/components/icons';
-import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { PAGE_ENDPOINTS } from '~/constants/constants';
 import { cn } from '~/utils/utils';
-
-const formSchema = z.object({
-  username: z.string().min(1),
-  password: z.string().min(6),
-});
-
-type FormFields = z.infer<typeof formSchema>;
+import { signinAction } from '~/services/users/users.action';
 
 export default function SignInForm() {
-  const [isLoading, setLoading] = useState(false);
-
-  const router = useRouter();
-
-  const form = useForm<FormFields>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      username: '',
-      password: '',
-    },
-  });
-
-  const onSubmit = useCallback(
-    async (values: FormFields) => {
-      setLoading(true);
-      try {
-        const resp = await signIn('credentials', {
-          ...values,
-          redirect: false,
-        });
-
-        if (resp) {
-          if (!resp.error && resp?.ok) {
-            router.replace(PAGE_ENDPOINTS.ROOT);
-          }
-        }
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [router],
-  );
+  const [state, formAction] = useFormState(signinAction, null);
 
   return (
     <div className="grid gap-6">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="grid gap-5">
-            <FormField
-              control={form.control}
+      <form action={formAction}>
+        <div className="grid gap-5">
+          <div className="space-y-2">
+            <Input
+              type="text"
               name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      type="text"
-                      placeholder="사용자 이름"
-                      autoCapitalize="none"
-                      autoComplete="username"
-                      autoCorrect="off"
-                      dir="ltr"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              placeholder="사용자 이름"
+              autoCapitalize="none"
+              autoComplete="username"
+              autoCorrect="off"
+              dir="ltr"
             />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="비밀번호"
-                      autoComplete="current-password"
-                      dir="ltr"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button
-              type="submit"
-              disabled={isLoading}
-              aria-disabled={isLoading}
-            >
-              {isLoading && (
-                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              로그인
-            </Button>
+            {state?.errors?.fieldErrors?.username && (
+              <p className="text-sm font-medium text-red-500 dark:text-red-900">
+                {state?.errors?.fieldErrors?.username?.at(0)}
+              </p>
+            )}
           </div>
-        </form>
-      </Form>
+          <div className="space-y-2">
+            <Input
+              type="password"
+              name="password"
+              placeholder="비밀번호"
+              autoComplete="current-password"
+              dir="ltr"
+            />
+            {state?.errors?.fieldErrors?.password && (
+              <p className="text-sm font-medium text-red-500 dark:text-red-900">
+                {state?.errors?.fieldErrors?.password?.at(0)}
+              </p>
+            )}
+          </div>
+          <SubmitButton />
+        </div>
+      </form>
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t" />
@@ -128,5 +59,37 @@ export default function SignInForm() {
         </div>
       </div>
     </div>
+  );
+}
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  const $div = useRef<HTMLDivElement>(null);
+
+  const onClick = useCallback(() => {
+    const $ele = getTargetElement($div);
+    if (!$ele) {
+      return;
+    }
+
+    const $form = $ele.closest('form');
+    if (!$form) {
+      return;
+    }
+
+    $form.requestSubmit();
+  }, []);
+
+  return (
+    <Button
+      type="submit"
+      onClick={onClick}
+      disabled={pending}
+      aria-disabled={pending}
+    >
+      {pending && <Icons.spinner className="mr-2 size-4 animate-spin" />}
+      로그인
+    </Button>
   );
 }

@@ -37,13 +37,13 @@ ProfileHeader.Head = function Item({ name, username, image }: HeadProps) {
       </div>
       <div className="col-start-2">
         <div className="text-align-inherit m-0 box-border flex cursor-pointer touch-manipulation rounded-full border-0 bg-transparent p-0 outline-none">
-          <div className="h-[64px] w-[64px] md:h-[84px] md:w-[84px]">
-            <div className="flex h-full w-full rounded-full bg-white">
+          <div className="size-[64px] md:size-[84px]">
+            <div className="flex size-full rounded-full bg-white">
               <img
                 height="100%"
                 width="100%"
                 alt={`${username}님의 프로필 사진`}
-                className="profile-outline h-full w-full rounded-full object-cover"
+                className="profile-outline size-full rounded-full object-cover"
                 src={image ?? undefined}
               />
             </div>
