@@ -5,6 +5,7 @@ import { TabsContent } from '@radix-ui/react-tabs';
 import { PAGE_ENDPOINTS } from '~/constants/constants';
 import { usePathname, useRouter } from 'next/navigation';
 import { useMediaQuery } from '~/libs/hooks/useMediaQuery';
+import { cn } from '~/utils/utils';
 
 interface MainTabsProps {
   children: React.ReactNode;
@@ -17,7 +18,7 @@ export default function MainTabs({ children }: MainTabsProps) {
 
   const pathname = usePathname();
   const router = useRouter();
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
   const onTabChange = useCallback(
     (value: string) => {
@@ -40,8 +41,22 @@ export default function MainTabs({ children }: MainTabsProps) {
         </TabsTrigger>
         <TabsTrigger value={PAGE_ENDPOINTS.FOLLOWING}>팔로잉</TabsTrigger>
       </TabsList>
-      <TabsContent value={PAGE_ENDPOINTS.ROOT}>{children}</TabsContent>
-      <TabsContent value={PAGE_ENDPOINTS.FOLLOWING}>{children}</TabsContent>
+      <TabsContent
+        value={PAGE_ENDPOINTS.ROOT}
+        className={cn({
+          'opacity-50': isPending && pathname === PAGE_ENDPOINTS.ROOT,
+        })}
+      >
+        {children}
+      </TabsContent>
+      <TabsContent
+        value={PAGE_ENDPOINTS.FOLLOWING}
+        className={cn({
+          'opacity-50': isPending && pathname === PAGE_ENDPOINTS.FOLLOWING,
+        })}
+      >
+        {children}
+      </TabsContent>
     </Tabs>
   );
 }
