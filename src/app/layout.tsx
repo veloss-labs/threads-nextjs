@@ -6,7 +6,7 @@ import localFont from 'next/font/local';
 import { Providers } from './providers';
 import { cn } from '~/utils/utils';
 import { getHeaderInDomainInfo } from '~/utils/url';
-import { SITE_CONFIG, PAGE_ENDPOINTS } from '~/constants/constants';
+import { SITE_CONFIG } from '~/constants/constants';
 import type { Metadata } from 'next';
 import { auth } from '~/services/auth';
 
@@ -23,6 +23,8 @@ const fontHeading = localFont({
 export async function generateMetadata(): Promise<Metadata> {
   const info = getHeaderInDomainInfo(headers());
   const metadataBase = new URL(info.domainUrl);
+  const manifestURL = new URL(SITE_CONFIG.manifest, metadataBase);
+
   return {
     title: SITE_CONFIG.title,
     description: SITE_CONFIG.description,
@@ -41,9 +43,9 @@ export async function generateMetadata(): Promise<Metadata> {
       ],
     },
     metadataBase,
-    manifest: SITE_CONFIG.manifest,
+    manifest: manifestURL,
     alternates: {
-      canonical: PAGE_ENDPOINTS.ROOT,
+      canonical: metadataBase,
     },
     openGraph: {
       title: SITE_CONFIG.title,
@@ -70,21 +72,7 @@ export default async function Layout(props: RoutesProps) {
   const info = getHeaderInDomainInfo(headers());
   const session = await auth();
   return (
-    <html lang="ko" dir="ltr" suppressHydrationWarning>
-      <head>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=2, shrink-to-fit=no"
-        />
-        <meta
-          name="referrer"
-          content="origin-when-cross-origin"
-          id="meta_referrer"
-        />
-        <meta name="color-scheme" content="light" />
-        <meta name="theme-color" content="#FFFFFF" />
-      </head>
-
+    <html lang="ko" dir="ltr">
       <body
         className={cn(
           'bg-background font-sans antialiased',

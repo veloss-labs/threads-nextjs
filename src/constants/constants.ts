@@ -60,7 +60,7 @@ export const SITE_CONFIG = {
   apple57x57: '/icons/icon_57x57.png',
   apple180x180: '/icons/icon_180x180.png',
   apple256x256: '/icons/icon_256x256.png',
-  manifest: '/manifest.json',
+  manifest: '/manifest.webmanifest',
 };
 
 export const STATUS_CODE = {

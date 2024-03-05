@@ -45,6 +45,8 @@ const Tiptap = (props: ITipTapRichTextEditor) => {
     editorContentCustomClassNames,
   } = props;
 
+  console.log('value', value);
+
   const editor = useEditor({
     editable: editable ?? true,
     editorProps: TiptapEditorProps(setIsSubmitting, className),
@@ -96,6 +98,8 @@ const Tiptap = (props: ITipTapRichTextEditor) => {
   ${noBorder ? '' : 'border border-custom-border-200'} ${
     borderOnFocus ? 'focus:border border-custom-border-300' : 'focus:border-0'
   } ${customClassName}`;
+
+  console.log('editor', editor);
 
   if (!editor) {
     return <TiptapSkeleton />;

@@ -106,7 +106,7 @@ export default function ThreadItem({ item }: ThreadItemProps) {
             </div>
           </div>
           <div className="py-4">
-            <TipTapEditor
+            {/* <TipTapEditor
               editable={false}
               debouncedUpdatesEnabled={false}
               name={`thraed-text-${item?.id}`}
@@ -116,7 +116,8 @@ export default function ThreadItem({ item }: ThreadItemProps) {
                 'prose prose-brand prose-headings:font-display font-default focus:outline-none',
               )}
               customClassName="p-0 mt-4"
-            />
+            /> */}
+            {item?.text}
           </div>
           <div className="flex items-center justify-end space-x-4 py-4">
             <div className="flex items-center space-x-1">
