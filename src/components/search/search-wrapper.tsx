@@ -9,9 +9,7 @@ export default function SearchWapper({ children }: SearchWapperProps) {
     <div className="flex w-full grow">
       <div className="mt-3 flex w-full grow">
         <div className="relative z-0 flex size-full flex-col pb-1">
-          <div className="relative flex grow flex-col space-y-4">
-            {children}
-          </div>
+          <div className="relative flex grow flex-col">{children}</div>
         </div>
       </div>
     </div>

@@ -6,9 +6,28 @@ import type {
 } from '~/services/threads/threads.query';
 import { getThreadsSelector } from '~/services/db/selectors/threads';
 import { remember } from '@epic-web/remember';
+import type { CreateInputSchema } from './threads.input';
 
 export class ThreadService {
   private readonly DEFAULT_LIMIT = 30;
+
+  create(userId: string, input: CreateInputSchema) {
+    return db.thread.create({
+      data: {
+        userId,
+        text: input.text,
+      },
+    });
+  }
+
+  getItem(id: string) {
+    return db.thread.findUnique({
+      where: {
+        id,
+      },
+      select: getThreadsSelector(),
+    });
+  }
 
   getItems(input: ThreadListQuerySchema) {
     return db.thread.findMany({

@@ -10,18 +10,6 @@ export const userIdSchema = z.object({
   userId: z.string(),
 });
 
-export const authResultSchema = z
-  .object({
-    ok: z.boolean(),
-    resultCode: z.number().int().min(200).max(500),
-    resultMessage: z.string().nullable(),
-    data: z.unknown().nullable(),
-    errors: z.any(),
-  })
-  .nullable();
-
 export type AuthFormData = z.infer<typeof authFormSchema>;
-
-export type AuthResult = z.infer<typeof authResultSchema>;
 
 export type UserIdInput = z.infer<typeof userIdSchema>;

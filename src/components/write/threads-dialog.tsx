@@ -10,16 +10,21 @@ import ThreadsForm from '~/components/write/threads-form';
 interface ThreadsDialogProps {
   open: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export default function ThreadsDialog({ open, onClose }: ThreadsDialogProps) {
+export default function ThreadsDialog({
+  open,
+  onClose,
+  onSuccess,
+}: ThreadsDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader className="text-left">
           <DialogTitle>새로운 스레드</DialogTitle>
         </DialogHeader>
-        <ThreadsForm isDialog />
+        <ThreadsForm isDialog onSuccess={onSuccess} />
       </DialogContent>
     </Dialog>
   );

@@ -22,12 +22,12 @@ const getCursorLimit = (searchParams: URLSearchParams) => ({
 });
 
 export default function UserList({ keyword, initialData }: UserListProps) {
-  const total = initialData?.totalCount ?? 0;
+  const total = initialData?.totalCount;
   const seachParams = useSearchParams();
   const hydrating = useIsHydrating('[data-hydrating-signal]');
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    api.users.getSearchUsers.useInfiniteQuery(
+  const [data, { fetchNextPage, hasNextPage, isFetchingNextPage }] =
+    api.users.getSearchUsers.useSuspenseInfiniteQuery(
       {
         keyword,
       },
@@ -48,6 +48,7 @@ export default function UserList({ keyword, initialData }: UserListProps) {
       },
     );
 
+  const totalCount = data?.pages?.at(0)?.totalCount ?? 0;
   const flatList = data?.pages?.map((page) => page?.list).flat() ?? [];
 
   const { start, cursor, limit } = getCursorLimit(seachParams);
@@ -57,10 +58,14 @@ export default function UserList({ keyword, initialData }: UserListProps) {
   const $list = useRef<HTMLDivElement>(null);
 
   const rowVirtualizer = useWindowVirtualizer({
-    count: total,
-    estimateSize: () => 250,
+    count: total ?? totalCount,
+    estimateSize: () => 40,
     overscan: CLIENT_DATA_OVERSCAN,
     scrollMargin: getTargetElement($list)?.offsetTop ?? 0,
+    initialRect: {
+      width: 0,
+      height: 400,
+    },
   });
 
   const virtualizerList = rowVirtualizer.getVirtualItems();
@@ -77,7 +82,6 @@ export default function UserList({ keyword, initialData }: UserListProps) {
       hasNextPage &&
       !isFetchingNextPage
     ) {
-      console.log('fetchNextPage');
       fetchNextPage();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -91,7 +95,7 @@ export default function UserList({ keyword, initialData }: UserListProps) {
 
   return (
     <div ref={$list}>
-      <div className="relative w-full">
+      <div className="relative w-full space-y-6">
         {virtualizerList.map((virtualRow) => {
           const isLoaderRow = virtualRow.index > flatList.length - 1;
           const item = flatList.at(virtualRow.index);

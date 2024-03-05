@@ -1,7 +1,11 @@
 'use client';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useTransition } from 'react';
 import Link from 'next/link';
-import { usePathname, useSelectedLayoutSegment } from 'next/navigation';
+import {
+  usePathname,
+  useSelectedLayoutSegment,
+  useRouter,
+} from 'next/navigation';
 import { Icons } from '~/components/icons';
 import { cn } from '~/utils/utils';
 import { NAV_CONFIG, NavItem } from '~/constants/nav';
@@ -16,6 +20,7 @@ import {
 import { signOut } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import { api } from '~/services/trpc/react';
+import { useLayoutStore } from '~/services/store/useLayoutStore';
 
 export default function MainNav() {
   return (
@@ -43,6 +48,9 @@ MainNav.Item = function Item({ item }: ItemProps) {
   switch (item.type) {
     case 'home': {
       return <MainNav.Home item={item} />;
+    }
+    case 'thread': {
+      return <MainNav.Thread item={item} />;
     }
     case 'link': {
       return <MainNav.Link item={item} />;
@@ -125,6 +133,42 @@ MainNav.MyPage = function Item({ item }: ItemProps) {
     >
       <item.icon />
     </Link>
+  );
+};
+
+MainNav.Thread = function Item({ item }: ItemProps) {
+  const pathname = usePathname();
+  const href = item.href as string;
+  const isActive = pathname === href ? true : false;
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const { popupOpen } = useLayoutStore();
+
+  const onClick = useCallback(() => {
+    popupOpen('THREAD');
+    startTransition(() => {
+      router.push(href);
+    });
+  }, [router, popupOpen, href]);
+
+  return (
+    <button
+      type="button"
+      role="link"
+      data-href={item.disabled ? '#' : href}
+      className={cn(
+        'px-8 py-5 mx-[2px] my-1 flex items-center text-lg font-medium transition-colors hover:bg-foreground/5 hover:rounded-md sm:text-sm',
+        isActive ? 'text-foreground' : 'text-foreground/60',
+        item.disabled && 'cursor-not-allowed opacity-80',
+      )}
+      onClick={onClick}
+    >
+      {isPending ? (
+        <Icons.rotateCcw className="mr-2 size-4 animate-spin" />
+      ) : (
+        <item.icon />
+      )}
+    </button>
   );
 };
 

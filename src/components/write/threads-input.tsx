@@ -7,6 +7,7 @@ import { PAGE_ENDPOINTS } from '~/constants/constants';
 import Link from 'next/link';
 import { type Session } from 'next-auth';
 import { Icons } from '~/components/icons';
+import { useLayoutStore } from '~/services/store/useLayoutStore';
 
 interface ThreadsInputProps {
   session: Session;
@@ -15,12 +16,14 @@ interface ThreadsInputProps {
 export default function ThreadsInput({ session }: ThreadsInputProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const { popupOpen } = useLayoutStore();
 
   const onClick = useCallback(() => {
+    popupOpen('THREAD');
     startTransition(() => {
       router.push(PAGE_ENDPOINTS.THREADS.ROOT);
     });
-  }, [router]);
+  }, [router, popupOpen]);
 
   return (
     <div className="hidden w-full border-b py-8 md:block">

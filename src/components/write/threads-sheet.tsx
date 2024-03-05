@@ -10,16 +10,21 @@ import ThreadsForm from './threads-form';
 interface ThreadsSheetProps {
   open: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export default function ThreadsSheet({ open, onClose }: ThreadsSheetProps) {
+export default function ThreadsSheet({
+  open,
+  onClose,
+  onSuccess,
+}: ThreadsSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent side="bottom" className="h-full">
         <SheetHeader className="text-left">
           <SheetTitle>새로운 스레드</SheetTitle>
         </SheetHeader>
-        <ThreadsForm isDialog />
+        <ThreadsForm isDialog onSuccess={onSuccess} />
       </SheetContent>
     </Sheet>
   );

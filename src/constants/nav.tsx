@@ -5,7 +5,7 @@ import { PAGE_ENDPOINTS } from './constants';
 
 export type NavItem = {
   id: 'home' | 'search' | 'thread' | 'activity' | 'myPage';
-  type: 'link' | 'myPage' | 'home';
+  type: 'link' | 'myPage' | 'home' | 'thread';
   title: string;
   href?: string;
   relationHrefs?: string[];
@@ -34,7 +34,7 @@ export const NAV_CONFIG = {
     },
     {
       id: 'thread',
-      type: 'link',
+      type: 'thread',
       title: 'New Thread',
       href: '/threads',
       icon: Icons.pen,

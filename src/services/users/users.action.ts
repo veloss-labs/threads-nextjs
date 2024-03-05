@@ -8,11 +8,12 @@ import { generateHash, generateSalt } from '~/utils/password';
 import { userService } from '~/services/users/users.service';
 import { generatorName } from '~/utils/utils';
 import { signIn } from '~/services/auth';
-import { AuthResult, authFormSchema, authResultSchema } from './users.input';
+import { authFormSchema } from './users.input';
+import { ResultSchema, resultSchema } from '~/services/request';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
-export async function signupAction(_: AuthResult | null, formData: FormData) {
+export async function signupAction(_: ResultSchema | null, formData: FormData) {
   const bindInput = {
     username: formData.get('username'),
     password: formData.get('password'),
@@ -21,7 +22,7 @@ export async function signupAction(_: AuthResult | null, formData: FormData) {
   const validatedFields = authFormSchema.safeParse(bindInput);
 
   if (!validatedFields.success) {
-    return authResultSchema.parse({
+    return resultSchema.parse({
       ok: false,
       resultCode: STATUS_CODE.BAD_REQUEST,
       resultMessage: 'Invalid input',
@@ -56,7 +57,7 @@ export async function signupAction(_: AuthResult | null, formData: FormData) {
     });
   } catch (error) {
     console.error(error);
-    return authResultSchema.parse({
+    return resultSchema.parse({
       ok: false,
       resultCode: STATUS_CODE.SERVER_ERROR,
       resultMessage: 'User creation failed',
@@ -73,7 +74,7 @@ export async function signupAction(_: AuthResult | null, formData: FormData) {
     });
   } catch (error) {
     console.error(error);
-    return authResultSchema.parse({
+    return resultSchema.parse({
       ok: false,
       resultCode: STATUS_CODE.UNAUTHORIZED,
       resultMessage: 'Sign in failed',
@@ -86,7 +87,7 @@ export async function signupAction(_: AuthResult | null, formData: FormData) {
   redirect(PAGE_ENDPOINTS.ROOT);
 }
 
-export async function signinAction(_: AuthResult | null, formData: FormData) {
+export async function signinAction(_: ResultSchema | null, formData: FormData) {
   const bindInput = {
     username: formData.get('username'),
     password: formData.get('password'),
@@ -95,7 +96,7 @@ export async function signinAction(_: AuthResult | null, formData: FormData) {
   const validatedFields = authFormSchema.safeParse(bindInput);
 
   if (!validatedFields.success) {
-    return authResultSchema.parse({
+    return resultSchema.parse({
       ok: false,
       resultCode: STATUS_CODE.BAD_REQUEST,
       resultMessage: 'Invalid input',
@@ -114,7 +115,7 @@ export async function signinAction(_: AuthResult | null, formData: FormData) {
     });
   } catch (error) {
     console.error(error);
-    return authResultSchema.parse({
+    return resultSchema.parse({
       ok: false,
       resultCode: STATUS_CODE.UNAUTHORIZED,
       resultMessage: 'Sign in failed',

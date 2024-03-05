@@ -15,7 +15,7 @@ export default function ThreadsTitle() {
   return (
     <div className="flex flex-row items-center space-x-4">
       <Button variant="ghost" size="icon" onClick={onClick}>
-        <Icons.chevronLeft className="h-6 w-6" />
+        <Icons.chevronLeft className="size-6" />
       </Button>
       <h3 className="font-semibold leading-none tracking-tight">
         새로운 스레드

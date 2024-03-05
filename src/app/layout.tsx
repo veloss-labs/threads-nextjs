@@ -72,7 +72,7 @@ export default async function Layout(props: RoutesProps) {
   const info = getHeaderInDomainInfo(headers());
   const session = await auth();
   return (
-    <html lang="ko" dir="ltr">
+    <html lang="ko" dir="ltr" suppressHydrationWarning>
       <body
         className={cn(
           'bg-background font-sans antialiased',

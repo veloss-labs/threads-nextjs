@@ -1,6 +1,7 @@
 import { useMemo, useSyncExternalStore } from 'react';
 import { useMemoizedFn } from './useMemoizedFn';
 import { isBrowser } from '../browser/dom';
+import { ResourceLoaderWithCache } from '~/utils/resource';
 
 export const MEDIA_QUERY = {
   xxlarge: '(min-width: 1920px)',
@@ -44,4 +45,24 @@ export function useMediaQuery(query: string, serverFallback: boolean): boolean {
     isBrowser ? getSnapshot : getServerSnapshot,
     getServerSnapshot,
   );
+}
+
+export function useSuspenseMediaQuery(query: string) {
+  const fetchMatchQuery = () => {
+    return new Promise<boolean>((resolve, reject) => {
+      if (!isBrowser) {
+        return;
+      }
+
+      try {
+        const mediaQueryList = window.matchMedia(query);
+        resolve(mediaQueryList.matches);
+      } catch (e) {
+        console.error(e);
+        reject(e);
+      }
+    });
+  };
+
+  return ResourceLoaderWithCache(useSuspenseMediaQuery.name, fetchMatchQuery);
 }

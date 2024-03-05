@@ -6,6 +6,7 @@ import useIsHydrating from '~/libs/hooks/useIsHydrating';
 import { getTargetElement } from '~/libs/browser/dom';
 import { api } from '~/services/trpc/react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
+import SkeletonCard from '../skeleton/card';
 
 interface ThreadLikeListProps {
   totalCount?: number;
@@ -22,12 +23,12 @@ const getCursorLimit = (searchParams: URLSearchParams) => ({
 });
 
 export default function ThreadLikeList({ initialData }: ThreadLikeListProps) {
-  const total = initialData?.totalCount ?? 0;
+  const total = initialData?.totalCount;
   const seachParams = useSearchParams();
   const hydrating = useIsHydrating('[data-hydrating-signal]');
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    api.threads.getLikeThreads.useInfiniteQuery(
+  const [data, { fetchNextPage, hasNextPage, isFetchingNextPage }] =
+    api.threads.getLikeThreads.useSuspenseInfiniteQuery(
       {},
       {
         initialData: () => {
@@ -46,6 +47,7 @@ export default function ThreadLikeList({ initialData }: ThreadLikeListProps) {
       },
     );
 
+  const totalCount = data?.pages?.at(0)?.totalCount ?? 0;
   const flatList = data?.pages?.map((page) => page?.list).flat() ?? [];
 
   const { start, cursor, limit } = getCursorLimit(seachParams);
@@ -55,10 +57,14 @@ export default function ThreadLikeList({ initialData }: ThreadLikeListProps) {
   const $list = useRef<HTMLDivElement>(null);
 
   const rowVirtualizer = useWindowVirtualizer({
-    count: total,
+    count: total ?? totalCount,
     estimateSize: () => 250,
     overscan: CLIENT_DATA_OVERSCAN,
     scrollMargin: getTargetElement($list)?.offsetTop ?? 0,
+    initialRect: {
+      width: 0,
+      height: 800,
+    },
   });
 
   const virtualizerList = rowVirtualizer.getVirtualItems();
@@ -75,7 +81,6 @@ export default function ThreadLikeList({ initialData }: ThreadLikeListProps) {
       hasNextPage &&
       !isFetchingNextPage
     ) {
-      console.log('fetchNextPage');
       fetchNextPage();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -99,20 +104,7 @@ export default function ThreadLikeList({ initialData }: ThreadLikeListProps) {
 
           if (isLoaderRow) {
             return (
-              <div
-                key={`items:loading:${item.id}:${item.type}`}
-                style={{
-                  height: virtualRow.size,
-                  position: 'absolute',
-                  top: virtualRow.start,
-                  left: 0,
-                  right: 0,
-                }}
-              >
-                <div className="flex h-full items-center justify-center">
-                  <div className="text-gray-500">Loading...</div>
-                </div>
-              </div>
+              <SkeletonCard key={`items:loading:${item.id}:${item.type}`} />
             );
           }
 

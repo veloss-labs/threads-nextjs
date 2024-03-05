@@ -24,7 +24,7 @@ const getCursorLimit = (searchParams: URLSearchParams) => ({
 });
 
 export default function ThreadList({ initialData, userId }: ThreadListProps) {
-  const total = initialData?.totalCount ?? 0;
+  const total = initialData?.totalCount;
   const seachParams = useSearchParams();
   const hydrating = useIsHydrating('[data-hydrating-signal]');
 
@@ -50,6 +50,7 @@ export default function ThreadList({ initialData, userId }: ThreadListProps) {
       },
     );
 
+  const totalCount = data?.pages?.at(0)?.totalCount ?? 0;
   const flatList = data?.pages?.map((page) => page?.list).flat() ?? [];
 
   const { start, cursor, limit } = getCursorLimit(seachParams);
@@ -59,7 +60,7 @@ export default function ThreadList({ initialData, userId }: ThreadListProps) {
   const $list = useRef<HTMLDivElement>(null);
 
   const rowVirtualizer = useWindowVirtualizer({
-    count: total,
+    count: total ?? totalCount,
     estimateSize: () => 250,
     overscan: CLIENT_DATA_OVERSCAN,
     scrollMargin: getTargetElement($list)?.offsetTop ?? 0,
@@ -83,7 +84,6 @@ export default function ThreadList({ initialData, userId }: ThreadListProps) {
       hasNextPage &&
       !isFetchingNextPage
     ) {
-      console.log('fetchNextPage');
       fetchNextPage();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -101,27 +101,12 @@ export default function ThreadList({ initialData, userId }: ThreadListProps) {
         {virtualizerList.map((virtualRow) => {
           const isLoaderRow = virtualRow.index > flatList.length - 1;
           const item = flatList.at(virtualRow.index);
+
           if (!item) {
             return null;
           }
 
           if (isLoaderRow) {
-            // return (
-            //   <SkeletonCard
-            //     key={`items:loading:${item.id}:${item.type}`}
-            //     style={{
-            //       height: virtualRow.size,
-            //       position: 'absolute',
-            //       top: virtualRow.start,
-            //       left: 0,
-            //       right: 0,
-            //     }}
-            //   >
-            //     <div className="flex h-full items-center justify-center">
-            //       <div className="text-gray-500">Loading...</div>
-            //     </div>
-            //   </div>
-            // );
             return (
               <SkeletonCard key={`items:loading:${item.id}:${item.type}`} />
             );

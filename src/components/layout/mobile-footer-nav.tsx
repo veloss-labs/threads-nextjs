@@ -1,13 +1,19 @@
 'use client';
-import React from 'react';
+import React, { useTransition, useCallback } from 'react';
 import Link from 'next/link';
-import { usePathname, useSelectedLayoutSegment } from 'next/navigation';
+import {
+  usePathname,
+  useSelectedLayoutSegment,
+  useRouter,
+} from 'next/navigation';
 import { cn } from '~/utils/utils';
 import { NAV_CONFIG, NavItem } from '~/constants/nav';
 import { PAGE_ENDPOINTS } from '~/constants/constants';
 import SkipRenderOnClient from '../shared/skip-render-on-client';
 import { useMediaQuery } from '~/libs/hooks/useMediaQuery';
 import { api } from '~/services/trpc/react';
+import { useLayoutStore } from '~/services/store/useLayoutStore';
+import { Icons } from '~/components/icons';
 
 export default function MobileFooterNav() {
   const isMobile = useMediaQuery('(max-width: 768px)', false);
@@ -32,6 +38,9 @@ MobileFooterNav.Item = function Item({ item }: ItemProps) {
   switch (item.type) {
     case 'home': {
       return <MobileFooterNav.Home item={item} />;
+    }
+    case 'thread': {
+      return <MobileFooterNav.Thread item={item} />;
     }
     case 'link': {
       return <MobileFooterNav.Link item={item} />;
@@ -64,8 +73,6 @@ MobileFooterNav.Home = function Item({ item }: ItemProps) {
   return (
     <Link
       href={item.disabled ? '#' : href}
-      scroll={true}
-      replace={false}
       className={cn(
         'h-10 p-4 flex items-center text-lg font-medium transition-colors hover:bg-foreground/5 hover:rounded-md sm:text-sm',
         isActive ? 'text-foreground' : 'text-foreground/60',
@@ -77,6 +84,42 @@ MobileFooterNav.Home = function Item({ item }: ItemProps) {
   );
 };
 
+MobileFooterNav.Thread = function Item({ item }: ItemProps) {
+  const pathname = usePathname();
+  const href = item.href as string;
+  const isActive = pathname === href ? true : false;
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const { popupOpen } = useLayoutStore();
+
+  const onClick = useCallback(() => {
+    popupOpen('THREAD');
+    startTransition(() => {
+      router.push(href);
+    });
+  }, [router, popupOpen, href]);
+
+  return (
+    <button
+      type="button"
+      role="link"
+      data-href={item.disabled ? '#' : href}
+      className={cn(
+        'h-10 p-4 flex items-center text-lg font-medium transition-colors hover:bg-foreground/5 hover:rounded-md sm:text-sm',
+        isActive ? 'text-foreground' : 'text-foreground/60',
+        item.disabled && 'cursor-not-allowed opacity-80',
+      )}
+      onClick={onClick}
+    >
+      {isPending ? (
+        <Icons.rotateCcw className="mr-2 size-4 animate-spin" />
+      ) : (
+        <item.icon />
+      )}
+    </button>
+  );
+};
+
 MobileFooterNav.Link = function Item({ item }: ItemProps) {
   const pathname = usePathname();
   const href = item.href as string;
@@ -85,8 +128,6 @@ MobileFooterNav.Link = function Item({ item }: ItemProps) {
   return (
     <Link
       href={item.disabled ? '#' : href}
-      scroll={item.id === 'thread' ? false : true}
-      replace={item.id === 'thread' ? true : false}
       className={cn(
         'h-10 p-4 flex items-center text-lg font-medium transition-colors hover:bg-foreground/5 hover:rounded-md sm:text-sm',
         isActive ? 'text-foreground' : 'text-foreground/60',
