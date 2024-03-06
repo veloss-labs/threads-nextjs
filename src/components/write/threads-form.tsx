@@ -4,8 +4,8 @@ import Avatars from '~/components/shared/avatars';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FieldErrors, FieldPath, get, useForm } from 'react-hook-form';
 import { Form, FormControl, FormField, FormItem } from '~/components/ui/form';
+import LexicalEditor from '~/components/editor/lexical-editor';
 import { Button } from '~/components/ui/button';
-import { TipTapEditor } from '~/components/editor/tiptap-editor';
 import { useSession } from 'next-auth/react';
 import { Icons } from '~/components/icons';
 import { cn } from '~/utils/utils';
@@ -82,30 +82,14 @@ export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <TipTapEditor
-                        ref={field.ref}
-                        editable={true}
-                        debouncedUpdatesEnabled={false}
-                        name={field.name}
-                        value={field.value}
-                        noBorder
-                        className={cn(
-                          'prose prose-brand prose-headings:font-display font-default focus:outline-none',
-                        )}
-                        customClassName={cn(
-                          isDialog ? 'max-w-[462px] p-0' : 'p-0',
-                        )}
-                        onChange={(
-                          _,
-                          description_html: string,
-                          empty: boolean,
-                        ) => {
-                          field.onChange(empty ? '' : description_html);
-                        }}
-                        onBlur={() => {
-                          field.onBlur();
-                        }}
-                      />
+                      {/* <Input
+                        className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        placeholder="스레드를 시작하세요..."
+                        {...field}
+                      /> */}
+                      <LexicalEditor />
                     </FormControl>
                     <ThreadsForm.EditorMessage
                       errors={errors}
