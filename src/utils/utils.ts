@@ -107,3 +107,70 @@ export const getDateFormatted = (date: Date | string) => {
 
   return `${diffYears}년 전`;
 };
+
+// 간단한 TF-IDF 계산
+export function computeTFIDF(documents: string[]): Map<string, number>[] {
+  let tfidf: Map<string, number>[] = documents.map((doc) => new Map());
+  let idf: Map<string, number> = new Map();
+
+  for (let i = 0; i < documents.length; i++) {
+    const target = documents[i];
+    if (isUndefined(target)) {
+      continue;
+    }
+    let words = target.split(' ');
+    let wordCount = words.length;
+    let wordSet = new Set(words);
+
+    wordSet.forEach((word) => {
+      let tf = words.filter((w) => w === word).length / wordCount;
+      tfidf[i]?.set(word, tf);
+
+      if (idf.has(word)) {
+        idf.set(word, idf.get(word)! + 1);
+      } else {
+        idf.set(word, 1);
+      }
+    });
+  }
+
+  idf = new Map(
+    [...idf.entries()].map(([word, count]) => [
+      word,
+      Math.log(documents.length / count),
+    ]),
+  );
+
+  tfidf = tfidf.map(
+    (tfMap) =>
+      new Map(
+        [...tfMap.entries()].map(([word, tf]) => [
+          word,
+          tf * (idf.get(word) || 0),
+        ]),
+      ),
+  );
+
+  return tfidf;
+}
+
+// 간단한 코사인 유사도 계산
+export function cosineSimilarity(
+  a: Map<string, number>,
+  b: Map<string, number>,
+): number {
+  let dotProduct = 0;
+  let aMagnitude = 0;
+  let bMagnitude = 0;
+
+  a.forEach((val, key) => {
+    dotProduct += val * (b.get(key) || 0);
+    aMagnitude += val * val;
+  });
+
+  b.forEach((val) => {
+    bMagnitude += val * val;
+  });
+
+  return dotProduct / (Math.sqrt(aMagnitude) * Math.sqrt(bMagnitude));
+}

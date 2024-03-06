@@ -2,8 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -12,22 +11,22 @@ datasource db {
 }
 
 model User {
-  id             String          @id @default(cuid())
-  name           String?
-  username       String?         @unique
-  password       String?
-  salt           String?
-  email          String?         @unique
-  emailVerified  DateTime?       @map(name: "email_verified")
-  image          String?
-  createdAt      DateTime        @default(now()) @map(name: "created_at")
-  updatedAt      DateTime        @updatedAt @map(name: "updated_at")
-  accounts       Account[]
-  sessions       Session[]
-  profile        UserProfile?
-  threads        Thread[]
-  threadLikes    ThreadLike[]
-  threadComments ThreadComment[]
+  id            String        @id @default(cuid())
+  name          String?
+  username      String?       @unique
+  password      String?
+  salt          String?
+  email         String?       @unique
+  emailVerified DateTime?     @map(name: "email_verified")
+  image         String?
+  createdAt     DateTime      @default(now()) @map(name: "created_at")
+  updatedAt     DateTime      @updatedAt @map(name: "updated_at")
+  accounts      Account[]
+  sessions      Session[]
+  profile       UserProfile?
+  threadAssets  ThreadAsset[]
+  threads       Thread[]
+  threadLikes   ThreadLike[]
 
   @@map(name: "users")
 }
@@ -86,20 +85,23 @@ model VerificationToken {
 }
 
 model Thread {
-  id        String   @id @default(cuid())
-  type      String?  @default("trending") // repost, comment, thread
-  text      String
-  level     Int?     @default(0)
-  deleted   Boolean? @default(false)
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-  userId    String   @map(name: "user_id")
+  id                             String   @id @default(cuid())
+  type                           String?  @default("trending") // repost, comment, thread
+  text                           String
+  level                          Int?     @default(0)
+  deleted                        Boolean? @default(false)
+  whoCanLeaveComments            String   @default("everyone") @map(name: "who_can_leave_comments") // everyone, followers, following, nobody
+  hiddenNumberOfLikesAndComments Boolean? @default(false) @map(name: "hidden_number_of_likes_and_comments")
+  createdAt                      DateTime @default(now()) @map(name: "created_at")
+  updatedAt                      DateTime @updatedAt @map(name: "updated_at")
+  userId                         String   @map(name: "user_id")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  assets   ThreadAsset[]
-  likes    ThreadLike[]
-  comments ThreadComment[]
+  assets                     ThreadAsset[]
+  likes                      ThreadLike[]
+  bookmark                   ThreadBookmark[]
+  threadRecommendationThread ThreadRecommendation[] @relation(name: "ThreadRecommendationThread")
+  recommendations            ThreadRecommendation[]
+  user                       User                   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
 
   @@index([createdAt], map: "threads_created_at")
   @@index([deleted])
@@ -107,19 +109,29 @@ model Thread {
   @@map(name: "threads")
 }
 
-model ThreadBookmark {
-  id String @id @default(cuid())
+model ThreadRecommendation {
+  id                  String @id @default(cuid())
+  threadId            String @map(name: "thread_id")
+  recommendedThreadId String @map(name: "recommended_thread_id")
+  similarity          Float
+
+  thread            Thread @relation(name: "ThreadRecommendationThread", fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  recommendedThread Thread @relation(fields: [recommendedThreadId], references: [id])
+
+  @@index([threadId], map: "thread_recommendations_thread_id")
+  @@map(name: "thread_recommendations")
 }
 
-model ThreadSetting {
-  id                             String   @id @default(cuid())
-  threadId                       String   @map(name: "thread_id")
-  whoCanLeaveComments            String   @default("everyone") @map(name: "who_can_leave_comments") // everyone, followers, following, nobody
-  hiddenNumberOfLikesAndComments Boolean? @default(false) @map(name: "hidden_number_of_likes_and_comments")
-  createdAt                      DateTime @default(now()) @map(name: "created_at")
-  updatedAt                      DateTime @updatedAt @map(name: "updated_at")
+model ThreadBookmark {
+  id        String   @id @default(cuid())
+  threadId  String   @map(name: "thread_id")
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  @@map(name: "thread_settings")
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@index([threadId], map: "thread_bookmarks_thread_id")
+  @@map("thread_bookmarks")
 }
 
 model ThreadLike {
@@ -129,8 +141,8 @@ model ThreadLike {
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
 
   @@unique([threadId, userId])
   @@index(createdAt)
@@ -138,31 +150,18 @@ model ThreadLike {
   @@map(name: "thread_likes")
 }
 
-model ThreadComment {
-  id        String   @id @default(cuid())
-  threadId  String   @map(name: "thread_id")
-  commentId String   @map(name: "comment_id")
-  userId    String   @map(name: "user_id")
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  comment Thread @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([threadId, commentId])
-  @@index([createdAt])
-  @@map(name: "thread_comments")
-}
-
 model ThreadAsset {
   id        String   @id @default(cuid())
-  threadId  String   @map(name: "thread_id")
-  fileId    String   @map(name: "file_id")
+  userId    String?  @map(name: "user_id")
+  threadId  String?  @map(name: "thread_id")
+  fileId    String?  @map(name: "file_id")
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
-  thread    Thread   @relation(fields: [threadId], references: [id])
 
-  @@unique([threadId, fileId])
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  thread Thread? @relation(fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  file   File?   @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
   @@map(name: "thread_assets")
 }
 
@@ -175,6 +174,8 @@ model File {
   uploadType String   @map(name: "upload_type")
   createdAt  DateTime @default(now()) @map(name: "created_at")
   updatedAt  DateTime @updatedAt @map(name: "updated_at")
+
+  threadAsset ThreadAsset[]
 
   @@map(name: "files")
 }
