@@ -56,8 +56,7 @@ model Account {
   session_state            String?
   oauth_token_secret       String?
   oauth_token              String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
@@ -85,23 +84,21 @@ model VerificationToken {
 }
 
 model Thread {
-  id                             String   @id @default(cuid())
-  type                           String?  @default("trending") // repost, comment, thread
+  id                             String                 @id @default(cuid())
   text                           String
-  level                          Int?     @default(0)
-  deleted                        Boolean? @default(false)
-  whoCanLeaveComments            String   @default("everyone") @map(name: "who_can_leave_comments") // everyone, followers, following, nobody
-  hiddenNumberOfLikesAndComments Boolean? @default(false) @map(name: "hidden_number_of_likes_and_comments")
-  createdAt                      DateTime @default(now()) @map(name: "created_at")
-  updatedAt                      DateTime @updatedAt @map(name: "updated_at")
-  userId                         String   @map(name: "user_id")
-
-  assets                     ThreadAsset[]
-  likes                      ThreadLike[]
-  bookmark                   ThreadBookmark[]
-  threadRecommendationThread ThreadRecommendation[] @relation(name: "ThreadRecommendationThread")
-  recommendations            ThreadRecommendation[]
-  user                       User                   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  level                          Int?                   @default(0)
+  deleted                        Boolean?               @default(false)
+  whoCanLeaveComments            String?                @default("everyone") @map(name: "who_can_leave_comments") // everyone, followers, following, nobody
+  hiddenNumberOfLikesAndComments Boolean?               @default(false) @map(name: "hidden_number_of_likes_and_comments")
+  createdAt                      DateTime               @default(now()) @map(name: "created_at")
+  updatedAt                      DateTime               @updatedAt @map(name: "updated_at")
+  userId                         String                 @map(name: "user_id")
+  assets                         ThreadAsset[]
+  likes                          ThreadLike[]
+  bookmark                       ThreadBookmark[]
+  threadRecommendationThread     ThreadRecommendation[] @relation(name: "ThreadRecommendationThread")
+  recommendations                ThreadRecommendation[]
+  user                           User                   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
 
   @@index([createdAt], map: "threads_created_at")
   @@index([deleted])
@@ -114,9 +111,8 @@ model ThreadRecommendation {
   threadId            String @map(name: "thread_id")
   recommendedThreadId String @map(name: "recommended_thread_id")
   similarity          Float
-
-  thread            Thread @relation(name: "ThreadRecommendationThread", fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  recommendedThread Thread @relation(fields: [recommendedThreadId], references: [id])
+  thread              Thread @relation(name: "ThreadRecommendationThread", fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  recommendedThread   Thread @relation(fields: [recommendedThreadId], references: [id])
 
   @@index([threadId], map: "thread_recommendations_thread_id")
   @@map(name: "thread_recommendations")
@@ -140,9 +136,8 @@ model ThreadLike {
   userId    String   @map(name: "user_id")
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
 
   @@unique([threadId, userId])
   @@index(createdAt)
@@ -157,24 +152,22 @@ model ThreadAsset {
   fileId    String?  @map(name: "file_id")
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  thread Thread? @relation(fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  file   File?   @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  thread    Thread?  @relation(fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  file      File?    @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Restrict)
 
   @@map(name: "thread_assets")
 }
 
 model File {
-  id         String   @id @default(cuid())
-  filename   String
-  filesize   Int
-  filetype   String   @map(name: "file_type")
-  publicUrl  String   @map(name: "public_url")
-  uploadType String   @map(name: "upload_type")
-  createdAt  DateTime @default(now()) @map(name: "created_at")
-  updatedAt  DateTime @updatedAt @map(name: "updated_at")
-
+  id          String        @id @default(cuid())
+  filename    String
+  filesize    Int
+  filetype    String        @map(name: "file_type")
+  publicUrl   String        @map(name: "public_url")
+  uploadType  String        @map(name: "upload_type")
+  createdAt   DateTime      @default(now()) @map(name: "created_at")
+  updatedAt   DateTime      @updatedAt @map(name: "updated_at")
   threadAsset ThreadAsset[]
 
   @@map(name: "files")
