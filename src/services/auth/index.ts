@@ -82,9 +82,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   pages: {
     signIn: '/signin',
-    verifyRequest: '/signin',
+    newUser: '/signup',
     error: '/signin', // Error code passed in query string as ?error=
   },
+  debug: process.env.NODE_ENV === 'development',
   session: { strategy: 'jwt' },
   callbacks: {
     async jwt({ token, user }) {
@@ -105,16 +106,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     authorized({ auth, request }) {
       const url = request.nextUrl;
 
+      const isLoggedIn = !!auth?.user;
+
       const authPath: string[] = [
         PAGE_ENDPOINTS.AUTH.SIGNIN,
         PAGE_ENDPOINTS.AUTH.SIGNUP,
       ];
 
-      if (authPath.includes(url.pathname) && !!auth?.user) {
+      const isAuthPath = authPath.includes(url.pathname);
+
+      // 인증 페이지인 데 로그인을 안한 경우 그대로 진행
+      if (authPath.includes(url.pathname) && !isLoggedIn) {
+        return true;
+      }
+
+      // 인증 페이지인데 로그인을 한 경우 루트로 리다이렉트
+      if (isAuthPath && isLoggedIn) {
         return NextResponse.redirect(new URL(PAGE_ENDPOINTS.ROOT, url));
       }
 
-      return !!auth?.user;
+      return isLoggedIn;
     },
   },
 });

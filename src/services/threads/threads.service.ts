@@ -7,7 +7,7 @@ import type {
 import { getThreadsSelector } from '~/services/db/selectors/threads';
 import { remember } from '@epic-web/remember';
 import type { CreateInputSchema } from './threads.input';
-import { computeTFIDF, cosineSimilarity } from '~/utils/utils';
+// import { computeTFIDF, cosineSimilarity } from '~/utils/utils';
 
 export class ThreadService {
   private readonly DEFAULT_LIMIT = 30;
