@@ -12,8 +12,16 @@ import { computeTFIDF, cosineSimilarity } from '~/utils/utils';
 export class ThreadService {
   private readonly DEFAULT_LIMIT = 30;
 
-  create(userId: string, input: CreateInputSchema) {
+  /**
+   * @description 스레드 생성
+   * @param {string} userId - 사용자 ID
+   * @param {CreateInputSchema} input - 생성할 스레드 데이터
+   */
+  async create(userId: string, input: CreateInputSchema) {
     return db.thread.create({
+      select: {
+        id: true,
+      },
       data: {
         userId,
         text: input.text,
@@ -130,32 +138,33 @@ export class ThreadService {
       },
     });
   }
-
-  async recommendThreads(threadId: string) {
-    // 1. 데이터베이스에서 스레드 데이터 가져오기
-    const threads = await db.thread.findMany({
-      where: { deleted: false },
-      select: { id: true, text: true },
-    });
-
-    // 2. TF-IDF 계산
-    const documents = threads.map((thread) => thread.text);
-    const tfidf = computeTFIDF(documents);
-
-    // 3. 코사인 유사도 계산
-    const targetIndex = threads.findIndex((thread) => thread.id === threadId);
-    const similarities = tfidf.map((doc, index) => ({
-      id: threads[index].id,
-      similarity: cosineSimilarity(tfidf[targetIndex], doc),
-    }));
-
-    // 유사도가 가장 높은 스레드를 정렬하여 반환
-    const sorted = similarities.sort((a, b) => b.similarity - a.similarity);
-    return sorted.slice(1, 11); // Top 10, 자기 자신을 제외
-  }
 }
 
 export const threadService = remember(
   'threadService',
   () => new ThreadService(),
 );
+
+// async recommendThreads(threadId: string) {
+//   // 1. 데이터베이스에서 스레드 데이터 가져오기
+//   const threads = await db.thread.findMany({
+//     where: { deleted: false },
+//     select: { id: true, text: true },
+//   });
+
+//   // 2. TF-IDF 계산
+//   const documents = threads.map((thread) => thread.text);
+//   const tfidf = computeTFIDF(documents);
+
+//   // 3. 코사인 유사도 계산
+//   const targetIndex = threads.findIndex((thread) => thread.id === threadId);
+//   const similarities = tfidf.map((doc, index) => ({
+//     id: threads[index]?.id,
+//     // @ts-expect-error index is not undefined
+//     similarity: cosineSimilarity(tfidf[targetIndex], doc),
+//   }));
+
+//   // 유사도가 가장 높은 스레드를 정렬하여 반환
+//   const sorted = similarities.sort((a, b) => b.similarity - a.similarity);
+//   return sorted.slice(1, 11); // Top 10, 자기 자신을 제외
+// }

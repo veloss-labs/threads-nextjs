@@ -21,7 +21,7 @@ interface ThreadsFormProps {
 }
 
 export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
-  const { data } = useSession();
+  const { data: session } = useSession();
 
   const mutation = api.threads.create.useMutation({
     async onSuccess(data) {
@@ -51,14 +51,10 @@ export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
   return (
     <>
       <div className="flex items-center space-x-4">
-        <Avatars
-          src={data?.user?.image ?? undefined}
-          fallback={'T'}
-          alt="thumbnail"
-        />
+        <Avatars src={undefined} fallback={'T'} alt="thumbnail" />
         <div>
           <p className="text-sm font-medium leading-none">
-            {data?.user?.username}
+            {session?.user?.username}
           </p>
         </div>
         <div className="flex w-full justify-end">

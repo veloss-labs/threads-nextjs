@@ -19,8 +19,8 @@ export const listQuerySchema = z
     keyword: z.string().optional(),
     userId: z.string().optional(),
     type: z
-      .enum(['trending', 'user', 'repost', 'comment', 'follow'])
-      .default('trending')
+      .enum(['recommendation', 'user', 'repost', 'comment', 'follow'])
+      .default('recommendation')
       .optional(),
   })
   .merge(cursorPaginationQuerySchema);

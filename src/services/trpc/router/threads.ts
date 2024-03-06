@@ -19,6 +19,9 @@ export const threadsRouter = createTRPCRouter({
       try {
         const { id } = await threadService.create(userId, input);
         const item = await threadService.getItem(id);
+
+        // 추천 스레드 계산
+
         return {
           ok: true,
           data: item,
@@ -31,7 +34,7 @@ export const threadsRouter = createTRPCRouter({
         };
       }
     }),
-  getThreads: publicProcedure
+  getThreads: protectedProcedure
     .input(listQuerySchema)
     .query(async ({ input }) => {
       try {
