@@ -7,11 +7,14 @@ import { getTargetElement } from '~/libs/browser/dom';
 import { api } from '~/services/trpc/react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import SkeletonCard from '~/components/skeleton/card';
+import { ThreadListQuerySchema } from '~/services/threads/threads.query';
 
 interface ThreadListProps {
   totalCount?: number;
   initialData?: any;
-  userId?: string;
+  userId?: ThreadListQuerySchema['userId'];
+  keyword?: ThreadListQuerySchema['keyword'];
+  type?: ThreadListQuerySchema['type'];
 }
 
 const CLIENT_LIMIT_SIZE = 30;
@@ -23,7 +26,12 @@ const getCursorLimit = (searchParams: URLSearchParams) => ({
   limit: Number(searchParams.get('limit') || CLIENT_LIMIT_SIZE.toString()),
 });
 
-export default function ThreadList({ initialData, userId }: ThreadListProps) {
+export default function ThreadList({
+  initialData,
+  userId,
+  keyword,
+  type,
+}: ThreadListProps) {
   const total = initialData?.totalCount;
   const seachParams = useSearchParams();
   const hydrating = useIsHydrating('[data-hydrating-signal]');
@@ -32,6 +40,8 @@ export default function ThreadList({ initialData, userId }: ThreadListProps) {
     api.threads.getThreads.useSuspenseInfiniteQuery(
       {
         userId,
+        keyword,
+        type,
       },
       {
         initialData: () => {

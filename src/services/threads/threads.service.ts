@@ -74,15 +74,15 @@ export class ThreadService {
     });
   }
 
-  hasNextPage(endCursor: string | undefined, userId: string | undefined) {
+  hasNextPage(endCursor: string | undefined, input: ThreadListQuerySchema) {
     return db.thread.count({
       where: {
         id: {
           lt: endCursor,
         },
         deleted: false,
-        ...(userId && {
-          userId,
+        ...(input?.userId && {
+          userId: input.userId,
         }),
       },
     });
@@ -105,12 +105,12 @@ export class ThreadService {
     });
   }
 
-  count(userId: string | undefined) {
+  count(input: ThreadListQuerySchema) {
     return db.thread.count({
       where: {
         deleted: false,
-        ...(userId && {
-          userId,
+        ...(input?.userId && {
+          userId: input.userId,
         }),
       },
     });

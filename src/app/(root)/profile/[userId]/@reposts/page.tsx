@@ -12,11 +12,16 @@ interface Props {
 export default async function Pages({ params }: Props) {
   const initialData = await api.threads.getThreads({
     userId: params.userId,
+    type: 'repost',
   });
 
   return (
     <React.Suspense fallback={<SkeletonCardList />}>
-      <ThreadList userId={params.userId} initialData={initialData} />
+      <ThreadList
+        userId={params.userId}
+        initialData={initialData}
+        type="repost"
+      />
     </React.Suspense>
   );
 }

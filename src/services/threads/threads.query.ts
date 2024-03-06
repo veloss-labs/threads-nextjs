@@ -18,8 +18,11 @@ export const listQuerySchema = z
   .object({
     keyword: z.string().optional(),
     userId: z.string().optional(),
+    type: z
+      .enum(['trending', 'user', 'repost', 'comment', 'follow'])
+      .default('trending')
+      .optional(),
   })
-  .merge(cursorPaginationQuerySchema)
-  .optional();
+  .merge(cursorPaginationQuerySchema);
 
 export type ThreadListQuerySchema = z.infer<typeof listQuerySchema>;

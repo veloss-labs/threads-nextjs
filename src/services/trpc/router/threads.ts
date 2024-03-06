@@ -36,13 +36,13 @@ export const threadsRouter = createTRPCRouter({
     .query(async ({ input }) => {
       try {
         const [totalCount, list] = await Promise.all([
-          threadService.count(input?.userId),
+          threadService.count(input),
           threadService.getItems(input),
         ]);
 
         const endCursor = list.at(-1)?.id ?? null;
         const hasNextPage = endCursor
-          ? (await threadService.hasNextPage(endCursor, input?.userId)) > 0
+          ? (await threadService.hasNextPage(endCursor, input)) > 0
           : false;
 
         return {
