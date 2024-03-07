@@ -7,11 +7,11 @@ import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
+import { Klass, LexicalNode } from 'lexical';
 import React, { useState } from 'react';
-
-// import ExampleTheme from './ExampleTheme';
-// import ToolbarPlugin from './plugins/ToolbarPlugin';
-// import TreeViewPlugin from './plugins/TreeViewPlugin';
+import { Skeleton } from '~/components/ui/skeleton';
+import MentionsPlugin from '~/components/editor/plugins/mentions-plugin';
+import MentionNode from '~/components/editor/nodes/mention-node';
 
 function Placeholder() {
   return (
@@ -23,10 +23,12 @@ function Placeholder() {
   );
 }
 
+const EditorNodes: Array<Klass<LexicalNode>> = [MentionNode];
+
 export default function LexicalEditor() {
   const [editorConfig, setEditorConfig] = useState<InitialConfigType>({
     namespace: 'ThreadEditor',
-    nodes: [],
+    nodes: [...EditorNodes],
     onError(error: Error) {
       throw error;
     },
@@ -51,8 +53,25 @@ export default function LexicalEditor() {
           />
           <HistoryPlugin />
           <AutoFocusPlugin />
+          <MentionsPlugin />
         </div>
       </div>
     </LexicalComposer>
   );
 }
+
+LexicalEditor.Skeleton = function LexicalEditorSkeleton() {
+  return (
+    <div className="space-y-2">
+      <Skeleton className="h-4 w-[400px]" />
+      <Skeleton className="h-4 w-[450px]" />
+      <Skeleton className="h-4 w-[350px]" />
+      <Skeleton className="h-4 w-[400px]" />
+      <Skeleton className="h-4 w-[200px]" />
+      <Skeleton className="h-4 w-[150px]" />
+      <Skeleton className="h-4 w-[250px]" />
+      <Skeleton className="h-4 w-[550px]" />
+      <Skeleton className="h-4 w-[500px]" />
+    </div>
+  );
+};

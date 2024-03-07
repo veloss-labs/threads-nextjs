@@ -14,6 +14,7 @@ import {
   CreateInputSchema,
   createInputSchema,
 } from '~/services/threads/threads.input';
+import ClientOnly from '../shared/client-only';
 
 interface ThreadsFormProps {
   isDialog?: boolean;
@@ -82,14 +83,9 @@ export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      {/* <Input
-                        className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                        autoCapitalize="none"
-                        autoCorrect="off"
-                        placeholder="스레드를 시작하세요..."
-                        {...field}
-                      /> */}
-                      <LexicalEditor />
+                      <ClientOnly fallback={<LexicalEditor.Skeleton />}>
+                        <LexicalEditor />
+                      </ClientOnly>
                     </FormControl>
                     <ThreadsForm.EditorMessage
                       errors={errors}
