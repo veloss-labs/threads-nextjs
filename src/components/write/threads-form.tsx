@@ -15,6 +15,7 @@ import {
   createInputSchema,
 } from '~/services/threads/threads.input';
 import ClientOnly from '../shared/client-only';
+import useBeforeUnload from '~/libs/hooks/useBeforeUnload';
 
 interface ThreadsFormProps {
   isDialog?: boolean;
@@ -46,8 +47,11 @@ export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
   };
 
   const {
+    watch,
     formState: { errors },
   } = form;
+
+  const watchText = watch('text');
 
   return (
     <>
@@ -98,6 +102,7 @@ export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
           </form>
         </Form>
       </div>
+      {watchText && watchText.length > 0 ? <ThreadsForm.BeforeUnload /> : null}
     </>
   );
 }
@@ -134,4 +139,23 @@ ThreadsForm.EditorMessage = function Item({
   }
 
   return errorMsgFn(body);
+};
+
+ThreadsForm.BeforeUnload = function Item() {
+  useBeforeUnload(
+    (evt) => {
+      const returnValue =
+        '화면을 벗어나면 작업이 취소됩니다. 화면을 벗어나시겠습니까?';
+
+      evt.preventDefault();
+      evt.returnValue = returnValue;
+
+      return returnValue;
+    },
+    {
+      capture: true,
+    },
+  );
+
+  return null;
 };

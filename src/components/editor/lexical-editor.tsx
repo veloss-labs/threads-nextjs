@@ -7,13 +7,23 @@ import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
-import { Klass, LexicalNode } from 'lexical';
+import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
+import {
+  EditorState,
+  Klass,
+  LexicalEditor as ReactLexicalEditor,
+  LexicalNode,
+} from 'lexical';
 import React, { useState } from 'react';
 import { Skeleton } from '~/components/ui/skeleton';
 import MentionsPlugin from '~/components/editor/plugins/mentions-plugin';
 import HashTagsPlugin from '~/components/editor/plugins/hashtags-plugin';
+import LexicalAutoLinkPlugin from '~/components/editor/plugins/auto-link-plugin';
+import LinkPlugin from '~/components/editor/plugins/hashtags-plugin';
+import AutoLinkPlugin from '~/components/editor/plugins/auto-link-plugin';
 import MentionNode from '~/components/editor/nodes/mention-node';
 import HashTagNode from '~/components/editor/nodes/hashtag-node';
+import { AutoLinkNode, LinkNode } from '@lexical/link';
 
 function Placeholder() {
   return (
@@ -25,9 +35,21 @@ function Placeholder() {
   );
 }
 
-const EditorNodes: Array<Klass<LexicalNode>> = [MentionNode, HashTagNode];
+const EditorNodes: Array<Klass<LexicalNode>> = [
+  MentionNode,
+  HashTagNode,
+  AutoLinkNode,
+  LinkNode,
+];
 
-export default function LexicalEditor() {
+interface LexicalEditorProps {
+  onChange?: (
+    editorState: EditorState,
+    editor: ReactLexicalEditor,
+    tags: Set<string>,
+  ) => void;
+}
+export default function LexicalEditor({ onChange }: LexicalEditorProps) {
   const [editorConfig, setEditorConfig] = useState<InitialConfigType>({
     namespace: 'ThreadEditor',
     nodes: [...EditorNodes],
@@ -39,6 +61,7 @@ export default function LexicalEditor() {
       text: {
         base: 'text-base text-slate-900 dark:text-slate-100',
       },
+      link: 'js-lexical-link',
     },
   });
 
@@ -55,8 +78,14 @@ export default function LexicalEditor() {
           />
           <HistoryPlugin />
           <AutoFocusPlugin />
+          <AutoLinkPlugin />
           <MentionsPlugin />
           <HashTagsPlugin />
+          <LexicalAutoLinkPlugin />
+          <LinkPlugin />
+          {onChange && typeof onChange === 'function' ? (
+            <OnChangePlugin onChange={onChange} />
+          ) : null}
         </div>
       </div>
     </LexicalComposer>
