@@ -75,7 +75,7 @@ const AtSignHashTagsRegexAliasRegex = new RegExp(
 );
 
 function useHashTagsLookupService(mentionString: string | null) {
-  const { data, isLoading } = api.users.getMentionUsers.useQuery(
+  const { data, isLoading } = api.tags.getMentionTags.useQuery(
     {
       keyword: mentionString ?? undefined,
     },
@@ -201,7 +201,7 @@ export default function NewHashTagsPlugin(): JSX.Element | null {
         (listItem) =>
           new HashTagTypeaheadOption({
             tagId: listItem.id,
-            tagName: listItem.username ?? 'EmptyTag',
+            tagName: listItem.name,
           }),
       ) ?? [],
     [data],

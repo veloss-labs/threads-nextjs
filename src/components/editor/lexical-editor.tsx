@@ -11,7 +11,9 @@ import { Klass, LexicalNode } from 'lexical';
 import React, { useState } from 'react';
 import { Skeleton } from '~/components/ui/skeleton';
 import MentionsPlugin from '~/components/editor/plugins/mentions-plugin';
+import HashTagsPlugin from '~/components/editor/plugins/hashtags-plugin';
 import MentionNode from '~/components/editor/nodes/mention-node';
+import HashTagNode from '~/components/editor/nodes/hashtag-node';
 
 function Placeholder() {
   return (
@@ -23,7 +25,7 @@ function Placeholder() {
   );
 }
 
-const EditorNodes: Array<Klass<LexicalNode>> = [MentionNode];
+const EditorNodes: Array<Klass<LexicalNode>> = [MentionNode, HashTagNode];
 
 export default function LexicalEditor() {
   const [editorConfig, setEditorConfig] = useState<InitialConfigType>({
@@ -54,6 +56,7 @@ export default function LexicalEditor() {
           <HistoryPlugin />
           <AutoFocusPlugin />
           <MentionsPlugin />
+          <HashTagsPlugin />
         </div>
       </div>
     </LexicalComposer>
