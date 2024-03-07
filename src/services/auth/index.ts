@@ -85,7 +85,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     newUser: '/signup',
     error: '/signin', // Error code passed in query string as ?error=
   },
-  debug: process.env.NODE_ENV === 'development',
   session: { strategy: 'jwt' },
   callbacks: {
     async jwt({ token, user }) {

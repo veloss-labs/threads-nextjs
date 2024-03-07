@@ -70,9 +70,12 @@ export default class MentionNode extends TextNode {
 
   createDOM(config: EditorConfig): HTMLElement {
     const dom = super.createDOM(config);
-    dom.dataset.type = 'mention';
+    dom.dataset.type = 'js-lexical-mention';
+    dom.dataset.value = this.__mention;
+    // dom.className =
+    // 'mention font-medium text-blue-400 underline underline-offset-4';
     dom.className =
-      'mention font-medium text-blue-400 underline underline-offset-4';
+      'js-lexical-mention relative rounded bg-muted px-[0.3rem] py-[0.2rem] mx-1 font-mono text-sm font-semibold';
     return dom;
   }
 

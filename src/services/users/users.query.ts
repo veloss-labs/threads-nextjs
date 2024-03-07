@@ -6,10 +6,12 @@ export const cursorPaginationQuerySchema = z.object({
   cursor: z.string().optional(),
 });
 
+export const searchQuerySchema = z.object({
+  keyword: z.string().optional(),
+});
+
 export const listQuerySchema = z
-  .object({
-    keyword: z.string().optional(),
-  })
+  .object(searchQuerySchema.shape)
   .merge(cursorPaginationQuerySchema)
   .optional();
 

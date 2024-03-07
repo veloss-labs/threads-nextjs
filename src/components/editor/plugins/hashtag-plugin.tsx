@@ -8,12 +8,11 @@ import {
 import { TextNode } from 'lexical';
 import React, { useCallback, useDeferredValue, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { $createMentionNode } from '~/components/editor/nodes/mention-node';
 import { Icons } from '~/components/icons';
-import Avatars from '~/components/shared/avatars';
 import { getTargetElement } from '~/libs/browser/dom';
 import { api } from '~/services/trpc/react';
 import { cn } from '~/utils/utils';
+import { $createHashTagNode } from '~/components/editor/nodes/hashtag-node';
 
 const PUNCTUATION =
   '\\.,\\+\\*\\?\\$\\@\\|#{}\\(\\)\\^\\-\\[\\]\\\\/!%\'"~=<>_:;';
@@ -26,7 +25,7 @@ const DocumentMentionsRegex = {
 
 const PUNC = DocumentMentionsRegex.PUNCTUATION;
 
-const TRIGGERS = ['@'].join('');
+const TRIGGERS = ['#'].join('');
 
 // Chars we expect to see in a mention (non-space, non-punctuation).
 const VALID_CHARS = '[^' + TRIGGERS + PUNC + '\\s]';
@@ -44,7 +43,7 @@ const VALID_JOINS =
 
 const LENGTH_LIMIT = 75;
 
-const AtSignMentionsRegex = new RegExp(
+const AtSignHashTagsRegex = new RegExp(
   '(^|\\s|\\()(' +
     '[' +
     TRIGGERS +
@@ -62,7 +61,7 @@ const AtSignMentionsRegex = new RegExp(
 const ALIAS_LENGTH_LIMIT = 50;
 
 // Regex used to match alias.
-const AtSignMentionsRegexAliasRegex = new RegExp(
+const AtSignHashTagsRegexAliasRegex = new RegExp(
   '(^|\\s|\\()(' +
     '[' +
     TRIGGERS +
@@ -75,7 +74,7 @@ const AtSignMentionsRegexAliasRegex = new RegExp(
     ')$',
 );
 
-function useMentionLookupService(mentionString: string | null) {
+function useHashTagsLookupService(mentionString: string | null) {
   const { data, isLoading } = api.users.getMentionUsers.useQuery(
     {
       keyword: mentionString ?? undefined,
@@ -92,14 +91,14 @@ function useMentionLookupService(mentionString: string | null) {
   };
 }
 
-function checkForAtSignMentions(
+function checkForAtSignHashTags(
   text: string,
   minMatchLength: number,
 ): MenuTextMatch | null {
-  let match = AtSignMentionsRegex.exec(text);
+  let match = AtSignHashTagsRegex.exec(text);
 
   if (match === null) {
-    match = AtSignMentionsRegexAliasRegex.exec(text);
+    match = AtSignHashTagsRegexAliasRegex.exec(text);
   }
   if (match !== null) {
     // The strategy ignores leading whitespace but we need to know it's
@@ -123,32 +122,27 @@ function checkForAtSignMentions(
 }
 
 function getPossibleQueryMatch(text: string): MenuTextMatch | null {
-  return checkForAtSignMentions(text, 1);
+  return checkForAtSignHashTags(text, 1);
 }
 
-interface MentionTypeaheadOptionParams {
-  userId: string;
-  username: string;
-  otherName?: string;
-  picture: JSX.Element;
+interface HashTagTypeaheadOptionParams {
+  tagId: string;
+  tagName: string;
 }
 
-class MentionTypeaheadOption extends MenuOption {
-  userId: string;
+class HashTagTypeaheadOption extends MenuOption {
+  tagId: string;
   name: string;
-  picture: JSX.Element;
   otherName?: string;
 
-  constructor(params: MentionTypeaheadOptionParams) {
-    super(params.username);
-    this.userId = params.userId;
-    this.name = params.username;
-    this.otherName = params.otherName;
-    this.picture = params.picture;
+  constructor(params: HashTagTypeaheadOptionParams) {
+    super(params.tagName);
+    this.tagId = params.tagId;
+    this.name = params.tagName;
   }
 }
 
-function MentionsTypeaheadMenuItem({
+function HashTagsTypeaheadMenuItem({
   index,
   isSelected,
   onClick,
@@ -159,7 +153,7 @@ function MentionsTypeaheadMenuItem({
   isSelected: boolean;
   onClick: () => void;
   onMouseEnter: () => void;
-  option: MentionTypeaheadOption;
+  option: HashTagTypeaheadOption;
 }) {
   return (
     <li
@@ -179,29 +173,23 @@ function MentionsTypeaheadMenuItem({
       onMouseEnter={onMouseEnter}
       onClick={onClick}
     >
-      {option.picture}
       <div>
         <p className="m-0 block max-w-full truncate font-semibold">
           {option.name}
         </p>
-        {option.otherName && (
-          <p className="m-0 block max-w-full truncate text-xs text-muted-foreground">
-            {option.otherName}
-          </p>
-        )}
       </div>
     </li>
   );
 }
 
-export default function NewMentionsPlugin(): JSX.Element | null {
+export default function NewHashTagsPlugin(): JSX.Element | null {
   const [editor] = useLexicalComposerContext();
 
   const [queryString, setQueryString] = useState<string | null>(null);
 
   const deferredQueryString = useDeferredValue(queryString);
 
-  const { data, isLoading } = useMentionLookupService(deferredQueryString);
+  const { data, isLoading } = useHashTagsLookupService(deferredQueryString);
 
   const checkForSlashTriggerMatch = useBasicTypeaheadTriggerMatch('/', {
     minLength: 0,
@@ -211,11 +199,9 @@ export default function NewMentionsPlugin(): JSX.Element | null {
     () =>
       data?.map(
         (listItem) =>
-          new MentionTypeaheadOption({
-            userId: listItem.id,
-            username: listItem.username ?? 'EmptyName',
-            otherName: listItem.name ?? undefined,
-            picture: <Avatars src={undefined} alt="thumbnail" fallback="T" />,
+          new HashTagTypeaheadOption({
+            tagId: listItem.id,
+            tagName: listItem.username ?? 'EmptyTag',
           }),
       ) ?? [],
     [data],
@@ -223,16 +209,16 @@ export default function NewMentionsPlugin(): JSX.Element | null {
 
   const onSelectOption = useCallback(
     (
-      selectedOption: MentionTypeaheadOption,
+      selectedOption: HashTagTypeaheadOption,
       nodeToReplace: TextNode | null,
       closeMenu: () => void,
     ) => {
       editor.update(() => {
-        const mentionNode = $createMentionNode(selectedOption.name);
+        const hashTagNode = $createHashTagNode(selectedOption.name);
         if (nodeToReplace) {
-          nodeToReplace.replace(mentionNode);
+          nodeToReplace.replace(hashTagNode);
         }
-        mentionNode.select();
+        hashTagNode.select();
         closeMenu();
       });
     },
@@ -251,7 +237,7 @@ export default function NewMentionsPlugin(): JSX.Element | null {
   );
 
   return (
-    <LexicalTypeaheadMenuPlugin<MentionTypeaheadOption>
+    <LexicalTypeaheadMenuPlugin<HashTagTypeaheadOption>
       onQueryChange={setQueryString}
       onSelectOption={onSelectOption}
       triggerFn={checkForMentionMatch}
@@ -275,7 +261,7 @@ export default function NewMentionsPlugin(): JSX.Element | null {
                   <ul>
                     {options.length > 0 ? (
                       options.map((option, i: number) => (
-                        <MentionsTypeaheadMenuItem
+                        <HashTagsTypeaheadMenuItem
                           index={i}
                           isSelected={selectedIndex === i}
                           onClick={() => {

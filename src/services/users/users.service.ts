@@ -20,6 +20,7 @@ export class UserService {
       data,
     });
   }
+
   async searchCount(input: UserListQuerySchema) {
     return db.user.count({
       where: {
@@ -29,6 +30,7 @@ export class UserService {
       },
     });
   }
+
   async getSearchItems(input: UserListQuerySchema) {
     return db.user.findMany({
       where: {
@@ -48,6 +50,7 @@ export class UserService {
       select: getUserSelector(),
     });
   }
+
   hasSearchNextPage(input: UserListQuerySchema, endCursor: string | undefined) {
     return db.user.count({
       where: {
@@ -106,6 +109,25 @@ export class UserService {
     }
 
     return omit(user, ['password', 'salt']);
+  }
+
+  // 멘션 팝업 리스트에서 보여주기 위한 유저 리스트 조회
+  async getMentionUsers(keyword: string, userId: string) {
+    return db.user.findMany({
+      where: {
+        id: {
+          not: userId,
+        },
+        username: {
+          contains: keyword,
+        },
+      },
+      take: 10,
+      select: getUserSelector(),
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
   }
 }
 

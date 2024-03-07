@@ -99,6 +99,7 @@ model Thread {
   threadRecommendationThread     ThreadRecommendation[] @relation(name: "ThreadRecommendationThread")
   recommendations                ThreadRecommendation[]
   user                           User                   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  tags                           ThreadTag[]
 
   @@index([createdAt], map: "threads_created_at")
   @@index([deleted])
@@ -159,6 +160,17 @@ model ThreadAsset {
   @@map(name: "thread_assets")
 }
 
+model ThreadTag {
+  id       String @id @default(cuid())
+  threadId String @map(name: "thread_id")
+  tagId    String @map(name: "tag_id")
+  thread   Thread @relation(fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  tag      Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@unique([threadId, tagId])
+  @@map(name: "thread_tags")
+}
+
 model File {
   id          String        @id @default(cuid())
   filename    String
@@ -171,4 +183,14 @@ model File {
   threadAsset ThreadAsset[]
 
   @@map(name: "files")
+}
+
+model Tag {
+  id        String      @id @default(cuid())
+  name      String      @unique
+  createdAt DateTime    @default(now()) @map(name: "created_at")
+  updatedAt DateTime    @updatedAt @map(name: "updated_at")
+  ThreadTag ThreadTag[]
+
+  @@map(name: "tags")
 }
