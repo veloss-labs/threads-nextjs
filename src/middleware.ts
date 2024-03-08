@@ -4,6 +4,6 @@ export { auth as middleware } from '~/services/auth';
 export const config = {
   // matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
   matcher: [
-    '/((?!api|manifest.webmanifest|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|manifest.webmanifest|icons|og|assets|_next/static|_next/image|favicon.ico).*)',
   ],
 };

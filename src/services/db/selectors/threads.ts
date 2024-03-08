@@ -6,10 +6,12 @@ import { type ThreadListQuerySchema } from '~/services/threads/threads.query';
 export const getThreadsSelector = (input?: ThreadListQuerySchema) =>
   Prisma.validator<Prisma.ThreadSelect>()({
     id: true,
-    type: true,
     text: true,
     level: true,
     createdAt: true,
+    whoCanLeaveComments: true,
+    hiddenNumberOfLikesAndComments: true,
+    deleted: true,
     user: {
       select: getUserSelector(),
     },
@@ -17,7 +19,13 @@ export const getThreadsSelector = (input?: ThreadListQuerySchema) =>
 
 export type ThreadSelectSchema = Pick<
   Thread,
-  'id' | 'type' | 'text' | 'level' | 'createdAt'
+  | 'id'
+  | 'text'
+  | 'level'
+  | 'createdAt'
+  | 'deleted'
+  | 'hiddenNumberOfLikesAndComments'
+  | 'whoCanLeaveComments'
 > & {
   user: UserSelectSchema;
 };

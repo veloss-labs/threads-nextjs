@@ -1,23 +1,24 @@
 import {
   createTRPCRouter,
-  publicProcedure,
   protectedProcedure,
 } from '~/services/trpc/core/trpc';
 import { userIdSchema } from '~/services/users/users.input';
-import { listQuerySchema } from '~/services/users/users.query';
+import {
+  listQuerySchema,
+  searchQuerySchema,
+} from '~/services/users/users.query';
 import { userService } from '~/services/users/users.service';
 
 export const usersRouter = createTRPCRouter({
-  getUser: publicProcedure.input(userIdSchema).query(async ({ input }) => {
+  byId: protectedProcedure.input(userIdSchema).query(async ({ input }) => {
     try {
-      const user = await userService.getItem(input.userId);
-      return user;
+      return await userService.byId(input.userId);
     } catch (error) {
       console.log('error', error);
       return null;
     }
   }),
-  getSearchUsers: publicProcedure
+  getSearchUsers: protectedProcedure
     .input(listQuerySchema)
     .query(async ({ input }) => {
       try {
@@ -45,6 +46,22 @@ export const usersRouter = createTRPCRouter({
           endCursor: null,
           hasNextPage: false,
         };
+      }
+    }),
+  getMentionUsers: protectedProcedure
+    .input(searchQuerySchema)
+    .query(async ({ input, ctx }) => {
+      try {
+        if (!input.keyword) {
+          return [];
+        }
+
+        const userId = ctx.session.user.id;
+
+        return await userService.getMentionUsers(input.keyword, userId);
+      } catch (error) {
+        console.log('error', error);
+        return [];
       }
     }),
 });

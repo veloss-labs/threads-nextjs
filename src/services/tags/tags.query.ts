@@ -15,4 +15,4 @@ export const listQuerySchema = z
   .merge(cursorPaginationQuerySchema)
   .optional();
 
-export type UserListQuerySchema = z.infer<typeof listQuerySchema>;
+export type TagListQuerySchema = z.infer<typeof listQuerySchema>;

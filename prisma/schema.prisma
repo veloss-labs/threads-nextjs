@@ -2,8 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -12,24 +11,23 @@ datasource db {
 }
 
 model User {
-  id             String          @id @default(cuid())
-  name           String?
-  username       String?         @unique
-  password       String?
-  salt           String?
-  email          String?         @unique
-  emailVerified  DateTime?       @map(name: "email_verified")
-  image          String?
-  createdAt      DateTime        @default(now()) @map(name: "created_at")
-  updatedAt      DateTime        @updatedAt @map(name: "updated_at")
-  accounts       Account[]
-  sessions       Session[]
-  profile        UserProfile?
-  threads        Thread[]
-  threadLikes    ThreadLike[]
-  threadReposts  ThreadRepost[]
-  threadComments ThreadComment[]
-  reports        Report[]
+  id            String        @id @default(cuid())
+  name          String?
+  username      String?       @unique
+  password      String?
+  salt          String?
+  email         String?       @unique
+  emailVerified DateTime?     @map(name: "email_verified")
+  image         String?
+  createdAt     DateTime      @default(now()) @map(name: "created_at")
+  updatedAt     DateTime      @updatedAt @map(name: "updated_at")
+  accounts      Account[]
+  sessions      Session[]
+  profile       UserProfile?
+  threadAssets  ThreadAsset[]
+  threads       Thread[]
+  threadLikes   ThreadLike[]
+  followTags    FollowTag[]
 
   @@map(name: "users")
 }
@@ -59,8 +57,7 @@ model Account {
   session_state            String?
   oauth_token_secret       String?
   oauth_token              String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
@@ -88,27 +85,52 @@ model VerificationToken {
 }
 
 model Thread {
-  id        String   @id @default(cuid())
-  type      String?  @default("thread") // repost, comment, thread
-  text      String
-  level     Int?     @default(0)
-  deleted   Boolean? @default(false)
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-  userId    String   @map(name: "user_id")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  assets   ThreadAsset[]
-  likes    ThreadLike[]
-  reposts  ThreadRepost[]
-  comments ThreadComment[]
-  reports  ReportThread[]
+  id                             String                 @id @default(cuid())
+  text                           String
+  jsonString                     String?                @map(name: "json_string")
+  level                          Int?                   @default(0)
+  deleted                        Boolean?               @default(false)
+  whoCanLeaveComments            String?                @default("everyone") @map(name: "who_can_leave_comments") // everyone, followers, following, nobody
+  hiddenNumberOfLikesAndComments Boolean?               @default(false) @map(name: "hidden_number_of_likes_and_comments")
+  createdAt                      DateTime               @default(now()) @map(name: "created_at")
+  updatedAt                      DateTime               @updatedAt @map(name: "updated_at")
+  userId                         String                 @map(name: "user_id")
+  assets                         ThreadAsset[]
+  likes                          ThreadLike[]
+  bookmarks                      ThreadBookmark[]
+  threadRecommendationThreads    ThreadRecommendation[] @relation(name: "ThreadRecommendationThread")
+  recommendations                ThreadRecommendation[]
+  user                           User                   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  tags                           ThreadTag[]
 
   @@index([createdAt], map: "threads_created_at")
   @@index([deleted])
   @@index([userId, deleted], map: "threads_user_id_deleted")
   @@map(name: "threads")
+}
+
+model ThreadRecommendation {
+  id                  String @id @default(cuid())
+  threadId            String @map(name: "thread_id")
+  recommendedThreadId String @map(name: "recommended_thread_id")
+  similarity          Float
+  thread              Thread @relation(name: "ThreadRecommendationThread", fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  recommendedThread   Thread @relation(fields: [recommendedThreadId], references: [id])
+
+  @@index([threadId], map: "thread_recommendations_thread_id")
+  @@map(name: "thread_recommendations")
+}
+
+model ThreadBookmark {
+  id        String   @id @default(cuid())
+  threadId  String   @map(name: "thread_id")
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@index([threadId], map: "thread_bookmarks_thread_id")
+  @@map("thread_bookmarks")
 }
 
 model ThreadLike {
@@ -117,9 +139,8 @@ model ThreadLike {
   userId    String   @map(name: "user_id")
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
 
   @@unique([threadId, userId])
   @@index(createdAt)
@@ -127,86 +148,65 @@ model ThreadLike {
   @@map(name: "thread_likes")
 }
 
-model ThreadRepost {
-  id        String   @id @default(cuid())
-  threadId  String   @map(name: "thread_id")
-  repostId  String   @map(name: "repost_id")
-  userId    String   @map(name: "user_id")
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  repost Thread @relation(fields: [repostId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([threadId, repostId, userId])
-  @@index(createdAt)
-  @@map(name: "thread_reposts")
-}
-
-model ThreadComment {
-  id        String   @id @default(cuid())
-  threadId  String   @map(name: "thread_id")
-  commentId String   @map(name: "comment_id")
-  userId    String   @map(name: "user_id")
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  comment Thread @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([threadId, commentId])
-  @@index([createdAt])
-  @@map(name: "thread_comments")
-}
-
 model ThreadAsset {
   id        String   @id @default(cuid())
-  threadId  String   @map(name: "thread_id")
-  fileId    String   @map(name: "file_id")
+  userId    String?  @map(name: "user_id")
+  threadId  String?  @map(name: "thread_id")
+  fileId    String?  @map(name: "file_id")
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
-  thread    Thread   @relation(fields: [threadId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  thread    Thread?  @relation(fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  file      File?    @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Restrict)
 
-  @@unique([threadId, fileId])
   @@map(name: "thread_assets")
 }
 
+model ThreadTag {
+  id       String @id @default(cuid())
+  threadId String @map(name: "thread_id")
+  tagId    String @map(name: "tag_id")
+  thread   Thread @relation(fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  tag      Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@unique([threadId, tagId])
+  @@map(name: "thread_tags")
+}
+
 model File {
-  id         String   @id @default(cuid())
+  id         String        @id @default(cuid())
   filename   String
   filesize   Int
-  filetype   String   @map(name: "file_type")
-  publicUrl  String   @map(name: "public_url")
-  uploadType String   @map(name: "upload_type")
-  createdAt  DateTime @default(now()) @map(name: "created_at")
-  updatedAt  DateTime @updatedAt @map(name: "updated_at")
+  filetype   String        @map(name: "file_type")
+  publicUrl  String        @map(name: "public_url")
+  uploadType String        @map(name: "upload_type")
+  createdAt  DateTime      @default(now()) @map(name: "created_at")
+  updatedAt  DateTime      @updatedAt @map(name: "updated_at")
+  assets     ThreadAsset[]
 
   @@map(name: "files")
 }
 
-model Report {
-  id      String         @id @default(cuid())
-  type    String         @default("thread") // thread, comment, user
-  text    String?
-  userId  String         @map(name: "user_id")
-  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reports ReportThread[]
+model Tag {
+  id         String      @id @default(cuid())
+  name       String      @unique
+  createdAt  DateTime    @default(now()) @map(name: "created_at")
+  updatedAt  DateTime    @updatedAt @map(name: "updated_at")
+  threadTags ThreadTag[]
+  followTags FollowTag[]
 
-  @@index([type])
-  @@index([userId])
-  @@map(name: "reports")
+  @@map(name: "tags")
 }
 
-model ReportThread {
+model FollowTag {
   id        String   @id @default(cuid())
-  threadId  String   @map(name: "thread_id")
-  reportId  String   @map(name: "report_id")
+  userId    String   @map(name: "user_id")
+  tagId     String   @map(name: "tag_id")
+  score     Int?     @default(0)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade, onUpdate: Restrict)
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
-
-  @@unique([threadId, reportId])
-  @@map(name: "report_threads")
+  @@map("follow_tags")
 }

@@ -1,19 +1,29 @@
 'use client';
-import React, { useCallback } from 'react';
+import React, { useCallback, useTransition } from 'react';
 import Avatars from '~/components/shared/avatars';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FieldErrors, FieldPath, get, useForm } from 'react-hook-form';
 import { Form, FormControl, FormField, FormItem } from '~/components/ui/form';
+import LexicalEditor from '~/components/editor/lexical-editor';
 import { Button } from '~/components/ui/button';
-import { TipTapEditor } from '~/components/editor/tiptap-editor';
 import { useSession } from 'next-auth/react';
 import { Icons } from '~/components/icons';
-import { cn } from '~/utils/utils';
+import { cn, getFindByLexicalNodeTypes } from '~/utils/utils';
 import { api } from '~/services/trpc/react';
 import {
   CreateInputSchema,
   createInputSchema,
 } from '~/services/threads/threads.input';
+import ClientOnly from '~/components/shared/client-only';
+import useBeforeUnload from '~/libs/hooks/useBeforeUnload';
+import { $generateHtmlFromNodes } from '@lexical/html';
+import {
+  type SerializedEditorState,
+  type SerializedLexicalNode,
+  type EditorState,
+  type LexicalEditor as ReactLexicalEditor,
+} from 'lexical';
+import { isEmpty } from '~/utils/assertion';
 
 interface ThreadsFormProps {
   isDialog?: boolean;
@@ -21,7 +31,10 @@ interface ThreadsFormProps {
 }
 
 export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
-  const { data } = useSession();
+  const { data: session } = useSession();
+  const utils = api.useUtils();
+
+  const [, startTransition] = useTransition();
 
   const mutation = api.threads.create.useMutation({
     async onSuccess(data) {
@@ -31,7 +44,6 @@ export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
       onSuccess?.();
     },
   });
-  const utils = api.useUtils();
 
   const form = useForm<CreateInputSchema>({
     resolver: zodResolver(createInputSchema),
@@ -41,24 +53,77 @@ export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
   });
 
   const onSubmit = (values: CreateInputSchema) => {
-    mutation.mutate(values);
+    const htmlJSON: SerializedEditorState<SerializedLexicalNode> | null =
+      values.htmlJSON ? JSON.parse(values.htmlJSON) : null;
+
+    let mentions: string[] | undefined = undefined;
+    let hashTags: string[] | undefined = undefined;
+    if (htmlJSON) {
+      const findNodes = getFindByLexicalNodeTypes(
+        ['mention', 'hashtag'],
+        htmlJSON,
+      );
+
+      console.log('findNodes', findNodes);
+      const tempMentions = findNodes.filter((node) => node.type === 'mention');
+      const tempHashtags = findNodes.filter((node) => node.type === 'hashtag');
+
+      if (!isEmpty(tempHashtags)) {
+        // @ts-expect-error 실제 데이터에는 node라는 값이 존재하고 text값이 존재한다.
+        hashTags = tempHashtags.map((node) => node.text);
+      }
+
+      if (!isEmpty(tempMentions)) {
+        // @ts-expect-error 실제 데이터에는 node라는 값이 존재하고 text값이 존재한다.
+        mentions = tempMentions.map((node) => node.text);
+      }
+    }
+
+    mutation.mutate({
+      ...values,
+      mentions,
+      hashTags,
+    });
   };
 
   const {
+    watch,
     formState: { errors },
   } = form;
+
+  const watchText = watch('text');
+
+  const onEditorUpdate = useCallback(
+    (
+      editorState: EditorState,
+      editor: ReactLexicalEditor,
+      onUpdate: (...event: any[]) => void,
+    ) => {
+      editor.update(() => {
+        if (editorState.isEmpty()) {
+          onUpdate('');
+          return;
+        }
+        const htmlString = $generateHtmlFromNodes(editor, null);
+        onUpdate(htmlString);
+      });
+
+      startTransition(() => {
+        console.log('editorState', editorState.toJSON());
+        const htmlJSON = JSON.stringify(editorState);
+        form.setValue('htmlJSON', editorState.isEmpty() ? undefined : htmlJSON);
+      });
+    },
+    [form],
+  );
 
   return (
     <>
       <div className="flex items-center space-x-4">
-        <Avatars
-          src={data?.user?.image ?? undefined}
-          fallback={'T'}
-          alt="thumbnail"
-        />
+        <Avatars src={undefined} fallback={'T'} alt="thumbnail" />
         <div>
           <p className="text-sm font-medium leading-none">
-            {data?.user?.username}
+            {session?.user?.username}
           </p>
         </div>
         <div className="flex w-full justify-end">
@@ -83,45 +148,40 @@ export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
               <FormField
                 control={form.control}
                 name="text"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <TipTapEditor
-                        ref={field.ref}
-                        editable={true}
-                        debouncedUpdatesEnabled={false}
-                        name={field.name}
-                        value={field.value}
-                        noBorder
-                        className={cn(
-                          'prose prose-brand prose-headings:font-display font-default focus:outline-none',
-                        )}
-                        customClassName={cn(
-                          isDialog ? 'max-w-[462px] p-0' : 'p-0',
-                        )}
-                        onChange={(
-                          _,
-                          description_html: string,
-                          empty: boolean,
-                        ) => {
-                          field.onChange(empty ? '' : description_html);
-                        }}
-                        onBlur={() => {
-                          field.onBlur();
-                        }}
+                render={({ field }) => {
+                  field.onChange;
+                  return (
+                    <FormItem>
+                      <FormControl>
+                        <ClientOnly fallback={<LexicalEditor.Skeleton />}>
+                          <LexicalEditor
+                            editable={!field.disabled}
+                            onChange={(editorState, editor) =>
+                              onEditorUpdate(
+                                editorState,
+                                editor,
+                                field.onChange,
+                              )
+                            }
+                            onBlur={(editorState, editor) =>
+                              onEditorUpdate(editorState, editor, field.onBlur)
+                            }
+                          />
+                        </ClientOnly>
+                      </FormControl>
+                      <ThreadsForm.EditorMessage
+                        errors={errors}
+                        id={field.name}
                       />
-                    </FormControl>
-                    <ThreadsForm.EditorMessage
-                      errors={errors}
-                      id={field.name}
-                    />
-                  </FormItem>
-                )}
+                    </FormItem>
+                  );
+                }}
               />
             </div>
           </form>
         </Form>
       </div>
+      {watchText && watchText.length > 0 ? <ThreadsForm.BeforeUnload /> : null}
     </>
   );
 }
@@ -158,4 +218,23 @@ ThreadsForm.EditorMessage = function Item({
   }
 
   return errorMsgFn(body);
+};
+
+ThreadsForm.BeforeUnload = function Item() {
+  useBeforeUnload(
+    (evt) => {
+      const returnValue =
+        '화면을 벗어나면 작업이 취소됩니다. 화면을 벗어나시겠습니까?';
+
+      evt.preventDefault();
+      evt.returnValue = returnValue;
+
+      return returnValue;
+    },
+    {
+      capture: true,
+    },
+  );
+
+  return null;
 };

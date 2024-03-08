@@ -103,16 +103,3 @@ export const RESULT_CODE = {
   // 로그인이 필요함
   LOGIN_REQUIRED: 5001,
 } as const;
-
-export const URL_STATE_KEY = {
-  modal: 'modalType',
-  sheet: 'sheetType',
-};
-
-export const MODAL_TYPE = {
-  thread: 'thread',
-};
-
-export const SHEET_TYPE = {
-  menu: 'menu',
-};

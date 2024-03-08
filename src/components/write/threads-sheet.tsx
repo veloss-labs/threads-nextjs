@@ -20,7 +20,10 @@ export default function ThreadsSheet({
 }: ThreadsSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent side="bottom" className="h-full">
+      <SheetContent
+        side="bottom"
+        className="h-full space-y-6 px-4 py-6 lg:py-10"
+      >
         <SheetHeader className="text-left">
           <SheetTitle>새로운 스레드</SheetTitle>
         </SheetHeader>

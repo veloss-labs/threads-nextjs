@@ -7,7 +7,7 @@ function getClient() {
   // that this only runs once per server restart and won't automatically be
   // re-run per request like everything else is.
   const client = new PrismaClient({
-    log: ['error', 'warn'],
+    log: ['error', 'warn', 'query'],
   });
 
   return client;
