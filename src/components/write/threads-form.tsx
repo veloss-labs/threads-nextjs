@@ -17,6 +17,10 @@ import {
 import ClientOnly from '~/components/shared/client-only';
 import useBeforeUnload from '~/libs/hooks/useBeforeUnload';
 import { $generateHtmlFromNodes } from '@lexical/html';
+import {
+  type EditorState,
+  type LexicalEditor as ReactLexicalEditor,
+} from 'lexical';
 
 interface ThreadsFormProps {
   isDialog?: boolean;
@@ -56,6 +60,29 @@ export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
 
   const watchText = watch('text');
 
+  const onEditorUpdate = useCallback(
+    (
+      editorState: EditorState,
+      editor: ReactLexicalEditor,
+      onUpdate: (...event: any[]) => void,
+    ) => {
+      editor.update(() => {
+        if (editorState.isEmpty()) {
+          onUpdate('');
+          return;
+        }
+        const htmlString = $generateHtmlFromNodes(editor, null);
+        onUpdate(htmlString);
+      });
+
+      startTransition(() => {
+        const htmlJSON = JSON.stringify(editorState);
+        form.setValue('htmlJSON', editorState.isEmpty() ? '' : htmlJSON);
+      });
+    },
+    [form],
+  );
+
   return (
     <>
       <div className="flex items-center space-x-4">
@@ -88,52 +115,23 @@ export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
                 control={form.control}
                 name="text"
                 render={({ field }) => {
+                  field.onChange;
                   return (
                     <FormItem>
                       <FormControl>
                         <ClientOnly fallback={<LexicalEditor.Skeleton />}>
                           <LexicalEditor
                             editable={!field.disabled}
-                            onChange={(editorState, editor) => {
-                              editor.update(() => {
-                                if (editorState.isEmpty()) {
-                                  field.onChange('');
-                                  return;
-                                }
-                                const htmlString = $generateHtmlFromNodes(
-                                  editor,
-                                  null,
-                                );
-                                field.onChange(htmlString);
-                              });
-                              startTransition(() => {
-                                const htmlJSON = JSON.stringify(editorState);
-                                form.setValue(
-                                  'htmlJSON',
-                                  editorState.isEmpty() ? '' : htmlJSON,
-                                );
-                              });
-                            }}
-                            onBlur={(editorState, editor) => {
-                              editor.update(() => {
-                                if (editorState.isEmpty()) {
-                                  field.onChange('');
-                                  return;
-                                }
-                                const htmlString = $generateHtmlFromNodes(
-                                  editor,
-                                  null,
-                                );
-                                field.onChange(htmlString);
-                              });
-                              startTransition(() => {
-                                const htmlJSON = JSON.stringify(editorState);
-                                form.setValue(
-                                  'htmlJSON',
-                                  editorState.isEmpty() ? '' : htmlJSON,
-                                );
-                              });
-                            }}
+                            onChange={(editorState, editor) =>
+                              onEditorUpdate(
+                                editorState,
+                                editor,
+                                field.onChange,
+                              )
+                            }
+                            onBlur={(editorState, editor) =>
+                              onEditorUpdate(editorState, editor, field.onBlur)
+                            }
                           />
                         </ClientOnly>
                       </FormControl>
