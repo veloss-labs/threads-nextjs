@@ -16,8 +16,8 @@ export const tagsRouter = createTRPCRouter({
         if (!!exists) {
           return exists;
         }
-        const tags = await tagService.create(userId, input);
-        return tags;
+
+        return await tagService.create(userId, input);
       } catch (error) {
         console.log('error', error);
         return null;

@@ -1,6 +1,5 @@
 import {
   createTRPCRouter,
-  publicProcedure,
   protectedProcedure,
 } from '~/services/trpc/core/trpc';
 import { userIdSchema } from '~/services/users/users.input';
@@ -11,10 +10,9 @@ import {
 import { userService } from '~/services/users/users.service';
 
 export const usersRouter = createTRPCRouter({
-  getUser: protectedProcedure.input(userIdSchema).query(async ({ input }) => {
+  byId: protectedProcedure.input(userIdSchema).query(async ({ input }) => {
     try {
-      const user = await userService.getItem(input.userId);
-      return user;
+      return await userService.byId(input.userId);
     } catch (error) {
       console.log('error', error);
       return null;

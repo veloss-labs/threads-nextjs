@@ -45,7 +45,7 @@ export const threadsRouter = createTRPCRouter({
 
         const endCursor = list.at(-1)?.id ?? null;
         const hasNextPage = endCursor
-          ? (await threadService.hasNextPage(endCursor, input)) > 0
+          ? (await threadService.hasNextPage(input, endCursor)) > 0
           : false;
 
         return {
@@ -77,7 +77,7 @@ export const threadsRouter = createTRPCRouter({
 
         const endCursor = list.at(-1)?.id ?? null;
         const hasNextPage = endCursor
-          ? (await threadService.hasNextLikePage(endCursor, userId)) > 0
+          ? (await threadService.hasNextLikePage(userId, endCursor)) > 0
           : false;
 
         return {

@@ -31,13 +31,44 @@ export class TagService {
 
   /**
    * @description 태그 생성
-   * @param {string} userId - 사용자 ID
+   * @param {string} userId - 유저 ID
    * @param {CreateInputSchema} input - 생성할 태그 데이터
    */
-  create(userId: string, input: CreateInputSchema) {
-    return db.tag.create({
+  async create(userId: string, input: CreateInputSchema) {
+    const tag = await db.tag.create({
       select: getTagsSelector(),
-      data: { name: input.name },
+      data: {
+        name: input.name,
+      },
+    });
+
+    await this.connectOrCreateFollowTag(userId, tag.id);
+
+    return tag;
+  }
+
+  /**
+   * @description 태그 스키마와 팔로우 태그 스키마를 연결
+   * @param {string} userId - 유저 ID
+   * @param {string} tagId - 태그 ID
+   */
+  connectOrCreateFollowTag(userId: string, tagId: string) {
+    const exists = db.followTag.findFirst({
+      where: {
+        userId,
+        tagId,
+      },
+    });
+
+    if (exists) {
+      return exists;
+    }
+
+    return db.followTag.create({
+      data: {
+        userId,
+        tagId,
+      },
     });
   }
 

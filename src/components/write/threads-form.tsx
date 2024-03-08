@@ -8,7 +8,7 @@ import LexicalEditor from '~/components/editor/lexical-editor';
 import { Button } from '~/components/ui/button';
 import { useSession } from 'next-auth/react';
 import { Icons } from '~/components/icons';
-import { cn } from '~/utils/utils';
+import { cn, getFindByLexicalNodeTypes } from '~/utils/utils';
 import { api } from '~/services/trpc/react';
 import {
   CreateInputSchema,
@@ -18,9 +18,12 @@ import ClientOnly from '~/components/shared/client-only';
 import useBeforeUnload from '~/libs/hooks/useBeforeUnload';
 import { $generateHtmlFromNodes } from '@lexical/html';
 import {
+  type SerializedEditorState,
+  type SerializedLexicalNode,
   type EditorState,
   type LexicalEditor as ReactLexicalEditor,
 } from 'lexical';
+import { isEmpty } from '~/utils/assertion';
 
 interface ThreadsFormProps {
   isDialog?: boolean;
@@ -50,7 +53,37 @@ export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
   });
 
   const onSubmit = (values: CreateInputSchema) => {
-    mutation.mutate(values);
+    const htmlJSON: SerializedEditorState<SerializedLexicalNode> | null =
+      values.htmlJSON ? JSON.parse(values.htmlJSON) : null;
+
+    let mentions: string[] | undefined = undefined;
+    let hashTags: string[] | undefined = undefined;
+    if (htmlJSON) {
+      const findNodes = getFindByLexicalNodeTypes(
+        ['mention', 'hashtag'],
+        htmlJSON,
+      );
+
+      console.log('findNodes', findNodes);
+      const tempMentions = findNodes.filter((node) => node.type === 'mention');
+      const tempHashtags = findNodes.filter((node) => node.type === 'hashtag');
+
+      if (!isEmpty(tempHashtags)) {
+        // @ts-expect-error 실제 데이터에는 node라는 값이 존재하고 text값이 존재한다.
+        hashTags = tempHashtags.map((node) => node.text);
+      }
+
+      if (!isEmpty(tempMentions)) {
+        // @ts-expect-error 실제 데이터에는 node라는 값이 존재하고 text값이 존재한다.
+        mentions = tempMentions.map((node) => node.text);
+      }
+    }
+
+    mutation.mutate({
+      ...values,
+      mentions,
+      hashTags,
+    });
   };
 
   const {
@@ -78,7 +111,7 @@ export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
       startTransition(() => {
         console.log('editorState', editorState.toJSON());
         const htmlJSON = JSON.stringify(editorState);
-        form.setValue('htmlJSON', editorState.isEmpty() ? '' : htmlJSON);
+        form.setValue('htmlJSON', editorState.isEmpty() ? undefined : htmlJSON);
       });
     },
     [form],

@@ -23,7 +23,7 @@ export default async function Layout({
     notFound();
   }
 
-  const data = await api.users.getUser({ userId: params.userId });
+  const data = await api.users.byId({ userId: params.userId });
   if (!data) {
     notFound();
   }

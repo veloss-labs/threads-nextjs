@@ -7,6 +7,10 @@ import {
   type Config,
 } from 'unique-username-generator';
 import { isEmpty, isNull, isUndefined } from '~/utils/assertion';
+import {
+  type SerializedEditorState,
+  type SerializedLexicalNode,
+} from 'lexical';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -173,4 +177,37 @@ export function cosineSimilarity(
   });
 
   return dotProduct / (Math.sqrt(aMagnitude) * Math.sqrt(bMagnitude));
+}
+
+type LexicalNode = SerializedLexicalNode & {
+  [key: string]: any;
+};
+
+type FindKeys = string;
+
+type Result = {
+  type: FindKeys;
+  node: LexicalNode;
+};
+
+function depthFristSearchNode(node: LexicalNode, keys: FindKeys[]) {
+  let result: Result[] = [];
+
+  if (keys.includes(node.type as FindKeys)) {
+    result.push({ type: node.type as FindKeys, node });
+  }
+
+  for (let child of node.children || []) {
+    result = result.concat(depthFristSearchNode(child, keys));
+  }
+
+  return result;
+}
+
+// state내에는 깊은 트리구조로 되어있음 (노드의 노드의 노드...) 이 깊은 트리구조를 가장 빠르게 순회를 하면서 노드의 타입이 keys와 일치하는 노드를 찾아내는 함수 (DFS 알고리즘 사용)
+export function getFindByLexicalNodeTypes(
+  keys: FindKeys[],
+  state: SerializedEditorState<LexicalNode>,
+) {
+  return depthFristSearchNode(state.root, keys);
 }

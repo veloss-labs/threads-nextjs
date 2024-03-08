@@ -43,7 +43,7 @@ export async function signupAction(_: ResultSchema | null, formData: FormData) {
   const name = generatorName(input.username);
 
   try {
-    await userService.createItem({
+    await userService.create({
       name,
       username: input.username,
       password: hash,
