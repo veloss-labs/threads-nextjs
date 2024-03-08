@@ -1,5 +1,5 @@
 'use client';
-import React, { useCallback } from 'react';
+import React, { useCallback, useTransition } from 'react';
 import Avatars from '~/components/shared/avatars';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FieldErrors, FieldPath, get, useForm } from 'react-hook-form';
@@ -14,8 +14,9 @@ import {
   CreateInputSchema,
   createInputSchema,
 } from '~/services/threads/threads.input';
-import ClientOnly from '../shared/client-only';
+import ClientOnly from '~/components/shared/client-only';
 import useBeforeUnload from '~/libs/hooks/useBeforeUnload';
+import { $generateHtmlFromNodes } from '@lexical/html';
 
 interface ThreadsFormProps {
   isDialog?: boolean;
@@ -25,6 +26,8 @@ interface ThreadsFormProps {
 export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
   const { data: session } = useSession();
   const utils = api.useUtils();
+
+  const [, startTransition] = useTransition();
 
   const mutation = api.threads.create.useMutation({
     async onSuccess(data) {
@@ -84,19 +87,63 @@ export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
               <FormField
                 control={form.control}
                 name="text"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <ClientOnly fallback={<LexicalEditor.Skeleton />}>
-                        <LexicalEditor />
-                      </ClientOnly>
-                    </FormControl>
-                    <ThreadsForm.EditorMessage
-                      errors={errors}
-                      id={field.name}
-                    />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  return (
+                    <FormItem>
+                      <FormControl>
+                        <ClientOnly fallback={<LexicalEditor.Skeleton />}>
+                          <LexicalEditor
+                            editable={!field.disabled}
+                            onChange={(editorState, editor) => {
+                              editor.update(() => {
+                                if (editorState.isEmpty()) {
+                                  field.onChange('');
+                                  return;
+                                }
+                                const htmlString = $generateHtmlFromNodes(
+                                  editor,
+                                  null,
+                                );
+                                field.onChange(htmlString);
+                              });
+                              startTransition(() => {
+                                const htmlJSON = JSON.stringify(editorState);
+                                form.setValue(
+                                  'htmlJSON',
+                                  editorState.isEmpty() ? '' : htmlJSON,
+                                );
+                              });
+                            }}
+                            onBlur={(editorState, editor) => {
+                              editor.update(() => {
+                                if (editorState.isEmpty()) {
+                                  field.onChange('');
+                                  return;
+                                }
+                                const htmlString = $generateHtmlFromNodes(
+                                  editor,
+                                  null,
+                                );
+                                field.onChange(htmlString);
+                              });
+                              startTransition(() => {
+                                const htmlJSON = JSON.stringify(editorState);
+                                form.setValue(
+                                  'htmlJSON',
+                                  editorState.isEmpty() ? '' : htmlJSON,
+                                );
+                              });
+                            }}
+                          />
+                        </ClientOnly>
+                      </FormControl>
+                      <ThreadsForm.EditorMessage
+                        errors={errors}
+                        id={field.name}
+                      />
+                    </FormItem>
+                  );
+                }}
               />
             </div>
           </form>

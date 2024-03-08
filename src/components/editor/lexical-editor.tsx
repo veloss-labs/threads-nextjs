@@ -2,6 +2,7 @@ import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin';
 import {
   type InitialConfigType,
   LexicalComposer,
+  type InitialEditorStateType,
 } from '@lexical/react/LexicalComposer';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
@@ -9,12 +10,13 @@ import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import {
-  EditorState,
-  Klass,
-  LexicalEditor as ReactLexicalEditor,
-  LexicalNode,
+  type EditorState,
+  type Klass,
+  type LexicalEditor as ReactLexicalEditor,
+  type LexicalNode,
+  type HTMLConfig,
 } from 'lexical';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Skeleton } from '~/components/ui/skeleton';
 import MentionsPlugin from '~/components/editor/plugins/mentions-plugin';
 import HashTagsPlugin from '~/components/editor/plugins/hashtags-plugin';
@@ -23,6 +25,7 @@ import LinkPlugin from '~/components/editor/plugins/hashtags-plugin';
 import AutoLinkPlugin from '~/components/editor/plugins/auto-link-plugin';
 import MentionNode from '~/components/editor/nodes/mention-node';
 import HashTagNode from '~/components/editor/nodes/hashtag-node';
+import LexicalOnBlurPlugin from '~/components/editor/plugins/blur-plugin';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
 
 function Placeholder() {
@@ -43,13 +46,28 @@ const EditorNodes: Array<Klass<LexicalNode>> = [
 ];
 
 interface LexicalEditorProps {
+  editable?: boolean;
+  html?: HTMLConfig;
+  editorState?: InitialEditorStateType;
   onChange?: (
     editorState: EditorState,
     editor: ReactLexicalEditor,
     tags: Set<string>,
   ) => void;
+  onBlur?: (
+    editorState: EditorState,
+    editor: ReactLexicalEditor,
+    event: FocusEvent,
+  ) => void;
 }
-export default function LexicalEditor({ onChange }: LexicalEditorProps) {
+export default function LexicalEditor(props: LexicalEditorProps) {
+  return <LexicalEditor.Root {...props} />;
+}
+
+LexicalEditor.Root = function LexicalEditorRoot({
+  onChange,
+  ...otherProps
+}: LexicalEditorProps) {
   const [editorConfig, setEditorConfig] = useState<InitialConfigType>({
     namespace: 'ThreadEditor',
     nodes: [...EditorNodes],
@@ -59,38 +77,82 @@ export default function LexicalEditor({ onChange }: LexicalEditorProps) {
     theme: {
       paragraph: 'm-0',
       text: {
-        base: 'text-base text-slate-900 dark:text-slate-100',
+        base: 'js-lexical-text',
       },
       link: 'js-lexical-link',
     },
+    ...otherProps,
   });
 
   return (
     <LexicalComposer initialConfig={editorConfig}>
       <div className="col-start-2 row-start-2 row-end-2">
-        <div className="relative">
-          <RichTextPlugin
-            contentEditable={
-              <ContentEditable className="relative overflow-auto outline-none" />
-            }
-            placeholder={<Placeholder />}
-            ErrorBoundary={LexicalErrorBoundary}
-          />
-          <HistoryPlugin />
-          <AutoFocusPlugin />
-          <AutoLinkPlugin />
-          <MentionsPlugin />
-          <HashTagsPlugin />
-          <LexicalAutoLinkPlugin />
-          <LinkPlugin />
-          {onChange && typeof onChange === 'function' ? (
-            <OnChangePlugin onChange={onChange} />
-          ) : null}
-        </div>
+        <LexicalEditor.Editor onChange={onChange} />
       </div>
     </LexicalComposer>
   );
+};
+
+interface LexicalEditorEditorProps {
+  onChange?: (
+    editorState: EditorState,
+    editor: ReactLexicalEditor,
+    tags: Set<string>,
+  ) => void;
+  onBlur?: (
+    editorState: EditorState,
+    editor: ReactLexicalEditor,
+    event: FocusEvent,
+  ) => void;
 }
+
+LexicalEditor.Editor = function LexicalEditorEditor({
+  onChange,
+  onBlur,
+}: LexicalEditorEditorProps) {
+  const onEditorChange = useCallback(
+    (
+      editorState: EditorState,
+      changedEditor: ReactLexicalEditor,
+      tags: Set<string>,
+    ) => {
+      onChange?.(editorState, changedEditor, tags);
+    },
+    [onChange],
+  );
+
+  const onEditorBlur = useCallback(
+    (
+      editorState: EditorState,
+      editor: ReactLexicalEditor,
+      event: FocusEvent,
+    ) => {
+      onBlur?.(editorState, editor, event);
+    },
+    [onBlur],
+  );
+
+  return (
+    <div className="relative">
+      <RichTextPlugin
+        contentEditable={
+          <ContentEditable className="relative overflow-auto outline-none" />
+        }
+        placeholder={<Placeholder />}
+        ErrorBoundary={LexicalErrorBoundary}
+      />
+      <HistoryPlugin />
+      <AutoFocusPlugin />
+      <AutoLinkPlugin />
+      <MentionsPlugin />
+      <HashTagsPlugin />
+      <LexicalAutoLinkPlugin />
+      <LinkPlugin />
+      <OnChangePlugin onChange={onEditorChange} />
+      <LexicalOnBlurPlugin onBlur={onEditorBlur} />
+    </div>
+  );
+};
 
 LexicalEditor.Skeleton = function LexicalEditorSkeleton() {
   return (

@@ -26,6 +26,9 @@ dependencies:
   '@hookform/resolvers':
     specifier: ^3.3.4
     version: 3.3.4(react-hook-form@7.51.0)
+  '@lexical/html':
+    specifier: ^0.13.1
+    version: 0.13.1(lexical@0.13.1)
   '@lexical/link':
     specifier: ^0.13.1
     version: 0.13.1(lexical@0.13.1)

@@ -102,3 +102,7 @@
 .js-lexical-link span[data-lexical-text] {
   @apply text-blue-400 dark:text-blue-300;
 }
+
+.js-lexical-text {
+  @apply text-base text-slate-900 dark:text-slate-100;
+}
