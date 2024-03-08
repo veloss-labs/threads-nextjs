@@ -76,6 +76,7 @@ export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
       });
 
       startTransition(() => {
+        console.log('editorState', editorState.toJSON());
         const htmlJSON = JSON.stringify(editorState);
         form.setValue('htmlJSON', editorState.isEmpty() ? '' : htmlJSON);
       });
