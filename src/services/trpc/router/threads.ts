@@ -17,11 +17,10 @@ export const threadsRouter = createTRPCRouter({
       const userId = ctx.session.user.id;
 
       try {
-        const { id } = await threadService.create(userId, input);
+        const { id } = await threadService.cre ate(userId, input);
         const item = await threadService.byId(id);
 
         // 추천 스레드 계산
-
         return {
           ok: true,
           data: item,

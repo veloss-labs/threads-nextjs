@@ -27,6 +27,7 @@ model User {
   threadAssets  ThreadAsset[]
   threads       Thread[]
   threadLikes   ThreadLike[]
+  followTags    FollowTag[]
 
   @@map(name: "users")
 }
@@ -86,6 +87,7 @@ model VerificationToken {
 model Thread {
   id                             String                 @id @default(cuid())
   text                           String
+  jsonString                     String?                @map(name: "json_string")
   level                          Int?                   @default(0)
   deleted                        Boolean?               @default(false)
   whoCanLeaveComments            String?                @default("everyone") @map(name: "who_can_leave_comments") // everyone, followers, following, nobody
@@ -95,8 +97,8 @@ model Thread {
   userId                         String                 @map(name: "user_id")
   assets                         ThreadAsset[]
   likes                          ThreadLike[]
-  bookmark                       ThreadBookmark[]
-  threadRecommendationThread     ThreadRecommendation[] @relation(name: "ThreadRecommendationThread")
+  bookmarks                      ThreadBookmark[]
+  threadRecommendationThreads    ThreadRecommendation[] @relation(name: "ThreadRecommendationThread")
   recommendations                ThreadRecommendation[]
   user                           User                   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
   tags                           ThreadTag[]
@@ -172,25 +174,39 @@ model ThreadTag {
 }
 
 model File {
-  id          String        @id @default(cuid())
-  filename    String
-  filesize    Int
-  filetype    String        @map(name: "file_type")
-  publicUrl   String        @map(name: "public_url")
-  uploadType  String        @map(name: "upload_type")
-  createdAt   DateTime      @default(now()) @map(name: "created_at")
-  updatedAt   DateTime      @updatedAt @map(name: "updated_at")
-  threadAsset ThreadAsset[]
+  id         String        @id @default(cuid())
+  filename   String
+  filesize   Int
+  filetype   String        @map(name: "file_type")
+  publicUrl  String        @map(name: "public_url")
+  uploadType String        @map(name: "upload_type")
+  createdAt  DateTime      @default(now()) @map(name: "created_at")
+  updatedAt  DateTime      @updatedAt @map(name: "updated_at")
+  assets     ThreadAsset[]
 
   @@map(name: "files")
 }
 
 model Tag {
-  id        String      @id @default(cuid())
-  name      String      @unique
-  createdAt DateTime    @default(now()) @map(name: "created_at")
-  updatedAt DateTime    @updatedAt @map(name: "updated_at")
-  ThreadTag ThreadTag[]
+  id         String      @id @default(cuid())
+  name       String      @unique
+  createdAt  DateTime    @default(now()) @map(name: "created_at")
+  updatedAt  DateTime    @updatedAt @map(name: "updated_at")
+  threadTags ThreadTag[]
+  followTags FollowTag[]
 
   @@map(name: "tags")
+}
+
+model FollowTag {
+  id        String   @id @default(cuid())
+  userId    String   @map(name: "user_id")
+  tagId     String   @map(name: "tag_id")
+  score     Int?     @default(0)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@map("follow_tags")
 }
