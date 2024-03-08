@@ -13,6 +13,7 @@ import { getTargetElement } from '~/libs/browser/dom';
 import { api } from '~/services/trpc/react';
 import { cn } from '~/utils/utils';
 import { $createHashTagNode } from '~/components/editor/nodes/hashtag-node';
+import { buttonVariants } from '~/components/ui/button';
 
 const PUNCTUATION =
   '\\.,\\+\\*\\?\\$\\@\\|#{}\\(\\)\\^\\-\\[\\]\\\\/!%\'"~=<>_:;';
@@ -75,6 +76,16 @@ const AtSignHashTagsRegexAliasRegex = new RegExp(
 );
 
 function useHashTagsLookupService(mentionString: string | null) {
+  const utils = api.useUtils();
+
+  const mutation = api.tags.create.useMutation({
+    async onSuccess(data) {
+      if (data) {
+        await utils.tags.getMentionTags.invalidate();
+      }
+    },
+  });
+
   const { data, isLoading } = api.tags.getMentionTags.useQuery(
     {
       keyword: mentionString ?? undefined,
@@ -88,6 +99,7 @@ function useHashTagsLookupService(mentionString: string | null) {
   return {
     data,
     isLoading,
+    mutation,
   };
 }
 
@@ -126,20 +138,30 @@ function getPossibleQueryMatch(text: string): MenuTextMatch | null {
 }
 
 interface HashTagTypeaheadOptionParams {
-  tagId: string;
+  tagId?: string;
   tagName: string;
+  type: 'remote' | 'input';
 }
 
 class HashTagTypeaheadOption extends MenuOption {
-  tagId: string;
+  tagId?: string;
   name: string;
-  otherName?: string;
+  type: 'remote' | 'input' = 'remote';
 
   constructor(params: HashTagTypeaheadOptionParams) {
     super(params.tagName);
     this.tagId = params.tagId;
     this.name = params.tagName;
+    this.type = params.type;
   }
+}
+
+interface HashTagTypeaheadMenuItemProps {
+  index: number;
+  isSelected: boolean;
+  onClick: () => void;
+  onMouseEnter: () => void;
+  option: HashTagTypeaheadOption;
 }
 
 function HashTagsTypeaheadMenuItem({
@@ -148,13 +170,7 @@ function HashTagsTypeaheadMenuItem({
   onClick,
   onMouseEnter,
   option,
-}: {
-  index: number;
-  isSelected: boolean;
-  onClick: () => void;
-  onMouseEnter: () => void;
-  option: HashTagTypeaheadOption;
-}) {
+}: HashTagTypeaheadMenuItemProps) {
   return (
     <li
       key={option.key}
@@ -182,6 +198,48 @@ function HashTagsTypeaheadMenuItem({
   );
 }
 
+function HashTagsTypeaheadRegisterMenuItem({
+  index,
+  isSelected,
+  onClick,
+  onMouseEnter,
+  option,
+}: HashTagTypeaheadMenuItemProps) {
+  return (
+    <li
+      key={option.key}
+      tabIndex={-1}
+      className={cn(
+        'relative flex cursor-default select-none items-center space-x-3 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-slate-100 focus:text-slate-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-slate-800 dark:focus:text-slate-50',
+        {
+          'dark:bg-slate-800 dark:text-slate-50 bg-slate-100 text-slate-900':
+            isSelected,
+        },
+      )}
+      ref={option.setRefElement}
+      role="option"
+      aria-selected={isSelected}
+      id={'typeahead-item-' + index}
+      onMouseEnter={onMouseEnter}
+      onClick={onClick}
+    >
+      <div className="flex flex-col">
+        <p className="m-0 block max-w-full truncate text-lg font-semibold">
+          {option.name}
+        </p>
+        <div
+          className={cn(
+            buttonVariants({ variant: 'ghost', size: 'sm', className: 'p-0' }),
+          )}
+        >
+          <Icons.add className="size-4" />
+          새로운 주제 태그하기
+        </div>
+      </div>
+    </li>
+  );
+}
+
 export default function NewHashTagsPlugin(): JSX.Element | null {
   const [editor] = useLexicalComposerContext();
 
@@ -189,23 +247,37 @@ export default function NewHashTagsPlugin(): JSX.Element | null {
 
   const deferredQueryString = useDeferredValue(queryString);
 
-  const { data, isLoading } = useHashTagsLookupService(deferredQueryString);
+  const { data, isLoading, mutation } =
+    useHashTagsLookupService(deferredQueryString);
 
   const checkForSlashTriggerMatch = useBasicTypeaheadTriggerMatch('/', {
     minLength: 0,
   });
 
-  const options = useMemo(
-    () =>
-      data?.map(
-        (listItem) =>
-          new HashTagTypeaheadOption({
-            tagId: listItem.id,
-            tagName: listItem.name,
-          }),
-      ) ?? [],
-    [data],
-  );
+  const options = useMemo(() => {
+    const hashTags: HashTagTypeaheadOption[] = [];
+    const typesafeData = data ?? [];
+    if (deferredQueryString) {
+      hashTags.push(
+        new HashTagTypeaheadOption({
+          tagId: undefined,
+          tagName: deferredQueryString,
+          type: 'input',
+        }),
+      );
+    }
+
+    for (const listItem of typesafeData) {
+      hashTags.push(
+        new HashTagTypeaheadOption({
+          tagId: listItem.id,
+          tagName: listItem.name,
+          type: 'remote',
+        }),
+      );
+    }
+    return hashTags;
+  }, [data, deferredQueryString]);
 
   const onSelectOption = useCallback(
     (
@@ -259,8 +331,28 @@ export default function NewHashTagsPlugin(): JSX.Element | null {
                   </div>
                 ) : (
                   <ul>
-                    {options.length > 0 ? (
-                      options.map((option, i: number) => (
+                    {options.map((option, i: number) => {
+                      if (option.type === 'input') {
+                        return (
+                          <HashTagsTypeaheadRegisterMenuItem
+                            index={i}
+                            isSelected={selectedIndex === i}
+                            onClick={() => {
+                              setHighlightedIndex(i);
+                              selectOptionAndCleanUp(option);
+                              mutation.mutate({
+                                name: option.name,
+                              });
+                            }}
+                            onMouseEnter={() => {
+                              setHighlightedIndex(i);
+                            }}
+                            key={`${option.key}-${option.type}`}
+                            option={option}
+                          />
+                        );
+                      }
+                      return (
                         <HashTagsTypeaheadMenuItem
                           index={i}
                           isSelected={selectedIndex === i}
@@ -271,15 +363,11 @@ export default function NewHashTagsPlugin(): JSX.Element | null {
                           onMouseEnter={() => {
                             setHighlightedIndex(i);
                           }}
-                          key={option.key}
+                          key={`${option.key}-${option.type}`}
                           option={option}
                         />
-                      ))
-                    ) : (
-                      <li className="p-2 text-sm text-muted-foreground">
-                        검색 결과가 없습니다.
-                      </li>
-                    )}
+                      );
+                    })}
                   </ul>
                 )}
               </div>

@@ -18,7 +18,7 @@ export const threadsRouter = createTRPCRouter({
 
       try {
         const { id } = await threadService.create(userId, input);
-        const item = await threadService.getItem(id);
+        const item = await threadService.byId(id);
 
         // 추천 스레드 계산
 

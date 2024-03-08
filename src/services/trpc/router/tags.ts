@@ -12,11 +12,15 @@ export const tagsRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       try {
         const userId = ctx.session.user.id;
+        const exists = await tagService.byName(input.name);
+        if (!!exists) {
+          return exists;
+        }
         const tags = await tagService.create(userId, input);
         return tags;
       } catch (error) {
         console.log('error', error);
-        return [];
+        return null;
       }
     }),
   getMentionTags: protectedProcedure

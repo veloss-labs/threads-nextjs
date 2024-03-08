@@ -29,7 +29,7 @@ export class ThreadService {
     });
   }
 
-  getItem(id: string) {
+  byId(id: string) {
     return db.thread.findUnique({
       where: {
         id,

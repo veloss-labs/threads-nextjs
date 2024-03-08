@@ -24,6 +24,7 @@ interface ThreadsFormProps {
 
 export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
   const { data: session } = useSession();
+  const utils = api.useUtils();
 
   const mutation = api.threads.create.useMutation({
     async onSuccess(data) {
@@ -33,7 +34,6 @@ export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
       onSuccess?.();
     },
   });
-  const utils = api.useUtils();
 
   const form = useForm<CreateInputSchema>({
     resolver: zodResolver(createInputSchema),
