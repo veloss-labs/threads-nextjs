@@ -1,6 +1,5 @@
 import {
   createTRPCRouter,
-  publicProcedure,
   protectedProcedure,
 } from '~/services/trpc/core/trpc';
 import {
@@ -9,6 +8,7 @@ import {
 } from '~/services/threads/threads.query';
 import { threadService } from '~/services/threads/threads.service';
 import { createInputSchema } from '~/services/threads/threads.input';
+import difference from 'lodash-es/difference';
 
 export const threadsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -17,7 +17,8 @@ export const threadsRouter = createTRPCRouter({
       const userId = ctx.session.user.id;
 
       try {
-        const { id } = await threadService.cre ate(userId, input);
+        const { id } = await threadService.create(userId, input);
+
         const item = await threadService.byId(id);
 
         // 추천 스레드 계산
@@ -41,6 +42,14 @@ export const threadsRouter = createTRPCRouter({
           threadService.count(input),
           threadService.getItems(input),
         ]);
+
+        try {
+          list.map((item) => {
+            threadService.recommendThreads(item.id);
+          });
+        } catch (error) {
+          console.log('error', error);
+        }
 
         const endCursor = list.at(-1)?.id ?? null;
         const hasNextPage = endCursor

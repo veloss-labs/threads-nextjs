@@ -94,6 +94,19 @@ export class UserService {
   }
 
   /**
+   * @description 유저 이름으로 조회
+   * @param {string} username - 유저 이름
+   */
+  byUsername(username: string) {
+    return db.user.findUnique({
+      where: {
+        username,
+      },
+      select: getUserSelector(),
+    });
+  }
+
+  /**
    * @description 인증된 유저 정보 조회
    * @param {AuthFormData} credentials - 아이디, 비밀번호 인증 정보
    */

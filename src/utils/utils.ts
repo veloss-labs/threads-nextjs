@@ -188,12 +188,15 @@ type FindKeys = string;
 type Result = {
   type: FindKeys;
   node: LexicalNode;
+  [key: string]: any;
 };
 
 function depthFristSearchNode(node: LexicalNode, keys: FindKeys[]) {
   let result: Result[] = [];
 
-  if (keys.includes(node.type as FindKeys)) {
+  console.log('node', node, keys);
+
+  if ('type' in node && keys.includes(node.type as FindKeys)) {
     result.push({ type: node.type as FindKeys, node });
   }
 

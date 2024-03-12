@@ -24,23 +24,27 @@ import {
   type LexicalEditor as ReactLexicalEditor,
 } from 'lexical';
 import { isEmpty } from '~/utils/assertion';
+import type { ThreadListQuerySchema } from '~/services/threads/threads.query';
 
 interface ThreadsFormProps {
+  type?: ThreadListQuerySchema['type'];
   isDialog?: boolean;
   onSuccess?: () => void;
 }
 
-export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
+export default function ThreadsForm({
+  isDialog,
+  onSuccess,
+  type,
+}: ThreadsFormProps) {
   const { data: session } = useSession();
   const utils = api.useUtils();
 
   const [, startTransition] = useTransition();
 
   const mutation = api.threads.create.useMutation({
-    async onSuccess(data) {
-      if (data.data) {
-        await utils.threads.getThreads.invalidate();
-      }
+    async onSuccess() {
+      await utils.threads.getThreads.invalidate();
       onSuccess?.();
     },
   });
@@ -69,12 +73,10 @@ export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
       const tempHashtags = findNodes.filter((node) => node.type === 'hashtag');
 
       if (!isEmpty(tempHashtags)) {
-        // @ts-expect-error 실제 데이터에는 node라는 값이 존재하고 text값이 존재한다.
         hashTags = tempHashtags.map((node) => node.text);
       }
 
       if (!isEmpty(tempMentions)) {
-        // @ts-expect-error 실제 데이터에는 node라는 값이 존재하고 text값이 존재한다.
         mentions = tempMentions.map((node) => node.text);
       }
     }
@@ -109,8 +111,8 @@ export default function ThreadsForm({ isDialog, onSuccess }: ThreadsFormProps) {
       });
 
       startTransition(() => {
-        console.log('editorState', editorState.toJSON());
         const htmlJSON = JSON.stringify(editorState);
+        console.log('htmlJSON', htmlJSON);
         form.setValue('htmlJSON', editorState.isEmpty() ? undefined : htmlJSON);
       });
     },

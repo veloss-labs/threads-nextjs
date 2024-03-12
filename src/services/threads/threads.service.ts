@@ -7,7 +7,13 @@ import type {
 import { getThreadsSelector } from '~/services/db/selectors/threads';
 import { remember } from '@epic-web/remember';
 import type { CreateInputSchema } from './threads.input';
-// import { computeTFIDF, cosineSimilarity } from '~/utils/utils';
+import { tagService } from '~/services/tags/tags.service';
+import { userService } from '../users/users.service';
+import {
+  computeTFIDF,
+  cosineSimilarity,
+  getFindByLexicalNodeTypes,
+} from '~/utils/utils';
 
 export class ThreadService {
   private readonly DEFAULT_LIMIT = 30;
@@ -18,18 +24,121 @@ export class ThreadService {
    * @param {CreateInputSchema} input - 생성할 스레드 데이터
    */
   async create(userId: string, input: CreateInputSchema) {
+    const { text, htmlJSON, mentions, hashTags } = input;
+
+    const connectTags: string[] = [];
+    if (hashTags) {
+      const _verifiedTags: string[] = [];
+      for (const tag of hashTags) {
+        const foundTag = await tagService.byName(tag);
+        if (!foundTag) {
+          const data = await tagService.create(userId, { name: tag });
+          _verifiedTags.push(data.id);
+        } else {
+          _verifiedTags.push(foundTag.id);
+        }
+      }
+      connectTags.push(..._verifiedTags);
+    }
+
+    const connectMentions: string[] = [];
+    if (mentions) {
+      const _verifiedMentions: string[] = [];
+      for (const mention of mentions) {
+        const data = await userService.byUsername(mention);
+        if (data) {
+          _verifiedMentions.push(data.id);
+        }
+      }
+      connectMentions.push(..._verifiedMentions);
+    }
+
     const data = await db.thread.create({
       select: {
         id: true,
       },
       data: {
         userId,
-        text: input.text,
-        jsonString: input.htmlJSON,
+        text,
+        jsonString: htmlJSON,
+        mentions: {
+          create: connectMentions.map((userId) => ({
+            userId,
+          })),
+        },
+        tags: {
+          create: connectTags.map((tagId) => ({
+            tagId,
+          })),
+        },
       },
     });
 
+    try {
+      this.recommendThreads(data.id);
+    } catch (error) {
+      console.error(error);
+    }
+
     return data;
+  }
+
+  async recommendThreads(threadId: string) {
+    const threads = await db.thread.findMany({
+      where: { deleted: false },
+      select: { id: true, jsonString: true },
+    });
+
+    const documents = threads
+      .filter((thread) => thread.jsonString)
+      .map((thread) => {
+        const htmlJSON = JSON.parse(thread.jsonString ?? '{}');
+        console.log('htmlJSON', htmlJSON);
+        const findNodes = getFindByLexicalNodeTypes(
+          ['text', 'mention', 'hashtag'],
+          htmlJSON,
+        );
+        return findNodes
+          .filter(
+            (node) =>
+              node.type === 'text' ||
+              node.type === 'mention' ||
+              node.type === 'hashtag',
+          )
+          .map((node) => {
+            if (node.type === 'text') {
+              return node.text;
+            }
+            if (node.type === 'mention') {
+              return node.text;
+            }
+            if (node.type === 'hashtag') {
+              return node.text;
+            }
+            return '';
+          });
+      })
+      .flatMap((doc) => doc);
+
+    console.log('documents', documents);
+    const tfidf = computeTFIDF(documents);
+
+    console.log('tfidf', tfidf);
+
+    const targetIndex = threads.findIndex((thread) => thread.id === threadId);
+    console.log('targetIndex', targetIndex);
+    const similarities = tfidf.map((doc, index) => {
+      const similarityIndex = tfidf[targetIndex];
+      return {
+        id: threads[index]?.id,
+        similarity: similarityIndex
+          ? cosineSimilarity(similarityIndex, doc)
+          : 0,
+      };
+    });
+    console.log('similarities', similarities);
+    const sorted = similarities.sort((a, b) => b.similarity - a.similarity);
+    console.log('sorted', sorted);
   }
 
   /**

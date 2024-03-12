@@ -34,17 +34,40 @@ export class TagService {
    * @param {string} userId - 유저 ID
    * @param {CreateInputSchema} input - 생성할 태그 데이터
    */
-  async create(userId: string, input: CreateInputSchema) {
-    const tag = await db.tag.create({
+  create(_: string, input: CreateInputSchema) {
+    return db.tag.create({
       select: getTagsSelector(),
       data: {
         name: input.name,
       },
     });
+  }
 
-    await this.connectOrCreateFollowTag(userId, tag.id);
+  /**
+   * @description 태그 스키마와 스레드 스키마를 연결
+   * @param {string} tagId - 태그 ID
+   * @param {string} threadId - 스레드 ID
+   */
+  async connectOrCreateTag(tagId: string, threadId: string) {
+    const exists = await db.threadTag.findFirst({
+      where: {
+        threadId,
+        tagId,
+      },
+    });
 
-    return tag;
+    if (exists) {
+      return exists;
+    }
+
+    const data = await db.threadTag.create({
+      data: {
+        threadId,
+        tagId,
+      },
+    });
+
+    return data;
   }
 
   /**
@@ -52,8 +75,8 @@ export class TagService {
    * @param {string} userId - 유저 ID
    * @param {string} tagId - 태그 ID
    */
-  connectOrCreateFollowTag(userId: string, tagId: string) {
-    const exists = db.followTag.findFirst({
+  async connectOrCreateFollowTag(userId: string, tagId: string) {
+    const exists = await db.followTag.findFirst({
       where: {
         userId,
         tagId,
@@ -64,12 +87,14 @@ export class TagService {
       return exists;
     }
 
-    return db.followTag.create({
+    const data = await db.followTag.create({
       data: {
         userId,
         tagId,
       },
     });
+
+    return data;
   }
 
   /**

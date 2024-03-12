@@ -14,3 +14,5 @@ export default async function Pages() {
     </React.Suspense>
   );
 }
+
+export const dynamic = 'force-dynamic';

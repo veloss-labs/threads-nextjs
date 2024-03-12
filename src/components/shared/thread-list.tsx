@@ -33,6 +33,7 @@ export default function ThreadList({
   type,
 }: ThreadListProps) {
   const total = initialData?.totalCount;
+
   const seachParams = useSearchParams();
   const hydrating = useIsHydrating('[data-hydrating-signal]');
 
@@ -117,14 +118,10 @@ export default function ThreadList({
           }
 
           if (isLoaderRow) {
-            return (
-              <SkeletonCard key={`items:loading:${item.id}:${item.type}`} />
-            );
+            return <SkeletonCard key={`items:loading:${item.id}`} />;
           }
 
-          return (
-            <ThreadItem key={`items:${item.id}:${item.type}`} item={item} />
-          );
+          return <ThreadItem key={`items:${item.id}`} item={item} />;
         })}
       </div>
     </div>

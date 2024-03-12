@@ -146,10 +146,29 @@ MainNav.Thread = function Item({ item }: ItemProps) {
 
   const onClick = useCallback(() => {
     popupOpen('THREAD');
+
+    let type: string | undefined = undefined;
+    switch (pathname) {
+      case PAGE_ENDPOINTS.ROOT: {
+        type = 'recommendation';
+        break;
+      }
+      case PAGE_ENDPOINTS.FOLLOWING: {
+        type = 'following';
+        break;
+      }
+      default: {
+        type = undefined;
+        break;
+      }
+    }
+
+    const nextPath = type ? `${href}?type=${type}` : href;
+
     startTransition(() => {
-      router.push(href);
+      router.push(nextPath);
     });
-  }, [router, popupOpen, href]);
+  }, [router, popupOpen, href, pathname]);
 
   return (
     <button
