@@ -17,6 +17,8 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '5mb',
     },
+    // see https://www.defer.run/docs/get-started/quickstart/nextjs#disable-server-minification
+    serverMinification: false,
     serverComponentsExternalPackages: ['@prisma/client'],
   },
   poweredByHeader: false,

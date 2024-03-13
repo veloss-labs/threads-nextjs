@@ -1,5 +1,5 @@
 import { SSTConfig } from 'sst';
-import { NextApp } from './stacks/NextApp';
+import { NextApp } from './stacks/next-app';
 
 const AWS_SST_NAME = process.env.AWS_SST_NAME;
 const AWS_SST_STAGE = process.env.AWS_SST_STAGE;

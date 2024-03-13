@@ -158,6 +158,64 @@ export function computeTFIDF(documents: string[]): Map<string, number>[] {
   return tfidf;
 }
 
+type Document = {
+  id: string;
+  text: string;
+};
+
+// 간단한 TF-IDF 계산을 하는데 id로 그룹화해서 계산하고 값을 반환 할 때 id를 key로 가지는 Map을 반환
+export function computeTFIDFById(documents: Document[]) {
+  let tfidf: Map<string, Map<string, number>> = new Map();
+  let idf: Map<string, number> = new Map();
+
+  for (let i = 0; i < documents.length; i++) {
+    const target = documents[i];
+    if (isUndefined(target)) {
+      continue;
+    }
+    let words = target.text.split(' ');
+    let wordCount = words.length;
+    let wordSet = new Set(words);
+
+    wordSet.forEach((word) => {
+      let tf = words.filter((w) => w === word).length / wordCount;
+
+      if (tfidf.has(target.id)) {
+        tfidf.get(target.id)?.set(word, tf);
+      } else {
+        tfidf.set(target.id, new Map([[word, tf]]));
+      }
+
+      if (idf.has(word)) {
+        idf.set(word, idf.get(word)! + 1);
+      } else {
+        idf.set(word, 1);
+      }
+    });
+  }
+
+  idf = new Map(
+    [...idf.entries()].map(([word, count]) => [
+      word,
+      Math.log(documents.length / count),
+    ]),
+  );
+
+  tfidf = new Map(
+    [...tfidf.entries()].map(([id, tfMap]) => [
+      id,
+      new Map(
+        [...tfMap.entries()].map(([word, tf]) => [
+          word,
+          tf * (idf.get(word) || 0),
+        ]),
+      ),
+    ]),
+  );
+
+  return tfidf;
+}
+
 // 간단한 코사인 유사도 계산
 export function cosineSimilarity(
   a: Map<string, number>,
@@ -193,8 +251,6 @@ type Result = {
 
 function depthFristSearchNode(node: LexicalNode, keys: FindKeys[]) {
   let result: Result[] = [];
-
-  console.log('node', node, keys);
 
   if ('type' in node && keys.includes(node.type as FindKeys)) {
     result.push({ type: node.type as FindKeys, node });

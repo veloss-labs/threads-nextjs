@@ -8,7 +8,7 @@ import {
 } from '~/services/threads/threads.query';
 import { threadService } from '~/services/threads/threads.service';
 import { createInputSchema } from '~/services/threads/threads.input';
-import difference from 'lodash-es/difference';
+import { taskRunner } from '~/services/task/task';
 
 export const threadsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -17,10 +17,17 @@ export const threadsRouter = createTRPCRouter({
       const userId = ctx.session.user.id;
 
       try {
-        const { id } = await threadService.create(userId, input);
+        const data = await threadService.create(userId, input);
+        const item = await threadService.byId(data.id);
 
-        const item = await threadService.byId(id);
-
+        taskRunner.registerTask(async () => {
+          const resultList =
+            await threadService.autoPaginationComputeRecommendations(
+              userId,
+              data.id,
+            );
+          console.log('[resultList] ==>', resultList);
+        });
         // 추천 스레드 계산
         return {
           ok: true,
@@ -43,14 +50,6 @@ export const threadsRouter = createTRPCRouter({
           threadService.getItems(input),
         ]);
 
-        try {
-          list.map((item) => {
-            threadService.recommendThreads(item.id);
-          });
-        } catch (error) {
-          console.log('error', error);
-        }
-
         const endCursor = list.at(-1)?.id ?? null;
         const hasNextPage = endCursor
           ? (await threadService.hasNextPage(input, endCursor)) > 0
@@ -70,6 +69,19 @@ export const threadsRouter = createTRPCRouter({
           endCursor: null,
           hasNextPage: false,
         };
+      }
+    }),
+  getRecommendations: protectedProcedure
+    .input(listQuerySchema)
+    .query(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
+
+      try {
+        const list = await threadService.getRecommendations(userId, input);
+        return list;
+      } catch (error) {
+        console.log('error', error);
+        return [];
       }
     }),
   getLikeThreads: protectedProcedure

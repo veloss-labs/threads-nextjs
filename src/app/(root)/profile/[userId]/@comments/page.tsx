@@ -13,6 +13,7 @@ export default async function Pages({ params }: Props) {
   const initialData = await api.threads.getThreads({
     userId: params.userId,
     type: 'comment',
+    limit: 10,
   });
 
   return (

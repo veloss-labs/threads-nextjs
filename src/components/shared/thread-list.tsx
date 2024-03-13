@@ -1,8 +1,7 @@
 'use client';
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ThreadItem from '~/components/shared/thread-item';
-import useIsHydrating from '~/libs/hooks/useIsHydrating';
 import { getTargetElement } from '~/libs/browser/dom';
 import { api } from '~/services/trpc/react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
@@ -17,8 +16,9 @@ interface ThreadListProps {
   type?: ThreadListQuerySchema['type'];
 }
 
-const CLIENT_LIMIT_SIZE = 30;
-const CLIENT_DATA_OVERSCAN = 10;
+const CLIENT_LIMIT_SIZE = 10;
+const CLIENT_DATA_OVERSCAN = 5;
+const MIN_ITEM_SIZE = 200;
 
 const getCursorLimit = (searchParams: URLSearchParams) => ({
   start: Number(searchParams.get('start') || '0'),
@@ -32,10 +32,8 @@ export default function ThreadList({
   keyword,
   type,
 }: ThreadListProps) {
-  const total = initialData?.totalCount;
-
   const seachParams = useSearchParams();
-  const hydrating = useIsHydrating('[data-hydrating-signal]');
+  const initialLength = initialData?.list?.length ?? CLIENT_DATA_OVERSCAN;
 
   const [data, { fetchNextPage, hasNextPage, isFetchingNextPage }] =
     api.threads.getThreads.useSuspenseInfiniteQuery(
@@ -43,6 +41,7 @@ export default function ThreadList({
         userId,
         keyword,
         type,
+        limit: CLIENT_LIMIT_SIZE,
       },
       {
         initialData: () => {
@@ -61,6 +60,13 @@ export default function ThreadList({
       },
     );
 
+  const initialRect = useMemo(() => {
+    return {
+      width: 0,
+      height: MIN_ITEM_SIZE * initialLength,
+    };
+  }, [initialLength]);
+
   const totalCount = data?.pages?.at(0)?.totalCount ?? 0;
   const flatList = data?.pages?.map((page) => page?.list).flat() ?? [];
 
@@ -71,20 +77,15 @@ export default function ThreadList({
   const $list = useRef<HTMLDivElement>(null);
 
   const rowVirtualizer = useWindowVirtualizer({
-    count: total ?? totalCount,
-    estimateSize: () => 250,
+    count: hasNextPage ? flatList.length + 1 : flatList.length,
+    estimateSize: () => MIN_ITEM_SIZE,
     overscan: CLIENT_DATA_OVERSCAN,
     scrollMargin: getTargetElement($list)?.offsetTop ?? 0,
-    initialRect: {
-      width: 0,
-      height: 800,
-    },
+    initialRect,
   });
 
-  const virtualizerList = rowVirtualizer.getVirtualItems();
-
   useEffect(() => {
-    const [lastItem] = [...virtualizerList].reverse();
+    const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse();
 
     if (!lastItem) {
       return;
@@ -103,25 +104,64 @@ export default function ThreadList({
     fetchNextPage,
     flatList.length,
     isFetchingNextPage,
-    virtualizerList,
+    rowVirtualizer.getVirtualItems(),
   ]);
 
   return (
-    <div ref={$list}>
-      <div className="relative w-full">
-        {virtualizerList.map((virtualRow) => {
+    <div ref={$list} data-hydrating-signal className="max-w-full">
+      <div
+        className="relative w-full"
+        style={{
+          height: `${rowVirtualizer.getTotalSize()}px`,
+        }}
+      >
+        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
           const isLoaderRow = virtualRow.index > flatList.length - 1;
           const item = flatList.at(virtualRow.index);
+          const isEnd = totalCount === virtualRow.index + 1;
+
+          if (isLoaderRow) {
+            return (
+              <div
+                key={`items:loading:${virtualRow.index}`}
+                className="absolute left-0 top-0 w-full"
+                style={{
+                  height: `${virtualRow.size}px`,
+                  transform: `translateY(${
+                    virtualRow.start - rowVirtualizer.options.scrollMargin
+                  }px)`,
+                }}
+              >
+                <SkeletonCard />;
+              </div>
+            );
+          }
 
           if (!item) {
             return null;
           }
 
-          if (isLoaderRow) {
-            return <SkeletonCard key={`items:loading:${item.id}`} />;
-          }
-
-          return <ThreadItem key={`items:${item.id}`} item={item} />;
+          return (
+            <div
+              key={`items:${item.id}`}
+              className="absolute left-0 top-0 w-full"
+              style={{
+                height: `${virtualRow.size}px`,
+                transform: `translateY(${
+                  virtualRow.start - rowVirtualizer.options.scrollMargin
+                }px)`,
+              }}
+            >
+              <ThreadItem item={item} />
+              {isEnd && (
+                <div className="w-full py-8">
+                  <p className="text-center text-slate-700 dark:text-slate-300">
+                    스레드를 모두 읽었습니다! 👋
+                  </p>
+                </div>
+              )}
+            </div>
+          );
         })}
       </div>
     </div>

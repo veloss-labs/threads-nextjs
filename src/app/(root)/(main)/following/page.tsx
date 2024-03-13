@@ -6,6 +6,7 @@ import { api } from '~/services/trpc/server';
 export default async function Pages() {
   const initialData = await api.threads.getThreads({
     type: 'follow',
+    limit: 10,
   });
 
   return (
