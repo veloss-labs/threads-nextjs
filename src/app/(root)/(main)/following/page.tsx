@@ -4,7 +4,7 @@ import SkeletonCardList from '~/components/skeleton/card-thread-list';
 import { api } from '~/services/trpc/server';
 
 export default async function Pages() {
-  const initialData = await api.threads.getThreads({
+  const initialData = await api.threads.getItems({
     type: 'follow',
     limit: 10,
   });

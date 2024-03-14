@@ -36,7 +36,7 @@ export default function ThreadList({
   const initialLength = initialData?.list?.length ?? CLIENT_DATA_OVERSCAN;
 
   const [data, { fetchNextPage, hasNextPage, isFetchingNextPage }] =
-    api.threads.getThreads.useSuspenseInfiniteQuery(
+    api.threads.getItems.useSuspenseInfiniteQuery(
       {
         userId,
         keyword,

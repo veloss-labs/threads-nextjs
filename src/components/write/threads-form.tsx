@@ -44,7 +44,10 @@ export default function ThreadsForm({
 
   const mutation = api.threads.create.useMutation({
     async onSuccess() {
-      await utils.threads.getThreads.invalidate();
+      await Promise.all([
+        utils.threads.getItems.invalidate(),
+        utils.threads.getRecommendations.invalidate(),
+      ]);
       onSuccess?.();
     },
   });

@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default async function Pages({ params }: Props) {
-  const initialData = await api.threads.getThreads({
+  const initialData = await api.threads.getItems({
     userId: params.userId,
     type: 'repost',
     limit: 10,

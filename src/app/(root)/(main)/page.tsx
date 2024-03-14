@@ -1,17 +1,19 @@
 import React from 'react';
-import ThreadList from '~/components/shared/thread-list';
+import ThreadRecommendationsList from '~/components/shared/thread-recommendations-list';
 import SkeletonCardList from '~/components/skeleton/card-thread-list';
 import { api } from '~/services/trpc/server';
 
 export default async function Pages() {
-  const initialData = await api.threads.getThreads({
-    type: 'recommendation',
+  const initialData = await api.threads.getRecommendations({
     limit: 10,
   });
 
   return (
     <React.Suspense fallback={<SkeletonCardList />}>
-      <ThreadList initialData={initialData} type="recommendation" />
+      <ThreadRecommendationsList
+        initialData={initialData}
+        type="recommendation"
+      />
     </React.Suspense>
   );
 }

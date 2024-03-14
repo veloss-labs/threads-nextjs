@@ -14,13 +14,20 @@ export const likeListQuerySchema = cursorPaginationQuerySchema.optional();
 
 export type LikeListQuerySchema = z.infer<typeof likeListQuerySchema>;
 
+export const recommendationListQuerySchema =
+  cursorPaginationQuerySchema.optional();
+
+export type RecommendationListQuerySchema = z.infer<
+  typeof recommendationListQuerySchema
+>;
+
 export const listQuerySchema = z
   .object({
     keyword: z.string().optional(),
     userId: z.string().optional(),
     type: z
-      .enum(['recommendation', 'user', 'repost', 'comment', 'follow'])
-      .default('recommendation')
+      .enum(['user', 'repost', 'comment', 'follow', 'default'])
+      .default('default')
       .optional(),
   })
   .merge(cursorPaginationQuerySchema);

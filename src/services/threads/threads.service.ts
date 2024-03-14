@@ -3,6 +3,7 @@ import { db } from '~/services/db/prisma';
 import type {
   LikeListQuerySchema,
   ThreadListQuerySchema,
+  RecommendationListQuerySchema,
 } from '~/services/threads/threads.query';
 import {
   getThreadsSelector,
@@ -226,9 +227,9 @@ export class ThreadService {
   /**
    * @description 추천 스레드 목록 조회
    * @param {string} userId - 사용자 ID
-   * @param {ThreadListQuerySchema} input - 스레드 목록 조회 조건
+   * @param {RecommendationListQuerySchema} input - 스레드 목록 조회 조건
    */
-  getRecommendations(userId: string, input: ThreadListQuerySchema) {
+  getRecommendations(userId: string, input: RecommendationListQuerySchema) {
     return db.thread.findMany({
       where: {
         deleted: false,
@@ -342,13 +343,13 @@ export class ThreadService {
   /**
    * @description endCursor 이후에 다음 페이지가 있는지 확인
    * @param {string} userId - 스레드 목록 조회 조건
-   * @param {string} endCursor - 스레드 ID
+   * @param {RecommendationListQuerySchema} input - 스레드 목록 조회 조건
    */
-  hasRecommendPage(userId: string, endCursor: string | undefined) {
+  hasRecommendPage(userId: string, input: RecommendationListQuerySchema) {
     return db.thread.count({
       where: {
         id: {
-          lt: endCursor,
+          lt: input?.cursor,
         },
         deleted: false,
         userId,
@@ -417,8 +418,9 @@ export class ThreadService {
   /**
    * @description 추천 스레드 목록 조회 총 개수
    * @param {string} userId - 사용자 ID
+   * @param {RecommendationListQuerySchema} input - 스레드 목록 조회 조건
    */
-  recommendCount(userId: string) {
+  recommendCount(userId: string, input: RecommendationListQuerySchema) {
     return db.thread.count({
       where: {
         deleted: false,

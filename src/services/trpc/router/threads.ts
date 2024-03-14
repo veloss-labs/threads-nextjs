@@ -5,6 +5,7 @@ import {
 import {
   likeListQuerySchema,
   listQuerySchema,
+  recommendationListQuerySchema,
 } from '~/services/threads/threads.query';
 import { threadService } from '~/services/threads/threads.service';
 import { createInputSchema } from '~/services/threads/threads.input';
@@ -41,7 +42,7 @@ export const threadsRouter = createTRPCRouter({
         };
       }
     }),
-  getThreads: protectedProcedure
+  getItems: protectedProcedure
     .input(listQuerySchema)
     .query(async ({ input }) => {
       try {
@@ -72,18 +73,18 @@ export const threadsRouter = createTRPCRouter({
       }
     }),
   getRecommendations: protectedProcedure
-    .input(listQuerySchema)
+    .input(recommendationListQuerySchema)
     .query(async ({ input, ctx }) => {
       const userId = ctx.session.user.id;
       try {
         const [totalCount, list] = await Promise.all([
-          threadService.recommendCount(userId),
+          threadService.recommendCount(userId, input),
           threadService.getRecommendations(userId, input),
         ]);
 
         const endCursor = list.at(-1)?.id ?? null;
         const hasNextPage = endCursor
-          ? (await threadService.hasRecommendPage(userId, endCursor)) > 0
+          ? (await threadService.hasRecommendPage(userId, input)) > 0
           : false;
 
         return {
@@ -102,7 +103,7 @@ export const threadsRouter = createTRPCRouter({
         };
       }
     }),
-  getLikeThreads: protectedProcedure
+  getLikes: protectedProcedure
     .input(likeListQuerySchema)
     .query(async ({ input, ctx }) => {
       const userId = ctx.session.user.id;
