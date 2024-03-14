@@ -22,15 +22,6 @@ export const threadsRouter = createTRPCRouter({
         const data = await threadService.create(userId, input);
         const item = await threadService.byId(data.id);
 
-        // taskRunner.registerTask(async () => {
-        //   const resultList =
-        //     await threadService.autoPaginationComputeRecommendations(
-        //       userId,
-        //       data.id,
-        //     );
-        //   console.log('[resultList] ==>', resultList);
-        // });
-        // 추천 스레드 계산
         return {
           ok: true,
           data: item,

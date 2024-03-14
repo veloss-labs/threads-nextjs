@@ -1,4 +1,5 @@
 'server-only';
+import dayjs from 'dayjs';
 import { db } from '~/services/db/prisma';
 import type {
   LikeListQuerySchema,
@@ -86,12 +87,15 @@ export class ThreadService {
    * @description 자동 페이지네이션을 통해 추천 스레드 계산
    * @param {string} threadId - 스레드 ID
    */
-  async autoPaginationComputeRecommendations(userId: string, threadId: string) {
+  async autoPaginationComputeRecommendations(threadId: string) {
+    const startDay = dayjs().startOf('day').toDate();
+    const endDay = dayjs().endOf('day').toDate();
     const totalCount = await db.thread.count({
       where: {
         deleted: false,
-        userId: {
-          not: userId,
+        updatedAt: {
+          gte: startDay,
+          lte: endDay,
         },
       },
     });
@@ -124,7 +128,6 @@ export class ThreadService {
       const fetchItem = db.threadRecommendation.create({
         data: {
           threadId,
-          userId,
           recommendedThreadId: item.id,
           similarity: item.similarity,
         },
@@ -257,14 +260,9 @@ export class ThreadService {
                 thread: {
                   user: {
                     id: {
-                      notIn: [userId],
+                      not: userId,
                     },
                   },
-                },
-              },
-              {
-                user: {
-                  id: userId,
                 },
               },
             ],
@@ -375,7 +373,7 @@ export class ThreadService {
     return db.thread.count({
       where: {
         id: {
-          lt: input?.cursor,
+          lt: endCursor,
         },
         deleted: false,
         userId,
@@ -402,7 +400,7 @@ export class ThreadService {
     return db.thread.count({
       where: {
         id: {
-          lt: input?.cursor,
+          lt: endCursor,
         },
         deleted: false,
         userId,
@@ -418,14 +416,9 @@ export class ThreadService {
                 thread: {
                   user: {
                     id: {
-                      notIn: [userId],
+                      not: userId,
                     },
                   },
-                },
-              },
-              {
-                user: {
-                  id: userId,
                 },
               },
             ],
@@ -449,7 +442,7 @@ export class ThreadService {
     return db.thread.count({
       where: {
         id: {
-          lt: input?.cursor,
+          lt: endCursor,
         },
         deleted: false,
         OR: [
@@ -526,14 +519,9 @@ export class ThreadService {
                 thread: {
                   user: {
                     id: {
-                      notIn: [userId],
+                      not: userId,
                     },
                   },
-                },
-              },
-              {
-                user: {
-                  id: userId,
                 },
               },
             ],
