@@ -75,13 +75,31 @@ export const threadsRouter = createTRPCRouter({
     .input(listQuerySchema)
     .query(async ({ input, ctx }) => {
       const userId = ctx.session.user.id;
-
       try {
-        const list = await threadService.getRecommendations(userId, input);
-        return list;
+        const [totalCount, list] = await Promise.all([
+          threadService.recommendCount(userId),
+          threadService.getRecommendations(userId, input),
+        ]);
+
+        const endCursor = list.at(-1)?.id ?? null;
+        const hasNextPage = endCursor
+          ? (await threadService.hasRecommendPage(userId, endCursor)) > 0
+          : false;
+
+        return {
+          totalCount,
+          list,
+          endCursor,
+          hasNextPage,
+        };
       } catch (error) {
         console.log('error', error);
-        return [];
+        return {
+          totalCount: 0,
+          list: [],
+          endCursor: null,
+          hasNextPage: false,
+        };
       }
     }),
   getLikeThreads: protectedProcedure

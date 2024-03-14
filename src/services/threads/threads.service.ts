@@ -228,7 +228,7 @@ export class ThreadService {
    * @param {string} userId - 사용자 ID
    * @param {ThreadListQuerySchema} input - 스레드 목록 조회 조건
    */
-  async getRecommendations(userId: string, input: ThreadListQuerySchema) {
+  getRecommendations(userId: string, input: ThreadListQuerySchema) {
     return db.thread.findMany({
       where: {
         deleted: false,
@@ -257,9 +257,7 @@ export class ThreadService {
               },
               {
                 user: {
-                  id: {
-                    notIn: [userId],
-                  },
+                  id: userId,
                 },
               },
             ],
@@ -342,6 +340,48 @@ export class ThreadService {
   }
 
   /**
+   * @description endCursor 이후에 다음 페이지가 있는지 확인
+   * @param {string} userId - 스레드 목록 조회 조건
+   * @param {string} endCursor - 스레드 ID
+   */
+  hasRecommendPage(userId: string, endCursor: string | undefined) {
+    return db.thread.count({
+      where: {
+        id: {
+          lt: endCursor,
+        },
+        deleted: false,
+        userId,
+        recommendations: {
+          some: {
+            AND: [
+              {
+                similarity: {
+                  gte: this.DEFAULT_RECOMMENDATION_SIMILARITY,
+                },
+              },
+              {
+                thread: {
+                  user: {
+                    id: {
+                      notIn: [userId],
+                    },
+                  },
+                },
+              },
+              {
+                user: {
+                  id: userId,
+                },
+              },
+            ],
+          },
+        },
+      },
+    });
+  }
+
+  /**
    * @description 스레드 목록 조회 총 개수
    * @param {ThreadListQuerySchema} input - 스레드 목록 조회 조건
    */
@@ -368,6 +408,44 @@ export class ThreadService {
         likes: {
           some: {
             userId,
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * @description 추천 스레드 목록 조회 총 개수
+   * @param {string} userId - 사용자 ID
+   */
+  recommendCount(userId: string) {
+    return db.thread.count({
+      where: {
+        deleted: false,
+        userId,
+        recommendations: {
+          some: {
+            AND: [
+              {
+                similarity: {
+                  gte: this.DEFAULT_RECOMMENDATION_SIMILARITY,
+                },
+              },
+              {
+                thread: {
+                  user: {
+                    id: {
+                      notIn: [userId],
+                    },
+                  },
+                },
+              },
+              {
+                user: {
+                  id: userId,
+                },
+              },
+            ],
           },
         },
       },

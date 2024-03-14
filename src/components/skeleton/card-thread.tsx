@@ -4,7 +4,7 @@ import { Icons } from '../icons';
 import { cn } from '~/utils/utils';
 import { Card } from '~/components/ui/card';
 
-export default function SkeletonCard() {
+export default function SkeletonCardThread() {
   return (
     <Card className="m-3 mx-auto overflow-hidden rounded-none border-x-0 border-b border-t-0 shadow-none dark:bg-background">
       <div className="md:flex">

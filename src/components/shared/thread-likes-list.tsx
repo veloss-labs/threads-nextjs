@@ -6,7 +6,7 @@ import useIsHydrating from '~/libs/hooks/useIsHydrating';
 import { getTargetElement } from '~/libs/browser/dom';
 import { api } from '~/services/trpc/react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
-import SkeletonCard from '../skeleton/card';
+import SkeletonCard from '../skeleton/card-thread';
 
 interface ThreadLikeListProps {
   totalCount?: number;
@@ -103,14 +103,10 @@ export default function ThreadLikeList({ initialData }: ThreadLikeListProps) {
           }
 
           if (isLoaderRow) {
-            return (
-              <SkeletonCard key={`items:loading:${item.id}:${item.type}`} />
-            );
+            return <SkeletonCard key={`items:loading:${item.id}`} />;
           }
 
-          return (
-            <ThreadItem key={`items:${item.id}:${item.type}`} item={item} />
-          );
+          return <ThreadItem key={`items:${item.id}`} item={item} />;
         })}
       </div>
     </div>

@@ -5,7 +5,7 @@ import ThreadItem from '~/components/shared/thread-item';
 import { getTargetElement } from '~/libs/browser/dom';
 import { api } from '~/services/trpc/react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
-import SkeletonCard from '~/components/skeleton/card';
+import SkeletonCard from '~/components/skeleton/card-thread';
 import { ThreadListQuerySchema } from '~/services/threads/threads.query';
 
 interface ThreadListProps {
@@ -44,6 +44,7 @@ export default function ThreadList({
         limit: CLIENT_LIMIT_SIZE,
       },
       {
+        staleTime: 2 * 60 * 1000,
         initialData: () => {
           if (initialData) {
             return {

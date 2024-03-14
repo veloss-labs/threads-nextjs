@@ -20,7 +20,7 @@ export const usersRouter = createTRPCRouter({
   }),
   getSearchUsers: protectedProcedure
     .input(listQuerySchema)
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       try {
         const [totalCount, list] = await Promise.all([
           userService.searchCount(input),

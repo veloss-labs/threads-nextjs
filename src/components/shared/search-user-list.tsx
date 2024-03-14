@@ -5,9 +5,10 @@ import useIsHydrating from '~/libs/hooks/useIsHydrating';
 import { getTargetElement } from '~/libs/browser/dom';
 import { api } from '~/services/trpc/react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
-import UserItem from '~/components/shared/user-item';
+import UserItem from '~/components/shared/search-user-item';
+import SkeletonCardUser from '~/components/skeleton/card-user';
 
-interface UserListProps {
+interface SearchUserListProps {
   initialData?: any;
   keyword?: string;
 }
@@ -22,7 +23,10 @@ const getCursorLimit = (searchParams: URLSearchParams) => ({
   limit: Number(searchParams.get('limit') || CLIENT_LIMIT_SIZE.toString()),
 });
 
-export default function UserList({ keyword, initialData }: UserListProps) {
+export default function SearchUserList({
+  keyword,
+  initialData,
+}: SearchUserListProps) {
   const seachParams = useSearchParams();
   const hydrating = useIsHydrating('[data-hydrating-signal]');
   const initialLength = initialData?.list?.length ?? CLIENT_DATA_OVERSCAN;
@@ -33,6 +37,7 @@ export default function UserList({ keyword, initialData }: UserListProps) {
         keyword,
       },
       {
+        staleTime: 2 * 60 * 1000,
         initialData: () => {
           if (initialData) {
             return {
@@ -120,9 +125,7 @@ export default function UserList({ keyword, initialData }: UserListProps) {
                   right: 0,
                 }}
               >
-                <div className="flex h-full items-center justify-center">
-                  <div className="text-gray-500">Loading...</div>
-                </div>
+                <SkeletonCardUser />
               </div>
             );
           }

@@ -1,6 +1,6 @@
 import React from 'react';
 import ThreadList from '~/components/shared/thread-list';
-import SkeletonCardList from '~/components/skeleton/card-list';
+import SkeletonCardList from '~/components/skeleton/card-thread-list';
 import { api } from '~/services/trpc/server';
 
 export default async function Pages() {
