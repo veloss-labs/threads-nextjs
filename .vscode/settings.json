@@ -1,12 +1,13 @@
 {
-  "solidity.compileUsingRemoteVersion": "v0.5.16+commit.9c3226ce",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "eslint.rules.customizations": [{ "rule": "*", "severity": "warn" }],
+  "typescript.preferences.autoImportFileExcludePatterns": [
+    "next/router.d.ts",
+    "next/dist/client/router.d.ts"
+  ],
   "typescript.tsdk": "node_modules/typescript/lib",
-  "sqltools.connections": [
-    {
-      "previewLimit": 50,
-      "driver": "SQLite",
-      "name": "sst-next-app",
-      "database": "${workspaceFolder:sst-next-app}/prisma/dev.db"
-    }
-  ]
 }
