@@ -1,19 +1,16 @@
 import { SSTConfig } from 'sst';
-import { NextApp } from './stacks/next-app';
-
-const AWS_SST_NAME = process.env.AWS_SST_NAME;
-const AWS_SST_STAGE = process.env.AWS_SST_STAGE;
-const AWS_REGION = process.env.AWS_REGION;
+import { modules } from './stacks/env';
 
 export default {
   config() {
     return {
-      name: AWS_SST_NAME,
-      region: AWS_REGION,
-      stage: AWS_SST_STAGE,
+      name: modules.env.SST_NAME,
+      region: modules.env.AWS_REGION,
+      stage: modules.env.SST_STAGE,
     };
   },
-  stacks(app) {
-    app.stack(NextApp);
+  async stacks(application) {
+    const appStacks = await import('./stacks');
+    appStacks.default(application, modules.env);
   },
 } satisfies SSTConfig;
