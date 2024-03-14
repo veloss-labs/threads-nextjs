@@ -1,6 +1,7 @@
 import * as sst from 'sst/constructs';
-import { Web } from './web';
 import type { Module } from './env';
+import { WebStack } from './web';
+import { CronStack } from './cron';
 
 // deal with dynamic imports of node built-ins (e.g. "crypto")
 // from https://github.com/evanw/esbuild/pull/2067#issuecomment-1073039746
@@ -12,5 +13,6 @@ export default function bootstrap(app: sst.App, env: Module['env']) {
     runtime: 'nodejs20.x',
   });
 
-  app.stack((input) => Web(input, env));
+  app.stack((input) => WebStack(input, env));
+  app.stack((input) => CronStack(input, env));
 }

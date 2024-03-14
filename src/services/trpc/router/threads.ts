@@ -10,7 +10,7 @@ import {
 } from '~/services/threads/threads.query';
 import { threadService } from '~/services/threads/threads.service';
 import { createInputSchema } from '~/services/threads/threads.input';
-import { taskRunner } from '~/services/task/task';
+// import { taskRunner } from '~/services/task/task';
 
 export const threadsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -22,14 +22,14 @@ export const threadsRouter = createTRPCRouter({
         const data = await threadService.create(userId, input);
         const item = await threadService.byId(data.id);
 
-        taskRunner.registerTask(async () => {
-          const resultList =
-            await threadService.autoPaginationComputeRecommendations(
-              userId,
-              data.id,
-            );
-          console.log('[resultList] ==>', resultList);
-        });
+        // taskRunner.registerTask(async () => {
+        //   const resultList =
+        //     await threadService.autoPaginationComputeRecommendations(
+        //       userId,
+        //       data.id,
+        //     );
+        //   console.log('[resultList] ==>', resultList);
+        // });
         // 추천 스레드 계산
         return {
           ok: true,
