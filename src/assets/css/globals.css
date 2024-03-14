@@ -103,6 +103,14 @@
   @apply text-blue-400 dark:text-blue-300;
 }
 
+.js-lexical-hashtag {
+  @apply cursor-pointer;
+}
+
+.js-lexical-mention {
+  @apply cursor-pointer;
+}
+
 .js-lexical-text {
   @apply text-base text-slate-900 dark:text-slate-100;
 }
