@@ -87,7 +87,12 @@ export class ThreadService {
    */
   async autoPaginationComputeRecommendations(userId: string, threadId: string) {
     const totalCount = await db.thread.count({
-      where: { deleted: false },
+      where: {
+        deleted: false,
+        userId: {
+          not: userId,
+        },
+      },
     });
 
     const fns: Map<
