@@ -10,10 +10,7 @@ export default async function Pages() {
 
   return (
     <React.Suspense fallback={<SkeletonCardList />}>
-      <ThreadRecommendationsList
-        initialData={initialData}
-        type="recommendation"
-      />
+      <ThreadRecommendationsList initialData={initialData} />
     </React.Suspense>
   );
 }

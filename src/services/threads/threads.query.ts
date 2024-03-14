@@ -21,6 +21,10 @@ export type RecommendationListQuerySchema = z.infer<
   typeof recommendationListQuerySchema
 >;
 
+export const followListQuerySchema = cursorPaginationQuerySchema.optional();
+
+export type FollowListQuerySchema = z.infer<typeof followListQuerySchema>;
+
 export const listQuerySchema = z
   .object({
     keyword: z.string().optional(),

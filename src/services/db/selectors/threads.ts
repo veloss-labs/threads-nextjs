@@ -1,6 +1,10 @@
 'server-only';
 import { Prisma, type Thread } from '@prisma/client';
-import { type UserSelectSchema, getUserSelector } from './users';
+import {
+  type UserSelectSchema,
+  getUserSelector,
+  getFollowWithUserSelector,
+} from './users';
 import { type ThreadListQuerySchema } from '~/services/threads/threads.query';
 
 export const getRecommendationsSelector = () =>
@@ -37,6 +41,20 @@ export const getRecommendationsWithThreadSelector = (
     },
     threadRecommendationThreads: {
       select: getRecommendationsSelector(),
+    },
+  });
+
+export const getFollowsWithThreadSelector = (input?: ThreadListQuerySchema) =>
+  Prisma.validator<Prisma.ThreadSelect>()({
+    id: true,
+    text: true,
+    level: true,
+    createdAt: true,
+    whoCanLeaveComments: true,
+    hiddenNumberOfLikesAndComments: true,
+    deleted: true,
+    user: {
+      select: getFollowWithUserSelector(),
     },
   });
 

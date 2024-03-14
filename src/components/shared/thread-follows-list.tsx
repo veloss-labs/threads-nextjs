@@ -6,9 +6,8 @@ import { getTargetElement } from '~/libs/browser/dom';
 import { api } from '~/services/trpc/react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import SkeletonCard from '~/components/skeleton/card-thread';
-import { ThreadListQuerySchema } from '~/services/threads/threads.query';
 
-interface ThreadRecommendationsListProps {
+interface ThreadFollowsListProps {
   initialData?: any;
 }
 
@@ -22,14 +21,14 @@ const getCursorLimit = (searchParams: URLSearchParams) => ({
   limit: Number(searchParams.get('limit') || CLIENT_LIMIT_SIZE.toString()),
 });
 
-export default function ThreadRecommendationsList({
+export default function ThreadFollowsList({
   initialData,
-}: ThreadRecommendationsListProps) {
+}: ThreadFollowsListProps) {
   const seachParams = useSearchParams();
   const initialLength = initialData?.list?.length ?? CLIENT_DATA_OVERSCAN;
 
   const [data, { fetchNextPage, hasNextPage, isFetchingNextPage }] =
-    api.threads.getRecommendations.useSuspenseInfiniteQuery(
+    api.threads.getFollows.useSuspenseInfiniteQuery(
       {
         limit: CLIENT_LIMIT_SIZE,
       },
@@ -147,7 +146,7 @@ export default function ThreadRecommendationsList({
               {isEnd && (
                 <div className="w-full py-8">
                   <p className="text-center text-slate-700 dark:text-slate-300">
-                    추천 스레드를 모두 읽었습니다! 👋
+                    스레드를 모두 읽었습니다! 👋
                   </p>
                 </div>
               )}

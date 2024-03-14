@@ -6,6 +6,7 @@ import {
   likeListQuerySchema,
   listQuerySchema,
   recommendationListQuerySchema,
+  followListQuerySchema,
 } from '~/services/threads/threads.query';
 import { threadService } from '~/services/threads/threads.service';
 import { createInputSchema } from '~/services/threads/threads.input';
@@ -53,7 +54,7 @@ export const threadsRouter = createTRPCRouter({
 
         const endCursor = list.at(-1)?.id ?? null;
         const hasNextPage = endCursor
-          ? (await threadService.hasNextPage(input, endCursor)) > 0
+          ? (await threadService.hasNextPage(endCursor, input)) > 0
           : false;
 
         return {
@@ -84,7 +85,38 @@ export const threadsRouter = createTRPCRouter({
 
         const endCursor = list.at(-1)?.id ?? null;
         const hasNextPage = endCursor
-          ? (await threadService.hasRecommendPage(userId, input)) > 0
+          ? (await threadService.hasRecommendPage(userId, endCursor, input)) > 0
+          : false;
+
+        return {
+          totalCount,
+          list,
+          endCursor,
+          hasNextPage,
+        };
+      } catch (error) {
+        console.log('error', error);
+        return {
+          totalCount: 0,
+          list: [],
+          endCursor: null,
+          hasNextPage: false,
+        };
+      }
+    }),
+  getFollows: protectedProcedure
+    .input(followListQuerySchema)
+    .query(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
+      try {
+        const [totalCount, list] = await Promise.all([
+          threadService.followCount(userId, input),
+          threadService.getFollows(userId, input),
+        ]);
+
+        const endCursor = list.at(-1)?.id ?? null;
+        const hasNextPage = endCursor
+          ? (await threadService.hasFollowPage(userId, endCursor, input)) > 0
           : false;
 
         return {
@@ -110,13 +142,13 @@ export const threadsRouter = createTRPCRouter({
 
       try {
         const [totalCount, list] = await Promise.all([
-          threadService.likeCount(userId),
-          threadService.getLikeItems(userId, input),
+          threadService.likeCount(userId, input),
+          threadService.getLikes(userId, input),
         ]);
 
         const endCursor = list.at(-1)?.id ?? null;
         const hasNextPage = endCursor
-          ? (await threadService.hasNextLikePage(userId, endCursor)) > 0
+          ? (await threadService.hasNextLikePage(userId, endCursor, input)) > 0
           : false;
 
         return {

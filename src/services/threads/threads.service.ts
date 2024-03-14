@@ -4,6 +4,7 @@ import type {
   LikeListQuerySchema,
   ThreadListQuerySchema,
   RecommendationListQuerySchema,
+  FollowListQuerySchema,
 } from '~/services/threads/threads.query';
 import {
   getThreadsSelector,
@@ -276,11 +277,48 @@ export class ThreadService {
   }
 
   /**
+   * @description 내가 팔로우한 사용자의 스레드 목록 조회 & 나 자신의 스레드 목록 조회
+   * @param {string} userId - 사용자 ID
+   * @param {FollowListQuerySchema} input - 스레드 목록 조회 조건
+   */
+  getFollows(userId: string, input: FollowListQuerySchema) {
+    return db.thread.findMany({
+      where: {
+        deleted: false,
+        OR: [
+          {
+            user: {
+              followers: {
+                some: {
+                  followerId: userId,
+                },
+              },
+            },
+          },
+          {
+            userId,
+          },
+        ],
+        id: input?.cursor
+          ? {
+              lt: input.cursor,
+            }
+          : undefined,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: input?.limit ?? this.DEFAULT_LIMIT,
+      select: getThreadsSelector(input),
+    });
+  }
+
+  /**
    * @description 좋아요한 스레드 목록 조회
    * @param {string} userId
    * @param {LikeListQuerySchema} input
    */
-  getLikeItems(userId: string, input: LikeListQuerySchema) {
+  getLikes(userId: string, input: LikeListQuerySchema) {
     return db.thread.findMany({
       where: {
         deleted: false,
@@ -306,10 +344,10 @@ export class ThreadService {
 
   /**
    * @description endCursor 이후에 다음 페이지가 있는지 확인
-   * @param {ThreadListQuerySchema} input - 스레드 목록 조회 조건
    * @param {string} endCursor - 스레드 ID
+   * @param {ThreadListQuerySchema} input - 스레드 목록 조회 조건
    */
-  hasNextPage(input: ThreadListQuerySchema, endCursor: string | undefined) {
+  hasNextPage(endCursor: string, input: ThreadListQuerySchema) {
     return db.thread.count({
       where: {
         id: {
@@ -327,12 +365,17 @@ export class ThreadService {
    * @description endCursor 이후에 다음 페이지가 있는지 확인
    * @param {string} userId - 스레드 목록 조회 조건
    * @param {string} endCursor - 스레드 ID
+   * @param {LikeListQuerySchema} input - 스레드 목록 조회 조건
    */
-  hasNextLikePage(userId: string, endCursor: string | undefined) {
+  hasNextLikePage(
+    userId: string,
+    endCursor: string,
+    input: LikeListQuerySchema,
+  ) {
     return db.thread.count({
       where: {
         id: {
-          lt: endCursor,
+          lt: input?.cursor,
         },
         deleted: false,
         userId,
@@ -348,9 +391,14 @@ export class ThreadService {
   /**
    * @description endCursor 이후에 다음 페이지가 있는지 확인
    * @param {string} userId - 스레드 목록 조회 조건
+   * @param {string} endCursor - 스레드 ID
    * @param {RecommendationListQuerySchema} input - 스레드 목록 조회 조건
    */
-  hasRecommendPage(userId: string, input: RecommendationListQuerySchema) {
+  hasRecommendPage(
+    userId: string,
+    endCursor: string,
+    input: RecommendationListQuerySchema,
+  ) {
     return db.thread.count({
       where: {
         id: {
@@ -388,6 +436,41 @@ export class ThreadService {
   }
 
   /**
+   * @description endCursor 이후에 다음 페이지가 있는지 확인
+   * @param {string} userId - 스레드 목록 조회 조건
+   * @param {string} endCursor - 스레드 ID
+   * @param {FollowListQuerySchema} input - 스레드 목록 조회 조건
+   */
+  hasFollowPage(
+    userId: string,
+    endCursor: string,
+    input: FollowListQuerySchema,
+  ) {
+    return db.thread.count({
+      where: {
+        id: {
+          lt: input?.cursor,
+        },
+        deleted: false,
+        OR: [
+          {
+            user: {
+              followers: {
+                some: {
+                  followerId: userId,
+                },
+              },
+            },
+          },
+          {
+            userId,
+          },
+        ],
+      },
+    });
+  }
+
+  /**
    * @description 스레드 목록 조회 총 개수
    * @param {ThreadListQuerySchema} input - 스레드 목록 조회 조건
    */
@@ -405,8 +488,9 @@ export class ThreadService {
   /**
    * @description 좋아요 스레드 목록 조회 총 개수
    * @param {string} userId - 스레드 목록 조회 조건
+   * @param {LikeListQuerySchema} input - 스레드 목록 조회 조건
    */
-  likeCount(userId: string) {
+  likeCount(userId: string, input: LikeListQuerySchema) {
     return db.thread.count({
       where: {
         deleted: false,
@@ -455,6 +539,33 @@ export class ThreadService {
             ],
           },
         },
+      },
+    });
+  }
+
+  /**
+   * @description 팔로우 스레드 목록 조회 총 개수
+   * @param {string} userId - 사용자 ID
+   * @param {FollowListQuerySchema} input - 스레드 목록 조회 조건
+   */
+  followCount(userId: string, input: FollowListQuerySchema) {
+    return db.thread.count({
+      where: {
+        deleted: false,
+        OR: [
+          {
+            user: {
+              followers: {
+                some: {
+                  followerId: userId,
+                },
+              },
+            },
+          },
+          {
+            userId,
+          },
+        ],
       },
     });
   }
