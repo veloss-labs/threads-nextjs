@@ -11,23 +11,27 @@ datasource db {
 }
 
 model User {
-  id            String        @id @default(cuid())
-  name          String?
-  username      String?       @unique
-  password      String?
-  salt          String?
-  email         String?       @unique
-  emailVerified DateTime?     @map(name: "email_verified")
-  image         String?
-  createdAt     DateTime      @default(now()) @map(name: "created_at")
-  updatedAt     DateTime      @updatedAt @map(name: "updated_at")
-  accounts      Account[]
-  sessions      Session[]
-  profile       UserProfile?
-  threadAssets  ThreadAsset[]
-  threads       Thread[]
-  threadLikes   ThreadLike[]
-  followTags    FollowTag[]
+  id                    String                 @id @default(cuid())
+  name                  String?
+  username              String?                @unique
+  password              String?
+  salt                  String?
+  email                 String?                @unique
+  emailVerified         DateTime?              @map(name: "email_verified")
+  image                 String?
+  createdAt             DateTime               @default(now()) @map(name: "created_at")
+  updatedAt             DateTime               @updatedAt @map(name: "updated_at")
+  accounts              Account[]
+  sessions              Session[]
+  profile               UserProfile?
+  threadAssets          ThreadAsset[]
+  threads               Thread[]
+  threadLikes           ThreadLike[]
+  followTags            FollowTag[]
+  threadMention         ThreadMention[]
+  threadRecommendations ThreadRecommendation[]
+  following             UserFollow[]           @relation(name: "following_relation")
+  followers             UserFollow[]           @relation(name: "follower_relation")
 
   @@map(name: "users")
 }
@@ -39,6 +43,17 @@ model UserProfile {
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_profiles")
+}
+
+model UserFollow {
+  id         String @id @default(cuid())
+  userId     String @map(name: "user_id")
+  followerId String @map(name: "follower_id")
+  user       User   @relation(name: "following_relation", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  follower   User   @relation(name: "follower_relation", fields: [followerId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@unique([userId, followerId])
+  @@map(name: "user_follows")
 }
 
 model Account {
@@ -98,10 +113,11 @@ model Thread {
   assets                         ThreadAsset[]
   likes                          ThreadLike[]
   bookmarks                      ThreadBookmark[]
-  threadRecommendationThreads    ThreadRecommendation[] @relation(name: "ThreadRecommendationThread")
+  threadRecommendationThreads    ThreadRecommendation[] @relation(name: "recommendation_thread_relation")
   recommendations                ThreadRecommendation[]
   user                           User                   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
   tags                           ThreadTag[]
+  mentions                       ThreadMention[]
 
   @@index([createdAt], map: "threads_created_at")
   @@index([deleted])
@@ -111,10 +127,12 @@ model Thread {
 
 model ThreadRecommendation {
   id                  String @id @default(cuid())
+  userId              String @map(name: "user_id")
   threadId            String @map(name: "thread_id")
   recommendedThreadId String @map(name: "recommended_thread_id")
   similarity          Float
-  thread              Thread @relation(name: "ThreadRecommendationThread", fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  user                User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  thread              Thread @relation(name: "recommendation_thread_relation", fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
   recommendedThread   Thread @relation(fields: [recommendedThreadId], references: [id])
 
   @@index([threadId], map: "thread_recommendations_thread_id")
@@ -171,6 +189,19 @@ model ThreadTag {
 
   @@unique([threadId, tagId])
   @@map(name: "thread_tags")
+}
+
+model ThreadMention {
+  id        String   @id @default(cuid())
+  threadId  String   @map(name: "thread_id")
+  userId    String   @map(name: "user_id")
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@unique([threadId, userId])
+  @@map(name: "thread_mentions")
 }
 
 model File {

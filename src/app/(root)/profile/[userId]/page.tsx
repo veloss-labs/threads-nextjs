@@ -1,6 +1,6 @@
 import React from 'react';
 import ThreadList from '~/components/shared/thread-list';
-import SkeletonCardList from '~/components/skeleton/card-list';
+import SkeletonCardList from '~/components/skeleton/card-thread-list';
 import { api } from '~/services/trpc/server';
 
 interface Props {
@@ -10,9 +10,10 @@ interface Props {
 }
 
 export default async function Pages({ params }: Props) {
-  const initialData = await api.threads.getThreads({
+  const initialData = await api.threads.getItems({
     userId: params.userId,
     type: 'user',
+    limit: 10,
   });
 
   return (

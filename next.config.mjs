@@ -9,7 +9,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 /**
  * Next Config Options
  * @type {import('next').NextConfig} */
-const nextConfig = {
+const config = {
   reactStrictMode: true,
   swcMinify: true,
   experimental: {
@@ -64,4 +64,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default config;

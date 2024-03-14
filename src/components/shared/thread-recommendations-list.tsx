@@ -5,10 +5,10 @@ import ThreadItem from '~/components/shared/thread-item';
 import { getTargetElement } from '~/libs/browser/dom';
 import { api } from '~/services/trpc/react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
-import SkeletonCard from '../skeleton/card-thread';
+import SkeletonCard from '~/components/skeleton/card-thread';
+import { ThreadListQuerySchema } from '~/services/threads/threads.query';
 
-interface ThreadLikeListProps {
-  totalCount?: number;
+interface ThreadRecommendationsListProps {
   initialData?: any;
 }
 
@@ -22,12 +22,14 @@ const getCursorLimit = (searchParams: URLSearchParams) => ({
   limit: Number(searchParams.get('limit') || CLIENT_LIMIT_SIZE.toString()),
 });
 
-export default function ThreadLikeList({ initialData }: ThreadLikeListProps) {
+export default function ThreadRecommendationsList({
+  initialData,
+}: ThreadRecommendationsListProps) {
   const seachParams = useSearchParams();
   const initialLength = initialData?.list?.length ?? CLIENT_DATA_OVERSCAN;
 
   const [data, { fetchNextPage, hasNextPage, isFetchingNextPage }] =
-    api.threads.getLikes.useSuspenseInfiniteQuery(
+    api.threads.getRecommendations.useSuspenseInfiniteQuery(
       {
         limit: CLIENT_LIMIT_SIZE,
       },

@@ -1,13 +1,13 @@
 import React from 'react';
-import SkeletonCard from '~/components/skeleton/card';
+import SkeletonCard from '~/components/skeleton/card-thread';
 
-interface SkeletonCardListProps {
+interface SkeletonCardThreadListProps {
   makeCount?: number;
 }
 
-export default function SkeletonCardList({
+export default function SkeletonCardThreadList({
   makeCount = 5,
-}: SkeletonCardListProps) {
+}: SkeletonCardThreadListProps) {
   return (
     <>
       {Array.from({ length: makeCount }).map((_, i) => (

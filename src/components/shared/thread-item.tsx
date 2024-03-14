@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
-import { TipTapEditor } from '~/components/editor/tiptap-editor';
+import LexicalEditor from '~/components/editor/lexical-editor';
 import { cn, getDateFormatted } from '~/utils/utils';
 import type { ThreadSelectSchema } from '~/services/db/selectors/threads';
 import { Icons } from '../icons';
@@ -106,18 +106,7 @@ export default function ThreadItem({ item }: ThreadItemProps) {
             </div>
           </div>
           <div className="py-4">
-            {/* <TipTapEditor
-              editable={false}
-              debouncedUpdatesEnabled={false}
-              name={`thraed-text-${item?.id}`}
-              value={item?.text}
-              noBorder
-              className={cn(
-                'prose prose-brand prose-headings:font-display font-default focus:outline-none',
-              )}
-              customClassName="p-0 mt-4"
-            /> */}
-            {item?.text}
+            <LexicalEditor editable={false} initialHTMLValue={item.text} />
           </div>
           <div className="flex items-center justify-end space-x-4 py-4">
             <div className="flex items-center space-x-1">

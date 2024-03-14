@@ -26,6 +26,7 @@ import AutoLinkPlugin from '~/components/editor/plugins/auto-link-plugin';
 import MentionNode from '~/components/editor/nodes/mention-node';
 import HashTagNode from '~/components/editor/nodes/hashtag-node';
 import LexicalOnBlurPlugin from '~/components/editor/plugins/blur-plugin';
+import LexicalDefaultValuePlugin from '~/components/editor/plugins/defaultValue-plugin';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
 
 function Placeholder() {
@@ -49,6 +50,7 @@ interface LexicalEditorProps {
   editable?: boolean;
   html?: HTMLConfig;
   editorState?: InitialEditorStateType;
+  initialHTMLValue?: string;
   onChange?: (
     editorState: EditorState,
     editor: ReactLexicalEditor,
@@ -66,6 +68,8 @@ export default function LexicalEditor(props: LexicalEditorProps) {
 
 LexicalEditor.Root = function LexicalEditorRoot({
   onChange,
+  onBlur,
+  initialHTMLValue,
   ...otherProps
 }: LexicalEditorProps) {
   const [editorConfig, setEditorConfig] = useState<InitialConfigType>({
@@ -87,7 +91,11 @@ LexicalEditor.Root = function LexicalEditorRoot({
   return (
     <LexicalComposer initialConfig={editorConfig}>
       <div className="col-start-2 row-start-2 row-end-2">
-        <LexicalEditor.Editor onChange={onChange} />
+        <LexicalEditor.Editor
+          onChange={onChange}
+          onBlur={onBlur}
+          initialHTMLValue={initialHTMLValue}
+        />
       </div>
     </LexicalComposer>
   );
@@ -104,11 +112,13 @@ interface LexicalEditorEditorProps {
     editor: ReactLexicalEditor,
     event: FocusEvent,
   ) => void;
+  initialHTMLValue?: string;
 }
 
 LexicalEditor.Editor = function LexicalEditorEditor({
   onChange,
   onBlur,
+  initialHTMLValue,
 }: LexicalEditorEditorProps) {
   const onEditorChange = useCallback(
     (
@@ -150,6 +160,9 @@ LexicalEditor.Editor = function LexicalEditorEditor({
       <LinkPlugin />
       <OnChangePlugin onChange={onEditorChange} />
       <LexicalOnBlurPlugin onBlur={onEditorBlur} />
+      {initialHTMLValue && (
+        <LexicalDefaultValuePlugin initialValue={initialHTMLValue} />
+      )}
     </div>
   );
 };

@@ -1,19 +1,21 @@
 'use client';
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import useIsHydrating from '~/libs/hooks/useIsHydrating';
 import { getTargetElement } from '~/libs/browser/dom';
 import { api } from '~/services/trpc/react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
-import UserItem from '~/components/shared/user-item';
+import UserItem from '~/components/shared/search-user-item';
+import SkeletonCardUser from '~/components/skeleton/card-user';
 
-interface UserListProps {
+interface SearchUserListProps {
   initialData?: any;
   keyword?: string;
 }
 
-const CLIENT_LIMIT_SIZE = 30;
-const CLIENT_DATA_OVERSCAN = 10;
+const CLIENT_LIMIT_SIZE = 10;
+const CLIENT_DATA_OVERSCAN = 5;
+const MIN_ITEM_SIZE = 60;
 
 const getCursorLimit = (searchParams: URLSearchParams) => ({
   start: Number(searchParams.get('start') || '0'),
@@ -21,10 +23,13 @@ const getCursorLimit = (searchParams: URLSearchParams) => ({
   limit: Number(searchParams.get('limit') || CLIENT_LIMIT_SIZE.toString()),
 });
 
-export default function UserList({ keyword, initialData }: UserListProps) {
-  const total = initialData?.totalCount;
+export default function SearchUserList({
+  keyword,
+  initialData,
+}: SearchUserListProps) {
   const seachParams = useSearchParams();
   const hydrating = useIsHydrating('[data-hydrating-signal]');
+  const initialLength = initialData?.list?.length ?? CLIENT_DATA_OVERSCAN;
 
   const [data, { fetchNextPage, hasNextPage, isFetchingNextPage }] =
     api.users.getSearchUsers.useSuspenseInfiniteQuery(
@@ -32,6 +37,7 @@ export default function UserList({ keyword, initialData }: UserListProps) {
         keyword,
       },
       {
+        staleTime: 2 * 60 * 1000,
         initialData: () => {
           if (initialData) {
             return {
@@ -51,6 +57,13 @@ export default function UserList({ keyword, initialData }: UserListProps) {
   const totalCount = data?.pages?.at(0)?.totalCount ?? 0;
   const flatList = data?.pages?.map((page) => page?.list).flat() ?? [];
 
+  const initialRect = useMemo(() => {
+    return {
+      width: 0,
+      height: MIN_ITEM_SIZE * initialLength,
+    };
+  }, [initialLength]);
+
   const { start, cursor, limit } = getCursorLimit(seachParams);
   const [initialStart] = useState(() => start);
   const isMountedRef = useRef(false);
@@ -58,20 +71,15 @@ export default function UserList({ keyword, initialData }: UserListProps) {
   const $list = useRef<HTMLDivElement>(null);
 
   const rowVirtualizer = useWindowVirtualizer({
-    count: total ?? totalCount,
-    estimateSize: () => 40,
+    count: hasNextPage ? flatList.length + 1 : flatList.length,
+    estimateSize: () => MIN_ITEM_SIZE,
     overscan: CLIENT_DATA_OVERSCAN,
     scrollMargin: getTargetElement($list)?.offsetTop ?? 0,
-    initialRect: {
-      width: 0,
-      height: 400,
-    },
+    initialRect,
   });
 
-  const virtualizerList = rowVirtualizer.getVirtualItems();
-
   useEffect(() => {
-    const [lastItem] = [...virtualizerList].reverse();
+    const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse();
 
     if (!lastItem) {
       return;
@@ -90,39 +98,64 @@ export default function UserList({ keyword, initialData }: UserListProps) {
     fetchNextPage,
     flatList.length,
     isFetchingNextPage,
-    virtualizerList,
+    rowVirtualizer.getVirtualItems(),
   ]);
 
   return (
-    <div ref={$list}>
-      <div className="relative w-full space-y-6">
-        {virtualizerList.map((virtualRow) => {
+    <div ref={$list} data-hydrating-signal className="max-w-full">
+      <div
+        className="relative w-full"
+        style={{
+          height: `${rowVirtualizer.getTotalSize()}px`,
+        }}
+      >
+        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
           const isLoaderRow = virtualRow.index > flatList.length - 1;
           const item = flatList.at(virtualRow.index);
-          if (!item) {
-            return null;
-          }
+          const isEnd = totalCount === virtualRow.index + 1;
 
           if (isLoaderRow) {
             return (
               <div
-                key={`items:loading:${item.id}`}
+                key={`users:loading:${virtualRow.index}`}
+                className="absolute left-0 top-0 w-full"
                 style={{
                   height: virtualRow.size,
-                  position: 'absolute',
-                  top: virtualRow.start,
-                  left: 0,
-                  right: 0,
+                  transform: `translateY(${
+                    virtualRow.start - rowVirtualizer.options.scrollMargin
+                  }px)`,
                 }}
               >
-                <div className="flex h-full items-center justify-center">
-                  <div className="text-gray-500">Loading...</div>
-                </div>
+                <SkeletonCardUser />
               </div>
             );
           }
 
-          return <UserItem key={`items:${item.id}`} item={item} />;
+          if (!item) {
+            return null;
+          }
+
+          return (
+            <div
+              key={`users:${item.id}`}
+              className="absolute left-0 top-0 w-full"
+              style={{
+                height: `${virtualRow.size}px`,
+                transform: `translateY(${
+                  virtualRow.start - rowVirtualizer.options.scrollMargin
+                }px)`,
+              }}
+            >
+              <UserItem item={item} />
+              {isEnd && (
+                <div className="w-full py-8">
+                  <p className="text-center text-slate-700 dark:text-slate-300">
+                    더 이상 유저가 없습니다! 👋
+                  </p>
+                </div>
+              )}
+            </div>
+          );
         })}
       </div>
     </div>

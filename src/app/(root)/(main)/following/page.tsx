@@ -1,16 +1,18 @@
 import React from 'react';
-import ThreadList from '~/components/shared/thread-list';
-import SkeletonCardList from '~/components/skeleton/card-list';
+import ThreadFollowsList from '~/components/shared/thread-follows-list';
+import SkeletonCardList from '~/components/skeleton/card-thread-list';
 import { api } from '~/services/trpc/server';
 
 export default async function Pages() {
-  const initialData = await api.threads.getThreads({
-    type: 'follow',
+  const initialData = await api.threads.getFollows({
+    limit: 10,
   });
 
   return (
     <React.Suspense fallback={<SkeletonCardList />}>
-      <ThreadList initialData={initialData} type="follow" />
+      <ThreadFollowsList initialData={initialData} />
     </React.Suspense>
   );
 }
+
+export const dynamic = 'force-dynamic';

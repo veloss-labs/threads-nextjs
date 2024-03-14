@@ -2,7 +2,7 @@
 import React, { useCallback, useTransition } from 'react';
 import Avatars from '~/components/shared/avatars';
 import { Button } from '~/components/ui/button';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { PAGE_ENDPOINTS } from '~/constants/constants';
 import Link from 'next/link';
 import { type Session } from 'next-auth';
@@ -15,15 +15,37 @@ interface ThreadsInputProps {
 
 export default function ThreadsInput({ session }: ThreadsInputProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
   const { popupOpen } = useLayoutStore();
 
   const onClick = useCallback(() => {
     popupOpen('THREAD');
+
+    let type: string | undefined = undefined;
+    switch (pathname) {
+      case PAGE_ENDPOINTS.ROOT: {
+        type = 'recommendation';
+        break;
+      }
+      case PAGE_ENDPOINTS.FOLLOWING: {
+        type = 'following';
+        break;
+      }
+      default: {
+        type = undefined;
+        break;
+      }
+    }
+
+    const nextPath = type
+      ? `${PAGE_ENDPOINTS.THREADS.ROOT}?type=${type}`
+      : PAGE_ENDPOINTS.THREADS.ROOT;
+
     startTransition(() => {
-      router.push(PAGE_ENDPOINTS.THREADS.ROOT);
+      router.push(nextPath);
     });
-  }, [router, popupOpen]);
+  }, [router, popupOpen, pathname]);
 
   return (
     <div className="hidden w-full border-b py-8 md:block">

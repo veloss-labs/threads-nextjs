@@ -1,5 +1,5 @@
 'use client';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import React, { useCallback, useTransition } from 'react';
 import { useLayoutStore } from '~/services/store/useLayoutStore';
 import ThreadsDialog from '~/components/write/threads-dialog';
@@ -12,6 +12,8 @@ export default function Modal() {
   const [, startTransition] = useTransition();
 
   const { popup, popupClose } = useLayoutStore();
+
+  const [searchParams] = useSearchParams();
 
   const open = popup.open && popup.type === 'THREAD';
 

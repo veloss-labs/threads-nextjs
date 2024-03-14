@@ -2,7 +2,7 @@
 import * as z from 'zod';
 
 export const cursorPaginationQuerySchema = z.object({
-  limit: z.number().optional().default(30),
+  limit: z.number().optional().default(10),
   cursor: z.string().optional(),
 });
 
@@ -14,13 +14,24 @@ export const likeListQuerySchema = cursorPaginationQuerySchema.optional();
 
 export type LikeListQuerySchema = z.infer<typeof likeListQuerySchema>;
 
+export const recommendationListQuerySchema =
+  cursorPaginationQuerySchema.optional();
+
+export type RecommendationListQuerySchema = z.infer<
+  typeof recommendationListQuerySchema
+>;
+
+export const followListQuerySchema = cursorPaginationQuerySchema.optional();
+
+export type FollowListQuerySchema = z.infer<typeof followListQuerySchema>;
+
 export const listQuerySchema = z
   .object({
     keyword: z.string().optional(),
     userId: z.string().optional(),
     type: z
-      .enum(['recommendation', 'user', 'repost', 'comment', 'follow'])
-      .default('recommendation')
+      .enum(['user', 'repost', 'comment', 'follow', 'default'])
+      .default('default')
       .optional(),
   })
   .merge(cursorPaginationQuerySchema);

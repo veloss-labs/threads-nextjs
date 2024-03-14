@@ -27,7 +27,6 @@ export default function UserItem({ item }: UserItemProps) {
     <div className="m-3 flex items-center justify-between space-x-4">
       <div className="flex items-center space-x-4">
         <Avatars
-          // src={item.user?.image ?? undefined}
           src={undefined}
           alt={`${item?.username} profile picture`}
           fallback="T"

@@ -2,7 +2,8 @@
 import React, { useDeferredValue, useState, useCallback } from 'react';
 import SearchInput from '~/components/search/search-input';
 import SearchWapper from '~/components/search/search-wrapper';
-import UserList from '~/components/shared/user-list';
+import SearchUserList from '~/components/shared/search-user-list';
+import SkeletonCardUserList from '~/components/skeleton/card-user-list';
 
 interface Props {
   initialKeyword?: string;
@@ -22,8 +23,8 @@ export default function Search({ initialKeyword, initialData }: Props) {
     <>
       <SearchInput value={query} onChange={onChange} />
       <SearchWapper>
-        <React.Suspense fallback={<>Loading...</>}>
-          <UserList keyword={deferredQuery} initialData={initialData} />
+        <React.Suspense fallback={<SkeletonCardUserList />}>
+          <SearchUserList keyword={deferredQuery} initialData={initialData} />
         </React.Suspense>
       </SearchWapper>
     </>
