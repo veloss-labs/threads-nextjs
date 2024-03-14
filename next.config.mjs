@@ -9,7 +9,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 /**
  * Next Config Options
  * @type {import('next').NextConfig} */
-const nextConfig = {
+const config = {
   reactStrictMode: true,
   swcMinify: true,
   experimental: {
@@ -17,8 +17,6 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '5mb',
     },
-    // see https://www.defer.run/docs/get-started/quickstart/nextjs#disable-server-minification
-    serverMinification: false,
     serverComponentsExternalPackages: ['@prisma/client'],
   },
   poweredByHeader: false,
@@ -66,4 +64,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default config;

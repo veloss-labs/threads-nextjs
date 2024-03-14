@@ -8,7 +8,6 @@ import { cn } from '~/utils/utils';
 import { getHeaderInDomainInfo } from '~/utils/url';
 import { SITE_CONFIG } from '~/constants/constants';
 import type { Metadata } from 'next';
-import { auth } from '~/services/auth';
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -70,7 +69,6 @@ interface RoutesProps {
 
 export default async function Layout(props: RoutesProps) {
   const info = getHeaderInDomainInfo(headers());
-  const session = await auth();
   return (
     <html lang="ko" dir="ltr" suppressHydrationWarning>
       <body
@@ -90,7 +88,7 @@ export default async function Layout(props: RoutesProps) {
             window.__DOMAIN_INFO__ = ${JSON.stringify(info)}`,
           }}
         />
-        <Providers session={session}>
+        <Providers>
           {props.children}
           {props.modal}
         </Providers>
