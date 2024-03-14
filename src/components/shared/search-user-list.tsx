@@ -15,7 +15,7 @@ interface SearchUserListProps {
 
 const CLIENT_LIMIT_SIZE = 10;
 const CLIENT_DATA_OVERSCAN = 5;
-const MIN_ITEM_SIZE = 40;
+const MIN_ITEM_SIZE = 60;
 
 const getCursorLimit = (searchParams: URLSearchParams) => ({
   start: Number(searchParams.get('start') || '0'),
@@ -104,7 +104,7 @@ export default function SearchUserList({
   return (
     <div ref={$list} data-hydrating-signal className="max-w-full">
       <div
-        className="relative w-full space-y-6"
+        className="relative w-full"
         style={{
           height: `${rowVirtualizer.getTotalSize()}px`,
         }}
@@ -112,17 +112,18 @@ export default function SearchUserList({
         {rowVirtualizer.getVirtualItems().map((virtualRow) => {
           const isLoaderRow = virtualRow.index > flatList.length - 1;
           const item = flatList.at(virtualRow.index);
+          const isEnd = totalCount === virtualRow.index + 1;
 
           if (isLoaderRow) {
             return (
               <div
-                key={`items:loading:${virtualRow.index}`}
+                key={`users:loading:${virtualRow.index}`}
+                className="absolute left-0 top-0 w-full"
                 style={{
                   height: virtualRow.size,
-                  position: 'absolute',
-                  top: virtualRow.start,
-                  left: 0,
-                  right: 0,
+                  transform: `translateY(${
+                    virtualRow.start - rowVirtualizer.options.scrollMargin
+                  }px)`,
                 }}
               >
                 <SkeletonCardUser />
@@ -146,6 +147,13 @@ export default function SearchUserList({
               }}
             >
               <UserItem item={item} />
+              {isEnd && (
+                <div className="w-full py-8">
+                  <p className="text-center text-slate-700 dark:text-slate-300">
+                    더 이상 유저가 없습니다! 👋
+                  </p>
+                </div>
+              )}
             </div>
           );
         })}

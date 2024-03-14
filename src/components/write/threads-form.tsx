@@ -6,7 +6,6 @@ import { FieldErrors, FieldPath, get, useForm } from 'react-hook-form';
 import { Form, FormControl, FormField, FormItem } from '~/components/ui/form';
 import LexicalEditor from '~/components/editor/lexical-editor';
 import { Button } from '~/components/ui/button';
-import { useSession } from 'next-auth/react';
 import { Icons } from '~/components/icons';
 import { cn, getFindByLexicalNodeTypes } from '~/utils/utils';
 import { api } from '~/services/trpc/react';
@@ -37,7 +36,7 @@ export default function ThreadsForm({
   onSuccess,
   type,
 }: ThreadsFormProps) {
-  const { data: session } = useSession();
+  const { data: session } = api.auth.getRequireSession.useQuery();
   const utils = api.useUtils();
 
   const [, startTransition] = useTransition();
@@ -71,16 +70,15 @@ export default function ThreadsForm({
         htmlJSON,
       );
 
-      console.log('findNodes', findNodes);
       const tempMentions = findNodes.filter((node) => node.type === 'mention');
       const tempHashtags = findNodes.filter((node) => node.type === 'hashtag');
 
       if (!isEmpty(tempHashtags)) {
-        hashTags = tempHashtags.map((node) => node.text);
+        hashTags = tempHashtags.map((node) => node.node.text);
       }
 
       if (!isEmpty(tempMentions)) {
-        mentions = tempMentions.map((node) => node.text);
+        mentions = tempMentions.map((node) => node.node.text);
       }
     }
 
