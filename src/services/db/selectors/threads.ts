@@ -1,25 +1,26 @@
 'server-only';
-import { Prisma, type Thread } from '@prisma/client';
-import {
-  type UserSelectSchema,
-  getUserSelector,
-  getFollowWithUserSelector,
-} from './users';
+import { Prisma, ThreadLike, type Thread } from '@prisma/client';
+import { type UserSelectSchema, getUserSelector } from './users';
 import { type ThreadListQuerySchema } from '~/services/threads/threads.query';
 
 export const getRecommendationsSelector = () =>
   Prisma.validator<Prisma.ThreadRecommendationSelect>()({
     id: true,
     similarity: true,
-    user: {
-      select: getUserSelector(),
-    },
     thread: {
       select: getThreadsSelector(),
     },
     recommendedThread: {
       select: getThreadsSelector(),
     },
+  });
+
+export const getStatsSelector = () =>
+  Prisma.validator<Prisma.ThreadStatsSelect>()({
+    id: true,
+    threadId: true,
+    likes: true,
+    score: true,
   });
 
 export const getRecommendationsWithThreadSelector = (
@@ -36,29 +37,18 @@ export const getRecommendationsWithThreadSelector = (
     user: {
       select: getUserSelector(),
     },
-    recommendations: {
-      select: getRecommendationsSelector(),
+    stats: {
+      select: getStatsSelector(),
     },
     threadRecommendationThreads: {
       select: getRecommendationsSelector(),
     },
   });
 
-export const getFollowsWithThreadSelector = (input?: ThreadListQuerySchema) =>
-  Prisma.validator<Prisma.ThreadSelect>()({
-    id: true,
-    text: true,
-    level: true,
-    createdAt: true,
-    whoCanLeaveComments: true,
-    hiddenNumberOfLikesAndComments: true,
-    deleted: true,
-    user: {
-      select: getFollowWithUserSelector(),
-    },
-  });
-
-export const getThreadsSelector = (input?: ThreadListQuerySchema) =>
+export const getThreadsSelector = (
+  userId?: string,
+  input?: ThreadListQuerySchema,
+) =>
   Prisma.validator<Prisma.ThreadSelect>()({
     id: true,
     text: true,
@@ -69,6 +59,12 @@ export const getThreadsSelector = (input?: ThreadListQuerySchema) =>
     deleted: true,
     user: {
       select: getUserSelector(),
+    },
+    likes: userId ? { where: { userId } } : false,
+    _count: {
+      select: {
+        likes: true,
+      },
     },
   });
 
@@ -83,4 +79,8 @@ export type ThreadSelectSchema = Pick<
   | 'whoCanLeaveComments'
 > & {
   user: UserSelectSchema;
+  _count: {
+    likes: number;
+  };
+  likes: ThreadLike[];
 };

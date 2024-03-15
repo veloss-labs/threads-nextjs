@@ -8,3 +8,9 @@ export const createInputSchema = z.object({
 });
 
 export type CreateInputSchema = z.infer<typeof createInputSchema>;
+
+export const likeInputSchema = z.object({
+  threadId: z.string(),
+});
+
+export type LikeInputSchema = z.infer<typeof likeInputSchema>;

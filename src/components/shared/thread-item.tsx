@@ -11,45 +11,41 @@ import {
 import LexicalEditor from '~/components/editor/lexical-editor';
 import { cn, getDateFormatted } from '~/utils/utils';
 import type { ThreadSelectSchema } from '~/services/db/selectors/threads';
-import { Icons } from '../icons';
-import { Button } from '../ui/button';
+import { Icons } from '~/components/icons';
+import { Button } from '~/components/ui/button';
+import { useCallback } from 'react';
+import { api } from '~/services/trpc/react';
 
 interface ThreadItemProps {
   item: ThreadSelectSchema;
 }
 
 export default function ThreadItem({ item }: ThreadItemProps) {
-  // const updateLikeFn = likeThreadAction.bind(null, {
-  //   threadId: item.id,
-  //   isLike: item.isLiked,
-  // });
+  const utils = api.useUtils();
 
-  // const updateRepostFn = repostThreadAction.bind(null, {
-  //   threadId: item.id,
-  // });
+  const { data } = api.auth.getRequireSession.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const isMe = data ? data.user.id === item.user.id : undefined;
+
+  const mutationByLike = api.threads.like.useMutation({
+    async onSuccess() {
+      await Promise.all([
+        utils.threads.getFollows.invalidate(),
+        utils.threads.getRecommendations.invalidate(),
+        utils.threads.getLikes.invalidate(),
+      ]);
+    },
+  });
+
+  const onClickLike = useCallback(() => {
+    mutationByLike.mutate({
+      threadId: item.id,
+    });
+  }, [item.id, mutationByLike]);
 
   const date = item ? getDateFormatted(item.createdAt) : null;
-  // const [isPending, startTransition] = useTransition();
-  // const queryClient = useQueryClient();
-  // const { queryKey } = useKeyContext();
-
-  // const onClickLike = async () => {
-  //   startTransition(async () => {
-  //     await updateLikeFn();
-  //     await queryClient.invalidateQueries({
-  //       queryKey,
-  //     });
-  //   });
-  // };
-
-  // const onClickRepost = () => {
-  //   startTransition(async () => {
-  //     await updateRepostFn();
-  //     await queryClient.invalidateQueries({
-  //       queryKey,
-  //     });
-  //   });
-  // };
 
   return (
     <Card className="m-3 mx-auto overflow-hidden rounded-none border-x-0 border-b border-t-0 shadow-none dark:bg-background">
@@ -88,17 +84,37 @@ export default function ThreadItem({ item }: ThreadItemProps) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      <DropdownMenuItem>업데이트 안 보기</DropdownMenuItem>
+                      <DropdownMenuItem>저장</DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem>숨기기</DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-500">
-                        차단하기
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-500">
-                        신고하기
-                      </DropdownMenuItem>
+                      {isMe ? (
+                        <>
+                          <DropdownMenuItem>
+                            답글을 남길 수 있는 사람
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem>
+                            좋아요 수 및 공유 수 숨기기
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-red-500">
+                            삭제
+                          </DropdownMenuItem>
+                        </>
+                      ) : (
+                        <>
+                          <DropdownMenuItem>숨기기</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem>업데이트 안보기</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-red-500">
+                            차단하기
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-red-500">
+                            신고하기
+                          </DropdownMenuItem>
+                        </>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -143,13 +159,13 @@ export default function ThreadItem({ item }: ThreadItemProps) {
               <Button
                 size="sm"
                 variant="link"
-                // onClick={onClickLike}
-                // disabled={isPending}
+                onClick={onClickLike}
+                disabled={mutationByLike.isPending}
               >
                 <Icons.heart
                   className={cn(
                     'h-4 w-4',
-                    // item?.isLiked ? 'text-red-500 dark:text-red-400' : '',
+                    item?.likes.length ? 'text-red-500 dark:text-red-400' : '',
                   )}
                 />
               </Button>

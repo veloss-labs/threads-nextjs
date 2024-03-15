@@ -9,10 +9,30 @@ import {
   followListQuerySchema,
 } from '~/services/threads/threads.query';
 import { threadService } from '~/services/threads/threads.service';
-import { createInputSchema } from '~/services/threads/threads.input';
-import { taskRunner } from '~/services/task/task';
+import {
+  createInputSchema,
+  likeInputSchema,
+} from '~/services/threads/threads.input';
 
 export const threadsRouter = createTRPCRouter({
+  like: protectedProcedure
+    .input(likeInputSchema)
+    .mutation(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
+      try {
+        const item = await threadService.like(userId, input);
+        return {
+          ok: true,
+          data: item,
+        };
+      } catch (error) {
+        console.error(error);
+        return {
+          ok: false,
+          data: null,
+        };
+      }
+    }),
   create: protectedProcedure
     .input(createInputSchema)
     .mutation(async ({ input, ctx }) => {
@@ -22,15 +42,6 @@ export const threadsRouter = createTRPCRouter({
         const data = await threadService.create(userId, input);
         const item = await threadService.byId(data.id);
 
-        taskRunner.registerTask(async () => {
-          const resultList =
-            await threadService.autoPaginationComputeRecommendations(
-              userId,
-              data.id,
-            );
-          console.log('[resultList] ==>', resultList);
-        });
-        // 추천 스레드 계산
         return {
           ok: true,
           data: item,
@@ -45,11 +56,12 @@ export const threadsRouter = createTRPCRouter({
     }),
   getItems: protectedProcedure
     .input(listQuerySchema)
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
       try {
         const [totalCount, list] = await Promise.all([
-          threadService.count(input),
-          threadService.getItems(input),
+          threadService.count(userId, input),
+          threadService.getItems(userId, input),
         ]);
 
         const endCursor = list.at(-1)?.id ?? null;
