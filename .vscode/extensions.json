@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "prisma.prisma",
+    "prisma.prisma-insider",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss"
+  ]
+}

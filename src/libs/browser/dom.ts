@@ -101,3 +101,10 @@ export const getClientHeight = (el: Document | Element) => {
     Math.max(document.documentElement.clientHeight, document.body.clientHeight)
   );
 };
+export const getWindowScrollTop = () => {
+  if (!document.body) return 0;
+  const scrollTop = document.documentElement
+    ? document.documentElement.scrollTop || document.body.scrollTop
+    : document.body.scrollTop;
+  return scrollTop;
+};

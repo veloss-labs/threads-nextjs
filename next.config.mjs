@@ -1,20 +1,22 @@
-!process.env.SKIP_ENV_VALIDATION && (await import('./src/env/server.mjs'));
-// import { withSentryConfig } from '@sentry/nextjs';
-// This file sets a custom webpack configuration to use your Next.js app
-// with Sentry.
-// https://nextjs.org/docs/api-reference/next.config.js/introduction
-// https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
-// const { withSentryConfig } = require('@sentry/nextjs');
+import createJiti from 'jiti';
+const jiti = createJiti(new URL(import.meta.url).pathname);
+
+// Import env here to validate during build. Using jiti we can import .ts files :)
+jiti('./src/app/env');
+
 const isProduction = process.env.NODE_ENV === 'production';
 
 /**
  * Next Config Options
  * @type {import('next').NextConfig} */
-const nextConfig = {
+const config = {
   reactStrictMode: true,
   swcMinify: true,
   experimental: {
-    appDir: true,
+    taint: true,
+    serverActions: {
+      bodySizeLimit: '5mb',
+    },
     serverComponentsExternalPackages: ['@prisma/client'],
   },
   poweredByHeader: false,
@@ -62,12 +64,4 @@ const nextConfig = {
   },
 };
 
-// export default nextConfig;
-
-// const _nextWithSentryConfig = withSentryConfig(
-//   nextConfig,
-//   { silent: true },
-//   { hideSourcemaps: true },
-// );
-
-export default nextConfig;
+export default config;
