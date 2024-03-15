@@ -43,7 +43,8 @@ export function CronStack({ stack }: StackContext, env: Module['env']) {
   stack.addDefaultFunctionLayers([prismaLayer]);
 
   const cron = new Cron(stack, 'daliy-recommendations', {
-    schedule: 'rate(1 day)',
+    // schedule: 'rate(1 day)',
+    schedule: 'rate(1 minute)',
     job: 'functions/daliy-recommendations.handler',
   });
 

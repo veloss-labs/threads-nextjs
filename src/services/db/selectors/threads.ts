@@ -11,9 +11,6 @@ export const getRecommendationsSelector = () =>
   Prisma.validator<Prisma.ThreadRecommendationSelect>()({
     id: true,
     similarity: true,
-    user: {
-      select: getUserSelector(),
-    },
     thread: {
       select: getThreadsSelector(),
     },

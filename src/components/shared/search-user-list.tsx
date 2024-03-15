@@ -98,6 +98,7 @@ export default function SearchUserList({
     fetchNextPage,
     flatList.length,
     isFetchingNextPage,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     rowVirtualizer.getVirtualItems(),
   ]);
 

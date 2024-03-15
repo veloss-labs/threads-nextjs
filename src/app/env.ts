@@ -51,4 +51,8 @@ export const env = createEnv({
     AWS_CLOUD_FRONT_DISTRIBUTION_ID:
       process.env.AWS_CLOUD_FRONT_DISTRIBUTION_ID,
   },
+  skipValidation:
+    !!process.env.CI ||
+    !!process.env.SKIP_ENV_VALIDATION ||
+    process.env.npm_lifecycle_event === 'lint',
 });
