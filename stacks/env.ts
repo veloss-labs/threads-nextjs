@@ -22,8 +22,6 @@ export type Module = {
 };
 
 // Import env here to validate during build. Using jiti we can import .ts files :)
-const modules: Module = jiti('../src/app/env');
-
-console.log(modules);
+const modules: Module = jiti('./src/app/env');
 
 export { modules };
