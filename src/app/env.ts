@@ -19,8 +19,8 @@ export const env = createEnv({
     SST_NAME: z.string().min(1),
     SST_ID: isProduction ? z.string().min(1) : z.string().optional(),
     SST_STAGE: isProduction
-      ? z.enum(['dev', 'staging', 'prod'])
-      : z.enum(['dev', 'staging', 'prod']).optional(),
+      ? z.enum(['dev', 'staging', 'prod', 'local'])
+      : z.enum(['dev', 'staging', 'prod', 'local']).optional(),
     AWS_REGION: isProduction ? z.string().min(1) : z.string().optional(),
     AWS_ACCESS_KEY_ID: isProduction ? z.string().min(1) : z.string().optional(),
     AWS_SECRET_ACCESS_KEY: isProduction
