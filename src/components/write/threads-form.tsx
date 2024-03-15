@@ -44,7 +44,7 @@ export default function ThreadsForm({
   const mutation = api.threads.create.useMutation({
     async onSuccess() {
       await Promise.all([
-        utils.threads.getItems.invalidate(),
+        utils.threads.getFollows.invalidate(),
         utils.threads.getRecommendations.invalidate(),
       ]);
       onSuccess?.();
@@ -113,7 +113,6 @@ export default function ThreadsForm({
 
       startTransition(() => {
         const htmlJSON = JSON.stringify(editorState);
-        console.log('htmlJSON', htmlJSON);
         form.setValue('htmlJSON', editorState.isEmpty() ? undefined : htmlJSON);
       });
     },

@@ -1,5 +1,4 @@
 'server-only';
-import dayjs from 'dayjs';
 import { db } from '~/services/db/prisma';
 import type {
   LikeListQuerySchema,
@@ -12,19 +11,115 @@ import {
   getRecommendationsWithThreadSelector,
 } from '~/services/db/selectors/threads';
 import { remember } from '@epic-web/remember';
-import type { CreateInputSchema } from './threads.input';
+import type { CreateInputSchema, LikeInputSchema } from './threads.input';
 import { tagService } from '~/services/tags/tags.service';
-import { userService } from '../users/users.service';
-import {
-  computeTFIDFById,
-  cosineSimilarity,
-  getFindByLexicalNodeTypes,
-} from '~/utils/utils';
+import { userService } from '~/services/users/users.service';
+import { calculateRankingScore } from '~/utils/utils';
+import { taskRunner } from '~/services/task/task';
 
 export class ThreadService {
   private readonly DEFAULT_LIMIT = 30;
 
-  private readonly DEFAULT_RECOMMENDATION_SIMILARITY = 0.1;
+  private readonly DEFAULT_RECOMMENDATION_SCORE = 0.001;
+
+  /**
+   * @description 스레드의 인기도 추천 계산을 위한 로직
+   * @param {string} threadId - 스레드 ID
+   * @param {number} likesCount - 좋아요 개수
+   * @returns
+   */
+  async recalculateRanking(threadId: string, likesCount?: number) {
+    const item = await db.thread.findUnique({ where: { id: threadId } });
+    if (!item) return;
+    const likes = likesCount ?? (await this.countLikes(threadId));
+    const age =
+      (Date.now() - new Date(item.createdAt).getTime()) / 1000 / 60 / 60;
+    const score = calculateRankingScore(likes, age);
+    return await db.threadStats.upsert({
+      where: {
+        threadId,
+      },
+      update: {
+        score,
+      },
+      create: {
+        threadId,
+        score,
+        likes,
+      },
+    });
+  }
+
+  /**
+   * @description 스레드 좋아요 개수 업데이트
+   * @param {string} threadId - 스레드 ID
+   * @param {number} likes - 좋아요 개수
+   */
+  updateThreadLikes(threadId: string, likes: number) {
+    return db.threadStats.upsert({
+      where: {
+        threadId,
+      },
+      create: {
+        threadId,
+        likes,
+      },
+      update: {
+        likes,
+      },
+    });
+  }
+
+  /**
+   * @description 스레드 좋아요, 좋아요 취소
+   * @param {string} userId - 사용자 ID
+   * @param {LikeInputSchema} input - 좋아요할 스레드 데이터
+   */
+  async like(userId: string, input: LikeInputSchema) {
+    const alreadyLiked = await db.threadLike.findUnique({
+      where: {
+        threadId_userId: {
+          threadId: input.threadId,
+          userId,
+        },
+      },
+    });
+
+    // 없으면 좋아요, 있으면 취소
+    if (!alreadyLiked) {
+      await db.threadLike.create({
+        data: {
+          threadId: input.threadId,
+          userId,
+        },
+      });
+    } else {
+      await db.threadLike.delete({
+        where: {
+          threadId_userId: {
+            threadId: input.threadId,
+            userId,
+          },
+        },
+      });
+    }
+
+    const likes = await this.countLikes(input.threadId);
+
+    taskRunner.registerTask(async () => {
+      await this.updateThreadLikes(input.threadId, likes);
+      await this.recalculateRanking(input.threadId, likes).catch(console.error);
+    });
+
+    return {
+      likes,
+      liked: !alreadyLiked,
+    };
+
+    // TODO: 연산 필요
+  }
+
+  async update() {}
 
   /**
    * @description 스레드 생성
@@ -69,6 +164,9 @@ export class ThreadService {
         userId,
         text,
         jsonString: htmlJSON,
+        stats: {
+          create: {},
+        },
         mentions: {
           create: connectMentions.map((userId) => ({
             userId,
@@ -81,118 +179,6 @@ export class ThreadService {
         },
       },
     });
-  }
-
-  /**
-   * @description 자동 페이지네이션을 통해 추천 스레드 계산
-   * @param {string} threadId - 스레드 ID
-   */
-  async autoPaginationComputeRecommendations(threadId: string) {
-    const startDay = dayjs().startOf('day').toDate();
-    const endDay = dayjs().endOf('day').toDate();
-    const totalCount = await db.thread.count({
-      where: {
-        deleted: false,
-        updatedAt: {
-          gte: startDay,
-          lte: endDay,
-        },
-      },
-    });
-
-    const fns: Map<
-      string,
-      ReturnType<typeof this.computeRecommendations>
-    > = new Map();
-
-    for (let i = 0; i < Math.ceil(totalCount / this.DEFAULT_LIMIT); i++) {
-      const threads = await db.thread.findMany({
-        where: {
-          deleted: false,
-        },
-        skip: i * this.DEFAULT_LIMIT,
-        take: this.DEFAULT_LIMIT,
-        select: {
-          id: true,
-          jsonString: true,
-        },
-      });
-      fns.set(i.toString(), this.computeRecommendations(threadId, threads));
-    }
-
-    const items = await Promise.all(fns.values());
-    const flatItems = items.flatMap((item) => item);
-
-    const fetchItems = [];
-    for (const item of flatItems) {
-      const fetchItem = db.threadRecommendation.create({
-        data: {
-          threadId,
-          recommendedThreadId: item.id,
-          similarity: item.similarity,
-        },
-      });
-      fetchItems.push(fetchItem);
-    }
-
-    await Promise.all(fetchItems);
-
-    return true;
-  }
-
-  /**
-   * @description threadId를 기반으로 유사한 스레드를 추천합니다.
-   * @param {string} threadId - 스레드 ID
-   * @param {{ id: string; jsonString: string | null }[]} threads - 스레드 목록
-   */
-  async computeRecommendations(
-    threadId: string,
-    threads: { id: string; jsonString: string | null }[],
-  ) {
-    const documents = threads
-      .filter((thread) => thread.jsonString)
-      .map((thread) => {
-        const htmlJSON = JSON.parse(thread.jsonString ?? '{}');
-        const lexicalNodes = getFindByLexicalNodeTypes(
-          ['text', 'mention', 'hashtag'],
-          htmlJSON,
-        );
-        return lexicalNodes
-          .filter(
-            (node) =>
-              node.type === 'text' ||
-              node.type === 'mention' ||
-              node.type === 'hashtag',
-          )
-          .map((node) => {
-            return {
-              id: thread.id,
-              text: node.node.text,
-            };
-          })
-          .filter((node) => node.text);
-      })
-      .flatMap((doc) => doc);
-
-    const tfidfMap = computeTFIDFById(documents);
-
-    const similarities: any[] = [];
-    for (const [id, doc] of tfidfMap) {
-      const similarity = cosineSimilarity(
-        tfidfMap.get(threadId) ?? new Map(),
-        doc,
-      );
-      similarities.push({
-        id,
-        similarity: isNaN(similarity) ? 0 : similarity,
-      });
-    }
-
-    const sorted = similarities
-      .filter((similarity) => similarity.id !== threadId)
-      .sort((a, b) => b.similarity - a.similarity);
-
-    return sorted;
   }
 
   /**
@@ -210,9 +196,10 @@ export class ThreadService {
 
   /**
    * @description 스레드 목록 조회
+   * @param {string} userId - 사용자 ID
    * @param {ThreadListQuerySchema} input - 스레드 목록 조회 조건
    */
-  getItems(input: ThreadListQuerySchema) {
+  getItems(userId: string, input: ThreadListQuerySchema) {
     return db.thread.findMany({
       where: {
         deleted: false,
@@ -229,7 +216,7 @@ export class ThreadService {
         createdAt: 'desc',
       },
       take: input?.limit ?? this.DEFAULT_LIMIT,
-      select: getThreadsSelector(input),
+      select: getThreadsSelector(userId, input),
     });
   }
 
@@ -248,27 +235,37 @@ export class ThreadService {
             }
           : undefined,
         userId,
-        recommendations: {
-          some: {
-            AND: [
-              {
-                similarity: {
-                  gte: this.DEFAULT_RECOMMENDATION_SIMILARITY,
-                },
+        stats: {
+          AND: [
+            {
+              score: {
+                gte: this.DEFAULT_RECOMMENDATION_SCORE,
               },
-              {
-                thread: {
-                  user: {
-                    id: {
-                      not: userId,
-                    },
+            },
+            {
+              thread: {
+                user: {
+                  id: {
+                    not: userId,
                   },
                 },
               },
-            ],
-          },
+            },
+          ],
         },
       },
+      orderBy: [
+        {
+          stats: {
+            score: 'desc',
+          },
+        },
+        {
+          stats: {
+            threadId: 'desc',
+          },
+        },
+      ],
       take: input?.limit ?? this.DEFAULT_LIMIT,
       select: getRecommendationsWithThreadSelector(input),
     });
@@ -307,7 +304,7 @@ export class ThreadService {
         createdAt: 'desc',
       },
       take: input?.limit ?? this.DEFAULT_LIMIT,
-      select: getThreadsSelector(input),
+      select: getThreadsSelector(userId, input),
     });
   }
 
@@ -336,7 +333,7 @@ export class ThreadService {
         createdAt: 'desc',
       },
       take: input?.limit ?? this.DEFAULT_LIMIT,
-      select: getThreadsSelector(input),
+      select: getThreadsSelector(userId, input),
     });
   }
 
@@ -404,27 +401,37 @@ export class ThreadService {
         },
         deleted: false,
         userId,
-        recommendations: {
-          some: {
-            AND: [
-              {
-                similarity: {
-                  gte: this.DEFAULT_RECOMMENDATION_SIMILARITY,
-                },
+        stats: {
+          AND: [
+            {
+              score: {
+                gte: this.DEFAULT_RECOMMENDATION_SCORE,
               },
-              {
-                thread: {
-                  user: {
-                    id: {
-                      not: userId,
-                    },
+            },
+            {
+              thread: {
+                user: {
+                  id: {
+                    not: userId,
                   },
                 },
               },
-            ],
-          },
+            },
+          ],
         },
       },
+      orderBy: [
+        {
+          stats: {
+            score: 'desc',
+          },
+        },
+        {
+          stats: {
+            threadId: 'desc',
+          },
+        },
+      ],
     });
   }
 
@@ -464,10 +471,23 @@ export class ThreadService {
   }
 
   /**
+   * @description 특정 스레드의 좋아요 개수 조회
+   * @param {string} threadId - 스레드 ID
+   */
+  countLikes(threadId: string) {
+    return db.threadLike.count({
+      where: {
+        threadId,
+      },
+    });
+  }
+
+  /**
    * @description 스레드 목록 조회 총 개수
+   * @param {string} userId - 스레드 목록 조회 조건
    * @param {ThreadListQuerySchema} input - 스레드 목록 조회 조건
    */
-  count(input: ThreadListQuerySchema) {
+  count(userId: string, input: ThreadListQuerySchema) {
     return db.thread.count({
       where: {
         deleted: false,
@@ -507,25 +527,23 @@ export class ThreadService {
       where: {
         deleted: false,
         userId,
-        recommendations: {
-          some: {
-            AND: [
-              {
-                similarity: {
-                  gte: this.DEFAULT_RECOMMENDATION_SIMILARITY,
-                },
+        stats: {
+          AND: [
+            {
+              score: {
+                gte: this.DEFAULT_RECOMMENDATION_SCORE,
               },
-              {
-                thread: {
-                  user: {
-                    id: {
-                      not: userId,
-                    },
+            },
+            {
+              thread: {
+                user: {
+                  id: {
+                    not: userId,
                   },
                 },
               },
-            ],
-          },
+            },
+          ],
         },
       },
     });

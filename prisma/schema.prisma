@@ -49,8 +49,8 @@ model UserFollow {
   id         String @id @default(cuid())
   userId     String @map(name: "user_id")
   followerId String @map(name: "follower_id")
-  user       User   @relation(name: "following_relation", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  follower   User   @relation(name: "follower_relation", fields: [followerId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  user       User   @relation(name: "following_relation", fields: [userId], references: [id], onDelete: Cascade)
+  follower   User   @relation(name: "follower_relation", fields: [followerId], references: [id], onDelete: Cascade)
 
   @@unique([userId, followerId])
   @@map(name: "user_follows")
@@ -115,9 +115,10 @@ model Thread {
   bookmarks                      ThreadBookmark[]
   threadRecommendationThreads    ThreadRecommendation[] @relation(name: "recommendation_thread_relation")
   recommendations                ThreadRecommendation[]
-  user                           User                   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  user                           User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   tags                           ThreadTag[]
   mentions                       ThreadMention[]
+  stats                          ThreadStats?
 
   @@index([createdAt], map: "threads_created_at")
   @@index([deleted])
@@ -130,11 +131,27 @@ model ThreadRecommendation {
   threadId            String @map(name: "thread_id")
   recommendedThreadId String @map(name: "recommended_thread_id")
   similarity          Float
-  thread              Thread @relation(name: "recommendation_thread_relation", fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  recommendedThread   Thread @relation(fields: [recommendedThreadId], references: [id])
+
+  thread            Thread @relation(name: "recommendation_thread_relation", fields: [threadId], references: [id], onDelete: Cascade)
+  recommendedThread Thread @relation(fields: [recommendedThreadId], references: [id])
 
   @@index([threadId], map: "thread_recommendations_thread_id")
   @@map(name: "thread_recommendations")
+}
+
+model ThreadStats {
+  id        String   @id @default(cuid())
+  threadId  String   @unique @map(name: "thread_id")
+  score     Int      @default(0)
+  likes     Int      @default(0)
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([score(sort: Desc), threadId(sort: Desc)])
+  @@index([likes(sort: Desc), threadId(sort: Desc)])
+  @@map(name: "thread_stats")
 }
 
 model ThreadBookmark {
@@ -143,7 +160,7 @@ model ThreadBookmark {
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
 
   @@index([threadId], map: "thread_bookmarks_thread_id")
   @@map("thread_bookmarks")
@@ -155,8 +172,8 @@ model ThreadLike {
   userId    String   @map(name: "user_id")
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
-  thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([threadId, userId])
   @@index(createdAt)
@@ -171,9 +188,9 @@ model ThreadAsset {
   fileId    String?  @map(name: "file_id")
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
-  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  thread    Thread?  @relation(fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  file      File?    @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread    Thread?  @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  file      File?    @relation(fields: [fileId], references: [id], onDelete: Cascade)
 
   @@map(name: "thread_assets")
 }
@@ -182,8 +199,8 @@ model ThreadTag {
   id       String @id @default(cuid())
   threadId String @map(name: "thread_id")
   tagId    String @map(name: "tag_id")
-  thread   Thread @relation(fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  tag      Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  thread   Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  tag      Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@unique([threadId, tagId])
   @@map(name: "thread_tags")
@@ -195,8 +212,8 @@ model ThreadMention {
   userId    String   @map(name: "user_id")
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
-  thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([threadId, userId])
   @@map(name: "thread_mentions")
@@ -232,8 +249,8 @@ model FollowTag {
   userId    String   @map(name: "user_id")
   tagId     String   @map(name: "tag_id")
   score     Int?     @default(0)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
