@@ -1,6 +1,19 @@
 'server-only';
 import { Prisma, type User, type UserProfile } from '@prisma/client';
 
+export const getUserSimpleSelector = () => {
+  return Prisma.validator<Prisma.UserSelect>()({
+    id: true,
+    username: true,
+  });
+};
+
+export const getUserProfileSelector = () => {
+  return Prisma.validator<Prisma.UserProfileSelect>()({
+    bio: true,
+  });
+};
+
 export const getUserSelector = () => {
   return Prisma.validator<Prisma.UserSelect>()({
     id: true,
@@ -10,9 +23,7 @@ export const getUserSelector = () => {
     image: true,
     emailVerified: true,
     profile: {
-      select: {
-        bio: true,
-      },
+      select: getUserProfileSelector(),
     },
     _count: {
       select: {
@@ -32,9 +43,7 @@ export const getFollowWithUserSelector = () => {
     image: true,
     emailVerified: true,
     profile: {
-      select: {
-        bio: true,
-      },
+      select: getUserProfileSelector(),
     },
     followers: {
       select: getUserSelector(),
