@@ -1,5 +1,6 @@
 'use client';
 import { ThemeProvider } from 'next-themes';
+import { Toaster } from '~/components/ui/toaster';
 import { TRPCReactProvider } from '~/services/trpc/react';
 
 interface Props {
@@ -15,6 +16,7 @@ export function Providers({ children }: Props) {
         disableTransitionOnChange
       >
         {children}
+        <Toaster />
       </ThemeProvider>
     </TRPCReactProvider>
   );

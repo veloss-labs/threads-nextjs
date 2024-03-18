@@ -1,27 +1,3 @@
-export const QUERIES_KEY = {
-  threads: {
-    root: ['threads'],
-    owners: (id: string) => ['threads', 'owner', id],
-    comments: (id: string) => ['threads', 'comment', id],
-    reposts: (id: string) => ['threads', 'reposts', id],
-    likes: {
-      root: ['threads-likes'],
-    },
-  },
-  users: {
-    root: ['users'],
-    search: (keyword?: string) => {
-      const keys = ['users', 'search'];
-      if (keyword) {
-        keys.push(keyword);
-      }
-      return keys;
-    },
-  },
-};
-
-export const MUTATIONS_KEY = {};
-
 export const API_ENDPOINTS = {
   avatar: (searchParams: URLSearchParams, styles = 'notionists') => {
     const url = new URL(`/7.x/${styles}/jpg`, 'https://api.dicebear.com');
@@ -48,6 +24,7 @@ export const PAGE_ENDPOINTS = {
     ROOT: '/threads',
     LIKES: '/threads/likes',
   },
+  SAVED: '/saved',
 } as const;
 
 export const SITE_CONFIG = {

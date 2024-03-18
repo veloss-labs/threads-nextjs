@@ -14,6 +14,10 @@ export const likeListQuerySchema = cursorPaginationQuerySchema.optional();
 
 export type LikeListQuerySchema = z.infer<typeof likeListQuerySchema>;
 
+export const bookmarkListQuerySchema = cursorPaginationQuerySchema.optional();
+
+export type BookmarkListQuerySchema = z.infer<typeof bookmarkListQuerySchema>;
+
 export const recommendationListQuerySchema =
   cursorPaginationQuerySchema.optional();
 

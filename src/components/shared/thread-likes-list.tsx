@@ -8,7 +8,6 @@ import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import SkeletonCard from '../skeleton/card-thread';
 
 interface ThreadLikeListProps {
-  totalCount?: number;
   initialData?: any;
 }
 
