@@ -28,6 +28,7 @@ import { ToastAction } from '~/components/ui/toast';
 import { useRouter } from 'next/navigation';
 import { PAGE_ENDPOINTS } from '~/constants/constants';
 import ClientOnly from '~/components/shared/client-only';
+import Modal from '../modal';
 
 interface ThreadItemProps {
   item: ThreadSelectSchema;
@@ -334,5 +335,13 @@ ThreadItem.HideNumberOfLikesAndSharesButton = function Item({
 ThreadItem.WhoCanLeaveReplyButton = function Item({ itemId }: ItemProps) {
   const utils = api.useUtils();
 
-  return <DropdownMenuItem>답글을 남길 수 있는 사람</DropdownMenuItem>;
+  return (
+    <DropdownMenuItem
+      onClick={() => {
+        Modal.success({});
+      }}
+    >
+      답글을 남길 수 있는 사람
+    </DropdownMenuItem>
+  );
 };
