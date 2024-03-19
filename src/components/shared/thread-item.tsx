@@ -8,6 +8,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '~/components/ui/dialog';
 import LexicalEditor from '~/components/editor/lexical-editor';
 import { cn, getDateFormatted } from '~/utils/utils';
 import type { ThreadSelectSchema } from '~/services/db/selectors/threads';
@@ -243,7 +251,6 @@ ThreadItem.SaveButton = function Item({ itemId, isSaved }: SaveItemProps) {
                 router.push(PAGE_ENDPOINTS.SAVED);
                 return;
               }
-
               mutation.mutate({
                 threadId: itemId,
               });
@@ -269,19 +276,11 @@ ThreadItem.SaveButton = function Item({ itemId, isSaved }: SaveItemProps) {
   }, [itemId, mutation]);
 
   return (
-    <DropdownMenuItem asChild>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="w-full"
-        onClick={onClick}
-        disabled={mutation.isPending}
-      >
-        {mutation.isPending && (
-          <Icons.spinner className="mr-2 size-4 animate-spin" />
-        )}
-        {isSaved ? '저장 취소' : '저장'}
-      </Button>
+    <DropdownMenuItem onClick={onClick} disabled={mutation.isPending}>
+      {mutation.isPending && (
+        <Icons.spinner className="mr-2 size-4 animate-spin" />
+      )}
+      {isSaved ? '저장 취소' : '저장'}
     </DropdownMenuItem>
   );
 };
@@ -305,13 +304,7 @@ ThreadItem.DeleteButton = function Item({ itemId }: ItemProps) {
     });
   }, [itemId, mutation]);
 
-  return (
-    <DropdownMenuItem asChild>
-      <Button variant="destructive" size="sm" className="w-full">
-        삭제
-      </Button>
-    </DropdownMenuItem>
-  );
+  return <DropdownMenuItem>삭제</DropdownMenuItem>;
 };
 
 ThreadItem.HideNumberOfLikesAndSharesButton = function Item({
@@ -335,39 +328,11 @@ ThreadItem.HideNumberOfLikesAndSharesButton = function Item({
     });
   }, [itemId, mutation]);
 
-  return (
-    <DropdownMenuItem asChild>
-      <Button variant="ghost" size="sm" className="w-full">
-        좋아요 수 및 공유 수 숨기기
-      </Button>
-    </DropdownMenuItem>
-  );
+  return <DropdownMenuItem>좋아요 수 및 공유 수 숨기기</DropdownMenuItem>;
 };
 
 ThreadItem.WhoCanLeaveReplyButton = function Item({ itemId }: ItemProps) {
   const utils = api.useUtils();
 
-  const mutation = api.threads.delete.useMutation({
-    async onSuccess() {
-      await Promise.all([
-        utils.threads.getFollows.invalidate(),
-        utils.threads.getRecommendations.invalidate(),
-        utils.threads.getLikes.invalidate(),
-      ]);
-    },
-  });
-
-  const onClick = useCallback(() => {
-    mutation.mutate({
-      threadId: itemId,
-    });
-  }, [itemId, mutation]);
-
-  return (
-    <DropdownMenuItem asChild>
-      <Button variant="ghost" size="sm" className="w-full">
-        답글을 남길 수 있는 사람
-      </Button>
-    </DropdownMenuItem>
-  );
+  return <DropdownMenuItem>답글을 남길 수 있는 사람</DropdownMenuItem>;
 };

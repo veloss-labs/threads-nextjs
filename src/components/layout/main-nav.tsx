@@ -192,12 +192,21 @@ MainNav.Thread = function Item({ item }: ItemProps) {
 };
 
 MainNav.Menu = function Item() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const { setTheme, theme } = useTheme();
 
   const onClick = useCallback(() => {
     setTheme(theme === 'light' ? 'dark' : 'light');
   }, [setTheme, theme]);
+
+  const onMoveSaved = useCallback(() => {
+    router.push(PAGE_ENDPOINTS.SAVED);
+  }, [router]);
+
+  const onMoveLiked = useCallback(() => {
+    router.push(PAGE_ENDPOINTS.LIKED);
+  }, [router]);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -210,7 +219,18 @@ MainNav.Menu = function Item() {
         <Icons.alignLeft />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" sideOffset={20}>
-        <DropdownMenuItem onClick={onClick}>모드전환</DropdownMenuItem>
+        <DropdownMenuItem onClick={onClick} className="space-x-4">
+          {theme === 'dark' ? <Icons.sun /> : <Icons.moon />}
+          <span>
+            {theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
+          </span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={onMoveSaved}>설정</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={onMoveSaved}>저장됨</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={onMoveLiked}>좋아요</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => signOut()}>로그아웃</DropdownMenuItem>
       </DropdownMenuContent>
