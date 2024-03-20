@@ -24,7 +24,7 @@ export type IdInputSchema = z.infer<typeof idInputSchema>;
 export const updateInputSchema = z
   .object({
     whoCanLeaveComments: z
-      .enum(['everyone', 'followers', 'following', 'nobody'])
+      .enum(['everyone', 'followers', 'mentiones', 'nobody'])
       .optional(),
     hiddenNumberOfLikesAndComments: z.boolean().optional(),
     text: z.string().min(1).max(500).optional(),

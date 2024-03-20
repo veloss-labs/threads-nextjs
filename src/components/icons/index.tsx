@@ -34,6 +34,7 @@ import {
   MessageSquare,
   RotateCcw,
   Users,
+  Share,
 } from 'lucide-react';
 
 export const Icons = {
@@ -42,6 +43,7 @@ export const Icons = {
   spinner: Loader2,
   chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
+  share: Share,
   trash: Trash,
   post: FileText,
   page: File,

@@ -1,5 +1,5 @@
 'use client';
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -9,33 +9,58 @@ import {
   DialogTitle,
 } from '~/components/ui/dialog';
 import type { ModalFuncProps } from './types';
-import { Button, type ButtonProps } from '../ui/button';
+import ActionButton from './action-button';
 import { cn } from '~/utils/utils';
+import { ModalContextProvider, useModalContext } from './context';
 
-interface ConfirmOkButtonProps extends ButtonProps {
-  text?: React.ReactNode;
-}
+function ConfirmOkButton() {
+  const { close, onConfirm, onOk, okButtonProps, okText, isSilent } =
+    useModalContext();
 
-function ConfirmOkButton({ text, ...otherProps }: ConfirmOkButtonProps) {
   return (
-    <Button variant="default" {...otherProps}>
-      {text ?? '확인'}
-    </Button>
+    <ActionButton
+      variant="default"
+      {...okButtonProps}
+      isSilent={isSilent}
+      actionFn={onOk}
+      close={(...args: any[]) => {
+        close?.(...args);
+        onConfirm?.(true);
+      }}
+    >
+      {okText}
+    </ActionButton>
   );
 }
 
-interface ConfirmCancelButtonProps extends ButtonProps {
-  text?: React.ReactNode;
-}
+function ConfirmCancelButton() {
+  const {
+    close,
+    onCancel,
+    onConfirm,
+    cancelButtonProps,
+    cancelText,
+    okCancel,
+    isSilent,
+  } = useModalContext();
 
-function ConfirmCancelButton({
-  text,
-  ...otherProps
-}: ConfirmCancelButtonProps) {
+  if (!okCancel) {
+    return null;
+  }
+
   return (
-    <Button variant="destructive" {...otherProps}>
-      {text ?? '취소'}
-    </Button>
+    <ActionButton
+      variant="destructive"
+      {...cancelButtonProps}
+      isSilent={isSilent}
+      actionFn={onCancel}
+      close={(...args: any[]) => {
+        close?.(...args);
+        onConfirm?.(false);
+      }}
+    >
+      {cancelText}
+    </ActionButton>
   );
 }
 
@@ -43,6 +68,7 @@ export interface ConfirmModalProps extends ModalFuncProps {
   afterClose?: () => void;
   close?: (...args: any[]) => void;
   onConfirm?: (confirmed: boolean) => void;
+  isSilent?: () => boolean;
 }
 
 export default function ConfirmModal({
@@ -51,6 +77,9 @@ export default function ConfirmModal({
   getContainer,
   onConfirm,
   close,
+  onCancel,
+  onOk,
+  isSilent,
   // header
   title,
   titleClassName,
@@ -67,8 +96,27 @@ export default function ConfirmModal({
   okText,
   cancelButtonProps,
   cancelText,
+  // opts
+  okCancel,
 }: ConfirmModalProps) {
-  const onModalClose = useCallback(() => {
+  const ctxValues = {
+    afterClose,
+    onConfirm,
+    close,
+    onCancel,
+    onOk,
+    isSilent,
+    okButtonProps,
+    okText,
+    cancelButtonProps,
+    cancelText,
+    okCancel,
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const btnCtxValues = useMemo(() => ctxValues, [...Object.values(ctxValues)]);
+
+  const onClose = useCallback(() => {
     afterClose?.();
 
     close?.({ triggerCancel: true });
@@ -79,13 +127,13 @@ export default function ConfirmModal({
   const onOpenChange = useCallback(
     (value: boolean) => {
       if (!value) {
-        onModalClose();
+        onClose();
       }
     },
-    [onModalClose],
+    [onClose],
   );
 
-  const titleComponent = (
+  const headerOriginNode = (
     <DialogHeader>
       {title && (
         <DialogTitle className={cn(titleClassName)}>{title}</DialogTitle>
@@ -99,10 +147,12 @@ export default function ConfirmModal({
   );
 
   const footerOriginNode = (
-    <DialogFooter className={cn(footerClassName)}>
-      <ConfirmCancelButton {...cancelButtonProps} text={cancelText} />
-      <ConfirmOkButton {...okButtonProps} text={okText} />
-    </DialogFooter>
+    <ModalContextProvider {...btnCtxValues}>
+      <DialogFooter className={cn(footerClassName)}>
+        <ConfirmCancelButton />
+        <ConfirmOkButton />
+      </DialogFooter>
+    </ModalContextProvider>
   );
 
   const footerComponent =
@@ -116,7 +166,7 @@ export default function ConfirmModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(contentClassName)}>
-        {titleComponent}
+        {headerOriginNode}
         {content}
         {footerComponent}
       </DialogContent>

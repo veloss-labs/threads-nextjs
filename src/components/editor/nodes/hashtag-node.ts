@@ -71,6 +71,7 @@ export default class HashTagNode extends TextNode {
   createDOM(config: EditorConfig): HTMLElement {
     const dom = super.createDOM(config);
     dom.dataset.type = 'hashtag';
+    dom.dataset.value = this.__hashtag;
     dom.className =
       'js-lexical-hashtag font-medium text-blue-400 underline underline-offset-4';
     return dom;
@@ -78,6 +79,7 @@ export default class HashTagNode extends TextNode {
 
   exportDOM(): DOMExportOutput {
     const element = document.createElement('span');
+    element.setAttribute('data-lexical-value', this.__hashtag);
     element.setAttribute('data-lexical-hashtag', 'true');
     element.textContent = this.__text;
     return { element };

@@ -13,14 +13,40 @@ interface InitializeAction {
 
 export type ActionType = InitializeAction;
 
-interface ModalContextState {}
+interface ModalContextState
+  extends Pick<
+    ConfirmModalProps,
+    | 'afterClose'
+    | 'onConfirm'
+    | 'close'
+    | 'isSilent'
+    | 'onCancel'
+    | 'onOk'
+    | 'okButtonProps'
+    | 'cancelButtonProps'
+    | 'okText'
+    | 'cancelText'
+    | 'okCancel'
+  > {}
 
 interface ModalContext extends ModalContextState {
   initialize: () => void;
   dispatch: React.Dispatch<ActionType>;
 }
 
-const initialState: ModalContextState = {};
+const initialState: ModalContextState = {
+  afterClose: () => {},
+  onConfirm: () => {},
+  close: () => {},
+  onCancel: () => {},
+  onOk: () => {},
+  isSilent: undefined,
+  okButtonProps: {},
+  cancelButtonProps: {},
+  okText: '확인',
+  cancelText: '취소',
+  okCancel: true,
+};
 
 const [Provider, useModalContext] = createContext<ModalContext>({
   name: 'useModalContext',
@@ -38,12 +64,29 @@ function reducer(state = initialState, action: ActionType) {
   }
 }
 
-interface Props extends ConfirmModalProps {
+interface Props
+  extends Pick<
+    ConfirmModalProps,
+    | 'afterClose'
+    | 'onConfirm'
+    | 'close'
+    | 'isSilent'
+    | 'onCancel'
+    | 'onOk'
+    | 'okButtonProps'
+    | 'cancelButtonProps'
+    | 'okText'
+    | 'cancelText'
+    | 'okCancel'
+  > {
   children: React.ReactNode;
 }
 
-function ModalContextProvider({ children }: Props) {
-  const [state, dispatch] = useReducer(reducer, initialState);
+function ModalContextProvider({ children, ...resetProps }: Props) {
+  const [state, dispatch] = useReducer(reducer, {
+    ...initialState,
+    ...resetProps,
+  });
 
   const initialize = () => {
     dispatch({ type: Action.INITIALIZE });

@@ -26,6 +26,7 @@ export const PAGE_ENDPOINTS = {
   },
   SAVED: '/saved',
   LIKED: '/liked',
+  SEARCH: '/search',
 } as const;
 
 export const SITE_CONFIG = {

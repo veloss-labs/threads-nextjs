@@ -9,6 +9,7 @@ export type ModalFooterRender = (
 interface ModalCommonProps {
   //   styles?: Omit<NonNullable<DialogProps['styles']>, 'wrapper'>;
 }
+
 export interface ModalProps extends ModalCommonProps {}
 
 type getContainerFunc = () => HTMLElement;

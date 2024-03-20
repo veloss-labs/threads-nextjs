@@ -6,17 +6,12 @@ import {
 } from '~/libs/react/render';
 import type { ModalFuncProps, ConfigUpdate } from './types';
 import destroyFns from './destoryFns';
-import { ModalContextProvider } from './context';
 import ConfirmModal, { type ConfirmModalProps } from './confirm-modal';
 
 function ConfirmDialogWrapper(props: ConfirmModalProps) {
   const { getContainer } = props;
   console.log(getContainer);
-  return (
-    <ModalContextProvider {...props}>
-      <ConfirmModal {...props} />
-    </ModalContextProvider>
-  );
+  return <ConfirmModal {...props} />;
 }
 
 export default function confirm(config: ModalFuncProps) {
@@ -45,8 +40,6 @@ export default function confirm(config: ModalFuncProps) {
     clearTimeout(timeoutId);
 
     /**
-     * https://github.com/ant-design/ant-design/issues/23623
-     *
      * Sync render blocks React event. Let's make this async.
      */
     timeoutId = setTimeout(() => {
@@ -95,9 +88,11 @@ export default function confirm(config: ModalFuncProps) {
   };
 }
 
-export function withSuccess(props: ModalFuncProps): ModalFuncProps {
+export function withModal(props: ModalFuncProps): ModalFuncProps {
   return {
+    type: 'confirm',
+    okText: '확인',
+    cancelText: '취소',
     ...props,
-    type: 'success',
   };
 }

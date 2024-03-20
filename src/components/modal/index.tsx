@@ -1,5 +1,5 @@
 import OriginModal from './confirm-modal';
-import confirm, { withSuccess } from './confirm';
+import confirm, { withModal } from './confirm';
 import type { ModalFuncProps, ModalStaticFunctions } from './types';
 
 type ModalType = typeof OriginModal &
@@ -10,8 +10,8 @@ type ModalType = typeof OriginModal &
 
 const Modal = OriginModal as ModalType;
 
-Modal.success = function successFn(props: ModalFuncProps) {
-  return confirm(withSuccess(props));
+Modal.confirm = function confirmFn(props: ModalFuncProps) {
+  return confirm(withModal(props));
 };
 
 export default Modal;

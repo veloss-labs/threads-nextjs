@@ -166,7 +166,7 @@ export class ThreadService {
 
     if (
       typeof whoCanLeaveComments !== 'undefined' &&
-      typeof whoCanLeaveComments === 'boolean' &&
+      typeof whoCanLeaveComments !== null &&
       !isEqual(whoCanLeaveComments, item.whoCanLeaveComments)
     ) {
       data.whoCanLeaveComments = whoCanLeaveComments;
