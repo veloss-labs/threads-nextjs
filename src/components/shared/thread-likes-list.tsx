@@ -145,7 +145,7 @@ export default function ThreadLikeList({ initialData }: ThreadLikeListProps) {
               {isEnd && (
                 <div className="w-full py-8">
                   <p className="text-center text-slate-700 dark:text-slate-300">
-                    추천 스레드를 모두 읽었습니다! 👋
+                    좋아요를 누른 게시물을 모두 읽었습니다! 👋
                   </p>
                 </div>
               )}

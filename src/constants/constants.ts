@@ -25,6 +25,8 @@ export const PAGE_ENDPOINTS = {
     LIKES: '/threads/likes',
   },
   SAVED: '/saved',
+  LIKED: '/liked',
+  SEARCH: '/search',
 } as const;
 
 export const SITE_CONFIG = {
