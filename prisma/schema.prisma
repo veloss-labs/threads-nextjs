@@ -12,16 +12,16 @@ datasource db {
 }
 
 model User {
-  id            String          @id @default(cuid())
+  id            String           @id @default(cuid())
   name          String?
-  username      String?         @unique
+  username      String?          @unique
   password      String?
   salt          String?
-  email         String?         @unique
-  emailVerified DateTime?       @map(name: "email_verified")
+  email         String?          @unique
+  emailVerified DateTime?        @map(name: "email_verified")
   image         String?
-  createdAt     DateTime        @default(now()) @map(name: "created_at")
-  updatedAt     DateTime        @updatedAt @map(name: "updated_at")
+  createdAt     DateTime         @default(now()) @map(name: "created_at")
+  updatedAt     DateTime         @updatedAt @map(name: "updated_at")
   accounts      Account[]
   sessions      Session[]
   profile       UserProfile?
@@ -30,8 +30,9 @@ model User {
   threadLikes   ThreadLike[]
   followTags    FollowTag[]
   threadMention ThreadMention[]
-  following     UserFollow[]    @relation(name: "following_relation")
-  followers     UserFollow[]    @relation(name: "follower_relation")
+  following     UserFollow[]     @relation(name: "following_relation")
+  followers     UserFollow[]     @relation(name: "follower_relation")
+  bookmarks     ThreadBookmark[]
 
   @@map(name: "users")
 }
@@ -105,7 +106,7 @@ model Thread {
   jsonString                     String?                @map(name: "json_string")
   level                          Int?                   @default(0)
   deleted                        Boolean?               @default(false)
-  whoCanLeaveComments            String?                @default("everyone") @map(name: "who_can_leave_comments") // everyone, followers, following, nobody
+  whoCanLeaveComments            String?                @default("everyone") @map(name: "who_can_leave_comments") // everyone, followers, mentiones, nobody
   hiddenNumberOfLikesAndComments Boolean?               @default(false) @map(name: "hidden_number_of_likes_and_comments")
   createdAt                      DateTime               @default(now()) @map(name: "created_at")
   updatedAt                      DateTime               @updatedAt @map(name: "updated_at")
@@ -156,13 +157,17 @@ model ThreadStats {
 
 model ThreadBookmark {
   id        String   @id @default(cuid())
+  userId    String   @map(name: "user_id")
   threadId  String   @map(name: "thread_id")
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
 
-  @@index([threadId], map: "thread_bookmarks_thread_id")
+  @@unique([userId, threadId])
+  @@index(createdAt)
+  @@index(userId)
   @@map("thread_bookmarks")
 }
 

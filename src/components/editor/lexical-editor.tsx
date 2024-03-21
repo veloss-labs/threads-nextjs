@@ -28,6 +28,7 @@ import HashTagNode from '~/components/editor/nodes/hashtag-node';
 import LexicalOnBlurPlugin from '~/components/editor/plugins/blur-plugin';
 import LexicalDefaultValuePlugin from '~/components/editor/plugins/defaultValue-plugin';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
+import HashtagsEventsPlugin from './plugins/hashtags-events-plugin';
 
 function Placeholder() {
   return (
@@ -61,6 +62,11 @@ interface LexicalEditorProps {
     editor: ReactLexicalEditor,
     event: FocusEvent,
   ) => void;
+  hashtagsEventListener?: (
+    event: Event,
+    editor: ReactLexicalEditor,
+    nodeKey: string,
+  ) => void;
 }
 export default function LexicalEditor(props: LexicalEditorProps) {
   return <LexicalEditor.Root {...props} />;
@@ -70,6 +76,8 @@ LexicalEditor.Root = function LexicalEditorRoot({
   onChange,
   onBlur,
   initialHTMLValue,
+  editable,
+  hashtagsEventListener,
   ...otherProps
 }: LexicalEditorProps) {
   const [editorConfig, setEditorConfig] = useState<InitialConfigType>({
@@ -85,6 +93,7 @@ LexicalEditor.Root = function LexicalEditorRoot({
       },
       link: 'js-lexical-link',
     },
+    editable,
     ...otherProps,
   });
 
@@ -95,30 +104,30 @@ LexicalEditor.Root = function LexicalEditorRoot({
           onChange={onChange}
           onBlur={onBlur}
           initialHTMLValue={initialHTMLValue}
+          editable={editable}
+          hashtagsEventListener={hashtagsEventListener}
         />
       </div>
     </LexicalComposer>
   );
 };
 
-interface LexicalEditorEditorProps {
-  onChange?: (
-    editorState: EditorState,
-    editor: ReactLexicalEditor,
-    tags: Set<string>,
-  ) => void;
-  onBlur?: (
-    editorState: EditorState,
-    editor: ReactLexicalEditor,
-    event: FocusEvent,
-  ) => void;
-  initialHTMLValue?: string;
-}
+interface LexicalEditorEditorProps
+  extends Pick<
+    LexicalEditorProps,
+    | 'onChange'
+    | 'onBlur'
+    | 'initialHTMLValue'
+    | 'editable'
+    | 'hashtagsEventListener'
+  > {}
 
 LexicalEditor.Editor = function LexicalEditorEditor({
   onChange,
   onBlur,
   initialHTMLValue,
+  editable,
+  hashtagsEventListener,
 }: LexicalEditorEditorProps) {
   const onEditorChange = useCallback(
     (
@@ -163,6 +172,11 @@ LexicalEditor.Editor = function LexicalEditorEditor({
       {initialHTMLValue && (
         <LexicalDefaultValuePlugin initialValue={initialHTMLValue} />
       )}
+      {!editable &&
+        hashtagsEventListener &&
+        typeof hashtagsEventListener === 'function' && (
+          <HashtagsEventsPlugin eventListener={hashtagsEventListener} />
+        )}
     </div>
   );
 };

@@ -13,39 +13,51 @@ import { cn, getDateFormatted } from '~/utils/utils';
 import type { ThreadSelectSchema } from '~/services/db/selectors/threads';
 import { Icons } from '~/components/icons';
 import { Button } from '~/components/ui/button';
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { api } from '~/services/trpc/react';
+import { useToast } from '~/components/ui/use-toast';
+import { ToastAction } from '~/components/ui/toast';
+import { useRouter } from 'next/navigation';
+import { PAGE_ENDPOINTS } from '~/constants/constants';
+import ClientOnly from '~/components/shared/client-only';
+import { Skeleton } from '../ui/skeleton';
+import dynamic from 'next/dynamic';
+import { useLayoutStore } from '~/services/store/useLayoutStore';
+import Modal from '~/components/modal';
+
+const WhoCanLeaveReplyDialog = dynamic(
+  () => import('~/components/dialog/who-can-leave-reply-dialog'),
+  {
+    ssr: false,
+  },
+);
 
 interface ThreadItemProps {
   item: ThreadSelectSchema;
 }
 
 export default function ThreadItem({ item }: ThreadItemProps) {
-  const utils = api.useUtils();
-
-  const { data } = api.auth.getRequireSession.useQuery(undefined, {
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const isMe = data ? data.user.id === item.user.id : undefined;
-
-  const mutationByLike = api.threads.like.useMutation({
-    async onSuccess() {
-      await Promise.all([
-        utils.threads.getFollows.invalidate(),
-        utils.threads.getRecommendations.invalidate(),
-        utils.threads.getLikes.invalidate(),
-      ]);
-    },
-  });
-
-  const onClickLike = useCallback(() => {
-    mutationByLike.mutate({
-      threadId: item.id,
-    });
-  }, [item.id, mutationByLike]);
-
   const date = item ? getDateFormatted(item.createdAt) : null;
+  const router = useRouter();
+
+  const onClick = useCallback(
+    (hashTag: string) => {
+      const tags = item.tags.map((current) => current.tag);
+      const currentTag = tags.find((current) => current.name === hashTag);
+      if (!currentTag) {
+        return;
+      }
+      const searchParams = new URLSearchParams({
+        keyword: currentTag.name,
+        searchType: 'tags',
+        tagId: currentTag.id,
+      });
+      const url = new URL(PAGE_ENDPOINTS.SEARCH, window.location.origin);
+      url.search = searchParams.toString();
+      router.push(url.toString());
+    },
+    [item.tags, router],
+  );
 
   return (
     <Card className="m-3 mx-auto overflow-hidden rounded-none border-x-0 border-b border-t-0 shadow-none dark:bg-background">
@@ -84,37 +96,35 @@ export default function ThreadItem({ item }: ThreadItemProps) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      <DropdownMenuItem>저장</DropdownMenuItem>
+                      <ThreadItem.SaveButton
+                        itemId={item.id}
+                        isSaved={item?.bookmarks.length > 0}
+                      />
                       <DropdownMenuSeparator />
-                      {isMe ? (
-                        <>
-                          <DropdownMenuItem>
-                            답글을 남길 수 있는 사람
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem>
-                            좋아요 수 및 공유 수 숨기기
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-500">
-                            삭제
-                          </DropdownMenuItem>
-                        </>
-                      ) : (
-                        <>
-                          <DropdownMenuItem>숨기기</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem>업데이트 안보기</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-500">
-                            차단하기
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-500">
-                            신고하기
-                          </DropdownMenuItem>
-                        </>
-                      )}
+                      <React.Suspense
+                        fallback={
+                          <>
+                            <DropdownMenuItem>
+                              <Skeleton className="h-4 w-[150px]" />
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem>
+                              <Skeleton className="h-4 w-[150px]" />
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem>
+                              <Skeleton className="h-4 w-[150px]" />
+                            </DropdownMenuItem>
+                          </>
+                        }
+                      >
+                        <ThreadItem.ConditionUserInfo
+                          itemId={item.id}
+                          userId={item.user.id}
+                          whoCanLeaveComments={item.whoCanLeaveComments}
+                          isHidden={item.hiddenNumberOfLikesAndComments}
+                        />
+                      </React.Suspense>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -122,57 +132,315 @@ export default function ThreadItem({ item }: ThreadItemProps) {
             </div>
           </div>
           <div className="py-4">
-            <LexicalEditor editable={false} initialHTMLValue={item.text} />
+            <ClientOnly fallback={<LexicalEditor.Skeleton />}>
+              <LexicalEditor
+                editable={false}
+                initialHTMLValue={item.text}
+                hashtagsEventListener={(event) => {
+                  const element = event.target as HTMLSpanElement;
+                  console.log('Hashtag clicked', element);
+                  if (
+                    element &&
+                    element.getAttribute('data-type') === 'hashtag'
+                  ) {
+                    const dataValue = element.getAttribute('data-value');
+                    if (dataValue) {
+                      onClick(dataValue);
+                    }
+                    return;
+                  }
+                }}
+              />
+            </ClientOnly>
           </div>
           <div className="flex items-center justify-end space-x-4 py-4">
             <div className="flex items-center space-x-1">
-              {/* <Button size="sm" variant="link">
-                <Icons.messageSquare className="h-4 w-4" />
-              </Button> */}
-
-              {/* <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="link">
-                    {item.isReposted ? (
-                      <Icons.repostCheck className="size-4" />
-                    ) : (
-                      <Icons.repeat className="size-4" />
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem
-                    onClick={onClickRepost}
-                    className={cn(
-                      item.isReposted ? 'text-red-500 dark:text-red-400' : '',
-                    )}
-                  >
-                    {isPending && (
-                      <Icons.spinner className="mr-2 size-4 animate-spin" />
-                    )}
-                    {item.isReposted ? '삭제' : '리포스트'}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>인용하기</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu> */}
-              <Button
-                size="sm"
-                variant="link"
-                onClick={onClickLike}
-                disabled={mutationByLike.isPending}
-              >
-                <Icons.heart
-                  className={cn(
-                    'h-4 w-4',
-                    item?.likes.length ? 'text-red-500 dark:text-red-400' : '',
-                  )}
-                />
+              <Button size="sm" variant="link">
+                <Icons.messageSquare className="size-4" />
               </Button>
+              <Button size="sm" variant="link">
+                <Icons.repeat className="size-4" />
+              </Button>
+              <ThreadItem.LikeButton
+                itemId={item.id}
+                isLiked={item?.likes.length > 0}
+              />
+              <ThreadItem.ShareButton itemId={item.id} />
             </div>
           </div>
         </div>
       </div>
+      <WhoCanLeaveReplyDialog />
     </Card>
   );
 }
+
+interface ItemProps {
+  itemId: string;
+}
+
+ThreadItem.ShareButton = function Item({ itemId }: ItemProps) {
+  return (
+    <Button size="sm" variant="link">
+      <Icons.share className="size-4" />
+    </Button>
+  );
+};
+
+interface SaveItemProps extends ItemProps {
+  isSaved: boolean;
+}
+
+ThreadItem.SaveButton = function Item({ itemId, isSaved }: SaveItemProps) {
+  const utils = api.useUtils();
+
+  const router = useRouter();
+
+  const { toast } = useToast();
+
+  const mutation = api.threads.save.useMutation({
+    async onSuccess(data) {
+      const saved = data.data?.saved ? 'SAVE' : 'UNSAVE';
+      toast({
+        description: saved === 'SAVE' ? '저장됨' : '저장 취소됨',
+        action: (
+          <ToastAction
+            altText={`${saved === 'SAVE' ? '모두보기' : '되돌리기'}`}
+            onClick={() => {
+              if (saved === 'SAVE') {
+                router.push(PAGE_ENDPOINTS.SAVED);
+                return;
+              }
+              mutation.mutate({
+                threadId: itemId,
+              });
+            }}
+          >
+            {saved === 'SAVE' ? '모두보기' : '되돌리기'}
+          </ToastAction>
+        ),
+      });
+
+      await Promise.all([
+        utils.threads.getFollows.invalidate(),
+        utils.threads.getRecommendations.invalidate(),
+        utils.threads.getBookmarks.invalidate(),
+      ]);
+    },
+  });
+
+  const onClick = useCallback(() => {
+    mutation.mutate({
+      threadId: itemId,
+    });
+  }, [itemId, mutation]);
+
+  return (
+    <DropdownMenuItem onClick={onClick} disabled={mutation.isPending}>
+      {mutation.isPending && (
+        <Icons.spinner className="mr-2 size-4 animate-spin" />
+      )}
+      {isSaved ? '저장 취소' : '저장'}
+    </DropdownMenuItem>
+  );
+};
+
+interface ConditionUserInfoItemProps extends ItemProps {
+  userId: string;
+  whoCanLeaveComments: string | null;
+  isHidden: boolean | null;
+}
+
+ThreadItem.ConditionUserInfo = function Item({
+  userId,
+  itemId,
+  whoCanLeaveComments,
+  isHidden,
+}: ConditionUserInfoItemProps) {
+  const [data] = api.auth.getRequireSession.useSuspenseQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const isMe = data ? data.user.id === userId : undefined;
+
+  if (isMe) {
+    return (
+      <>
+        <ThreadItem.WhoCanLeaveReplyButton
+          itemId={itemId}
+          initialWhoCanLeaveReply={whoCanLeaveComments ?? 'everyone'}
+        />
+        <DropdownMenuSeparator />
+        <ThreadItem.HideNumberOfLikesAndSharesButton
+          itemId={itemId}
+          isHidden={isHidden ?? false}
+        />
+        <DropdownMenuSeparator />
+        <ThreadItem.DeleteButton itemId={itemId} />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <DropdownMenuItem>숨기기</DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem>업데이트 안보기</DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem className="text-red-500">차단하기</DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem className="text-red-500">신고하기</DropdownMenuItem>
+    </>
+  );
+};
+
+interface LikeItemProps extends ItemProps {
+  isLiked: boolean;
+}
+
+ThreadItem.LikeButton = function Item({ itemId, isLiked }: LikeItemProps) {
+  const utils = api.useUtils();
+
+  const mutation = api.threads.like.useMutation({
+    async onSuccess() {
+      await Promise.all([
+        utils.threads.getFollows.invalidate(),
+        utils.threads.getRecommendations.invalidate(),
+        utils.threads.getLikes.invalidate(),
+      ]);
+    },
+  });
+
+  const onClick = useCallback(() => {
+    mutation.mutate({
+      threadId: itemId,
+    });
+  }, [itemId, mutation]);
+
+  return (
+    <Button
+      size="sm"
+      variant="link"
+      onClick={onClick}
+      disabled={mutation.isPending}
+    >
+      <Icons.heart
+        className={cn(
+          'h-4 w-4',
+          isLiked ? 'text-red-500 dark:text-red-400' : '',
+        )}
+      />
+    </Button>
+  );
+};
+
+ThreadItem.DeleteButton = function Item({ itemId }: ItemProps) {
+  const utils = api.useUtils();
+
+  const mutation = api.threads.delete.useMutation({
+    async onSuccess() {
+      await Promise.all([
+        utils.threads.getFollows.invalidate(),
+        utils.threads.getRecommendations.invalidate(),
+        utils.threads.getLikes.invalidate(),
+        utils.threads.getBookmarks.invalidate(),
+      ]);
+    },
+  });
+
+  const onClick = useCallback(() => {
+    Modal.confirm({
+      title: '게시물을 삭제하시겠어요?',
+      description: '이 게시물을 삭제하면 복원할 수 없습니다.',
+      okCancel: true,
+      cancelButtonProps: {
+        variant: 'default',
+      },
+      okButtonProps: {
+        variant: 'destructive',
+      },
+      onOk: () => {
+        mutation.mutate({
+          threadId: itemId,
+        });
+      },
+    });
+  }, [itemId, mutation]);
+
+  return (
+    <DropdownMenuItem onClick={onClick} disabled={mutation.isPending}>
+      삭제
+    </DropdownMenuItem>
+  );
+};
+
+interface HideNumberOfLikesAndSharesItemProps extends ItemProps {
+  isHidden: boolean;
+}
+
+ThreadItem.HideNumberOfLikesAndSharesButton = function Item({
+  itemId,
+  isHidden,
+}: HideNumberOfLikesAndSharesItemProps) {
+  const utils = api.useUtils();
+
+  const { toast } = useToast();
+
+  const mutation = api.threads.update.useMutation({
+    async onSuccess(data) {
+      const saved = data.data?.hiddenNumberOfLikesAndComments
+        ? 'SAVE'
+        : 'UNSAVE';
+      toast({
+        description:
+          saved === 'SAVE'
+            ? '좋아요 및 공유 숨김'
+            : '좋아요 및 공유 숨기기 취소됨',
+      });
+
+      await Promise.all([
+        utils.threads.getFollows.invalidate(),
+        utils.threads.getRecommendations.invalidate(),
+        utils.threads.getLikes.invalidate(),
+        utils.threads.getBookmarks.invalidate(),
+      ]);
+    },
+  });
+
+  const onClick = useCallback(() => {
+    mutation.mutate({
+      threadId: itemId,
+      hiddenNumberOfLikesAndComments: !isHidden,
+    });
+  }, [itemId, mutation, isHidden]);
+
+  return (
+    <DropdownMenuItem onClick={onClick} disabled={mutation.isPending}>
+      좋아요 수 및 공유 수 숨기기 {isHidden ? '취소' : ''}
+    </DropdownMenuItem>
+  );
+};
+
+interface WhoCanLeaveReplyItemProps extends ItemProps {
+  initialWhoCanLeaveReply: string;
+}
+
+ThreadItem.WhoCanLeaveReplyButton = function Item({
+  itemId,
+  initialWhoCanLeaveReply,
+}: WhoCanLeaveReplyItemProps) {
+  const { popupOpen } = useLayoutStore();
+
+  const onClick = useCallback(() => {
+    popupOpen('WHO_CAN_LEAVE_REPLY', {
+      itemId,
+      initialValue: initialWhoCanLeaveReply,
+    });
+  }, [initialWhoCanLeaveReply, itemId, popupOpen]);
+
+  return (
+    <DropdownMenuItem onClick={onClick}>
+      답글을 남길 수 있는 사람
+    </DropdownMenuItem>
+  );
+};

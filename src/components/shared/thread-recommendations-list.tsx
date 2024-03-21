@@ -6,7 +6,6 @@ import { getTargetElement } from '~/libs/browser/dom';
 import { api } from '~/services/trpc/react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import SkeletonCard from '~/components/skeleton/card-thread';
-import { ThreadListQuerySchema } from '~/services/threads/threads.query';
 
 interface ThreadRecommendationsListProps {
   initialData?: any;

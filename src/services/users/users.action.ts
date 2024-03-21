@@ -8,7 +8,7 @@ import { generateHash, generateSalt } from '~/utils/password';
 import { userService } from '~/services/users/users.service';
 import { generatorName } from '~/utils/utils';
 import { signIn } from '~/services/auth';
-import { authFormSchema } from './users.input';
+import { authFormSchema } from '~/services/users/users.input';
 import { ResultSchema, resultSchema } from '~/services/common/response.schema';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
