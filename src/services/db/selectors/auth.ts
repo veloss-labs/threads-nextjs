@@ -1,7 +1,7 @@
 'server-only';
 import { Prisma } from '@prisma/client';
 
-export const AUTH_CRDENTIALS_USER_SELECT =
+export const getAuthCredentialsSelector = () =>
   Prisma.validator<Prisma.UserSelect>()({
     id: true,
     name: true,

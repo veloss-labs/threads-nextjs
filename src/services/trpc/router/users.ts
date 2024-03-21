@@ -2,14 +2,23 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from '~/services/trpc/core/trpc';
-import { userIdSchema } from '~/services/users/users.input';
-import {
-  listQuerySchema,
-  searchQuerySchema,
-} from '~/services/users/users.query';
+import { userIdSchema, followUserSchema } from '~/services/users/users.input';
+import { searchQuerySchema } from '~/services/users/users.query';
 import { userService } from '~/services/users/users.service';
 
 export const usersRouter = createTRPCRouter({
+  follow: protectedProcedure
+    .input(followUserSchema)
+    .mutation(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
+      return await userService.follow(userId, input.targetId);
+    }),
+  unfollow: protectedProcedure
+    .input(followUserSchema)
+    .mutation(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
+      return await userService.unfollow(userId, input.targetId);
+    }),
   byId: protectedProcedure.input(userIdSchema).query(async ({ input }) => {
     try {
       return await userService.byId(input.userId);
@@ -18,36 +27,6 @@ export const usersRouter = createTRPCRouter({
       return null;
     }
   }),
-  getSearchUsers: protectedProcedure
-    .input(listQuerySchema)
-    .query(async ({ input, ctx }) => {
-      try {
-        const [totalCount, list] = await Promise.all([
-          userService.searchCount(input),
-          userService.getSearchItems(input),
-        ]);
-
-        const endCursor = list.at(-1)?.id ?? null;
-        const hasNextPage = endCursor
-          ? (await userService.hasSearchNextPage(input, endCursor)) > 0
-          : false;
-
-        return {
-          totalCount,
-          list,
-          endCursor,
-          hasNextPage,
-        };
-      } catch (error) {
-        console.log('error', error);
-        return {
-          totalCount: 0,
-          list: [],
-          endCursor: null,
-          hasNextPage: false,
-        };
-      }
-    }),
   getMentionUsers: protectedProcedure
     .input(searchQuerySchema)
     .query(async ({ input, ctx }) => {

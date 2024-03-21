@@ -1,30 +1,62 @@
-import React, { useTransition } from 'react';
+import React, { useCallback } from 'react';
 import Avatars from '~/components/shared/avatars';
 import { Button } from '~/components/ui/button';
 import { UserSelectSchema } from '~/services/db/selectors/users';
+import { api } from '~/services/trpc/react';
+import { Icons } from '~/components/icons';
 
 interface UserItemProps {
   item: UserSelectSchema;
 }
 
-export default function UserItem({ item }: UserItemProps) {
-  const [isPending, startTransition] = useTransition();
-
-  const onClickFollow = () => {
-    // TODO: follow
-    startTransition(async () => {
-      // await likeThread({
-      //   threadId: item.id,
-      //   isLike: item.isLiked,
-      // });
-      // await queryClient.invalidateQueries({
-      //   queryKey,
-      // });
-    });
-  };
-
+export default function SearchUserItem({ item }: UserItemProps) {
   return (
     <div className="m-3 flex items-center justify-between space-x-4">
+      <SearchUserItem.Content item={item} />
+    </div>
+  );
+}
+
+interface SearchUserItemProps {
+  item: UserSelectSchema;
+}
+
+SearchUserItem.Content = function Item({ item }: SearchUserItemProps) {
+  const utils = api.useUtils();
+
+  const followMutation = api.users.follow.useMutation({
+    async onSuccess() {
+      await Promise.all([
+        utils.threads.getFollows.invalidate(),
+        utils.threads.getRecommendations.invalidate(),
+        utils.threads.getBookmarks.invalidate(),
+      ]);
+    },
+  });
+
+  const unfollowMutation = api.users.unfollow.useMutation({
+    async onSuccess() {
+      await Promise.all([
+        utils.threads.getFollows.invalidate(),
+        utils.threads.getRecommendations.invalidate(),
+        utils.threads.getBookmarks.invalidate(),
+      ]);
+    },
+  });
+
+  const isPending = followMutation.isPending || unfollowMutation.isPending;
+  const isFollowing = item?.followers?.length ?? 0 > 0;
+
+  const onClickFollow = useCallback(() => {
+    if (isFollowing) {
+      unfollowMutation.mutate({ targetId: item.id });
+    } else {
+      followMutation.mutate({ targetId: item.id });
+    }
+  }, [followMutation, isFollowing, item.id, unfollowMutation]);
+
+  return (
+    <>
       <div className="flex items-center space-x-4">
         <Avatars
           src={undefined}
@@ -33,12 +65,20 @@ export default function UserItem({ item }: UserItemProps) {
         />
         <div>
           <p className="text-sm font-medium leading-none">{item?.username}</p>
-          <p className="text-sm text-muted-foreground">팔로우 0명</p>
+          <p className="text-sm text-muted-foreground">
+            팔로우 {item?._count.followers ?? 0}명
+          </p>
         </div>
       </div>
-      <Button variant="outline" className="ml-auto">
-        팔로우
+      <Button
+        variant="outline"
+        className="ml-auto"
+        onClick={onClickFollow}
+        disabled={isPending}
+      >
+        {isPending && <Icons.spinner className="mr-2 size-4 animate-spin" />}
+        {isFollowing ? '팔로우 취소' : '팔로우'}
       </Button>
-    </div>
+    </>
   );
-}
+};

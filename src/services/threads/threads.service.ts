@@ -18,13 +18,14 @@ import type {
   CreateInputSchema,
   IdInputSchema,
   UpdateInputSchema,
-} from './threads.input';
+} from '~/services/threads/threads.input';
 import { tagService } from '~/services/tags/tags.service';
 import { userService } from '~/services/users/users.service';
 import { calculateRankingScore } from '~/utils/utils';
 import { taskRunner } from '~/services/task/task';
 import { TRPCError } from '@trpc/server';
 import { Prisma } from '@prisma/client';
+import { env } from '~/app/env';
 
 export class ThreadService {
   private readonly DEFAULT_LIMIT = 30;
@@ -35,7 +36,6 @@ export class ThreadService {
    * @description 스레드의 인기도 추천 계산을 위한 로직
    * @param {string} threadId - 스레드 ID
    * @param {number} likesCount - 좋아요 개수
-   * @returns
    */
   async recalculateRanking(threadId: string, likesCount?: number) {
     const item = await db.thread.findUnique({ where: { id: threadId } });
@@ -893,7 +893,7 @@ export class ThreadService {
   }
 }
 
-export const threadService = remember(
-  'threadService',
-  () => new ThreadService(),
-);
+export const threadService =
+  env.NODE_ENV === 'development'
+    ? new ThreadService()
+    : remember('threadService', () => new ThreadService());

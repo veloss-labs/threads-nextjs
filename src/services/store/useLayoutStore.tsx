@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-type PopupType = 'NOOP' | 'THREAD' | 'WHO_CAN_LEAVE_REPLY';
+type PopupType = 'NOOP' | 'THREAD' | 'WHO_CAN_LEAVE_REPLY' | 'SEARCH_PAGE';
 
 type MetaData = {
   [key: string]: any;
