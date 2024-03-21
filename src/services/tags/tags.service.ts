@@ -3,6 +3,7 @@ import { db } from '~/services/db/prisma';
 import { getTagsSelector } from '~/services/db/selectors/tags';
 import { remember } from '@epic-web/remember';
 import type { CreateInputSchema } from '~/services/tags/tags.input';
+import { env } from '~/app/env';
 
 export class TagService {
   private readonly DEFAULT_LIMIT = 30;
@@ -117,4 +118,7 @@ export class TagService {
   }
 }
 
-export const tagService = remember('tagService', () => new TagService());
+export const tagService =
+  env.NODE_ENV === 'development'
+    ? new TagService()
+    : remember('tagService', () => new TagService());

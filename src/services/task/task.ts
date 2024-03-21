@@ -1,4 +1,5 @@
 import { remember } from '@epic-web/remember';
+import { env } from '~/app/env';
 
 type Task = {
   fn: () => Promise<void>;
@@ -121,7 +122,7 @@ export class BackgroundTaskManager {
   }
 }
 
-export const taskRunner = remember(
-  'taskRunner',
-  () => new BackgroundTaskManager(),
-);
+export const taskRunner =
+  env.NODE_ENV === 'development'
+    ? new BackgroundTaskManager()
+    : remember('taskRunner', () => new BackgroundTaskManager());

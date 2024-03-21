@@ -14,7 +14,7 @@ export const getUserProfileSelector = () => {
   });
 };
 
-export const getUserSelector = () => {
+export const getUserSelector = (userId?: string) => {
   return Prisma.validator<Prisma.UserSelect>()({
     id: true,
     name: true,
@@ -25,6 +25,13 @@ export const getUserSelector = () => {
     profile: {
       select: getUserProfileSelector(),
     },
+    followers: userId
+      ? {
+          where: {
+            userId: userId,
+          },
+        }
+      : false,
     _count: {
       select: {
         followers: true,
@@ -65,6 +72,7 @@ export type UserSelectSchema = Pick<
   'id' | 'name' | 'username' | 'email' | 'image' | 'emailVerified'
 > & {
   profile: Pick<UserProfile, 'bio'> | null;
+  followers: UserSelectSchema[];
   _count: {
     followers: number;
     following: number;

@@ -3,45 +3,106 @@ import omit from 'lodash-es/omit';
 import { generateHash, secureCompare } from '~/utils/password';
 import { db } from '~/services/db/prisma';
 import { getUserSelector } from '~/services/db/selectors/users';
-import { AUTH_CRDENTIALS_USER_SELECT } from '~/services/db/selectors/auth';
+import { getAuthCredentialsSelector } from '~/services/db/selectors/auth';
 import { Prisma } from '@prisma/client';
-import type { AuthFormData } from './users.input';
+import type { AuthFormData } from '~/services/users/users.input';
 import { remember } from '@epic-web/remember';
-import { type UserListQuerySchema } from '~/services/users/users.query';
+import { env } from '~/app/env';
+import { TRPCError } from '@trpc/server';
 
 export class UserService {
   private readonly DEFAULT_LIMIT = 30;
 
   /**
-   * @description 유저 검색시 나오는 총 갯수
-   * @param {UserListQuerySchema} input - 유저 목록 조회 조건
+   * @description 유저 팔로우
+   * @param {string} userId - 팔로우 하는 유저 ID
+   * @param {string} targetId - 팔로우 대상 유저 ID
    */
-  searchCount(input: UserListQuerySchema) {
-    return db.user.count({
+  async follow(userId: string, targetId: string) {
+    if (userId === targetId) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: '자신을 팔로우 할 수 없습니다.',
+      });
+    }
+
+    const following = await this.byId(userId);
+    if (!following) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: '팔로우 정보를 찾을 수 없습니다.',
+      });
+    }
+
+    const follower = await this.byId(targetId);
+    if (!follower) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: '팔로우 대상을 찾을 수 없습니다.',
+      });
+    }
+
+    const exists = await db.userFollow.findFirst({
       where: {
-        username: {
-          contains: input?.keyword,
-        },
+        userId,
+        followerId: targetId,
       },
     });
+
+    if (exists) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: '이미 팔로우 중입니다.',
+      });
+    }
+
+    const relationship = await db.userFollow.create({
+      data: {
+        userId,
+        followerId: targetId,
+      },
+    });
+
+    return relationship;
   }
 
   /**
-   * @description 유저 검색시 다음 페이지가 있는지 확인
-   * @param {UserListQuerySchema} input - 유저 목록 조회 조건
-   * @param {string | undefined} endCursor - 마지막 커서
+   * @description 유저 언팔로우
+   * @param {string} userId - 팔로우 하는 유저 ID
+   * @param {string} targetId - 팔로우 대상 유저 ID
    */
-  hasSearchNextPage(input: UserListQuerySchema, endCursor: string | undefined) {
-    return db.user.count({
+  async unfollow(userId: string, targetId: string) {
+    if (userId === targetId) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: '자신을 언팔로우 할 수 없습니다.',
+      });
+    }
+
+    const following = await this.byId(userId);
+    if (!following) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: '팔로우 정보를 찾을 수 없습니다.',
+      });
+    }
+
+    const follower = await this.byId(targetId);
+    if (!follower) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: '팔로우 대상을 찾을 수 없습니다.',
+      });
+    }
+
+    const relationship = await db.userFollow.deleteMany({
       where: {
-        id: {
-          lt: endCursor,
-        },
-        username: {
-          contains: input?.keyword,
-        },
+        userId,
+        followerId: targetId,
       },
     });
+
+    return relationship;
   }
 
   /**
@@ -53,30 +114,6 @@ export class UserService {
   ) {
     return db.user.create({
       data: input,
-    });
-  }
-
-  /**
-   * @description 유저 검색시 나오는 목록 조회
-   * @param {UserListQuerySchema} input - 유저 목록 조회 조건
-   */
-  getSearchItems(input: UserListQuerySchema) {
-    return db.user.findMany({
-      where: {
-        id: input?.cursor
-          ? {
-              lt: input.cursor,
-            }
-          : undefined,
-        username: {
-          contains: input?.keyword,
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: input?.limit ?? this.DEFAULT_LIMIT,
-      select: getUserSelector(),
     });
   }
 
@@ -115,7 +152,7 @@ export class UserService {
       where: {
         username: credentials.username,
       },
-      select: AUTH_CRDENTIALS_USER_SELECT,
+      select: getAuthCredentialsSelector(),
     });
 
     if (!user) {
@@ -160,4 +197,7 @@ export class UserService {
   }
 }
 
-export const userService = remember('userService', () => new UserService());
+export const userService =
+  env.NODE_ENV === 'development'
+    ? new UserService()
+    : remember('userService', () => new UserService());

@@ -7,15 +7,19 @@ import { api } from '~/services/trpc/react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import UserItem from '~/components/shared/search-user-item';
 import SkeletonCardUser from '~/components/skeleton/card-user';
+import SkeletonCard from '~/components/skeleton/card-thread';
+import ThreadItem from '~/components/shared/thread-item';
 
 interface SearchUserListProps {
   initialData?: any;
   keyword?: string;
+  searchType: 'tags' | 'mentions' | 'default' | undefined;
+  tagId?: string | undefined;
+  userId?: string | undefined;
 }
 
 const CLIENT_LIMIT_SIZE = 10;
 const CLIENT_DATA_OVERSCAN = 5;
-const MIN_ITEM_SIZE = 60;
 
 const getCursorLimit = (searchParams: URLSearchParams) => ({
   start: Number(searchParams.get('start') || '0'),
@@ -23,18 +27,26 @@ const getCursorLimit = (searchParams: URLSearchParams) => ({
   limit: Number(searchParams.get('limit') || CLIENT_LIMIT_SIZE.toString()),
 });
 
-export default function SearchUserList({
+export default function SearchList({
   keyword,
+  searchType,
+  tagId,
+  userId,
   initialData,
 }: SearchUserListProps) {
   const seachParams = useSearchParams();
   const hydrating = useIsHydrating('[data-hydrating-signal]');
   const initialLength = initialData?.list?.length ?? CLIENT_DATA_OVERSCAN;
 
+  const MIN_ITEM_SIZE = searchType === 'tags' ? 200 : 60;
+
   const [data, { fetchNextPage, hasNextPage, isFetchingNextPage }] =
-    api.users.getSearchUsers.useSuspenseInfiniteQuery(
+    api.search.getSearch.useSuspenseInfiniteQuery(
       {
         keyword,
+        searchType,
+        tagId,
+        userId,
       },
       {
         staleTime: 2 * 60 * 1000,
@@ -118,7 +130,7 @@ export default function SearchUserList({
           if (isLoaderRow) {
             return (
               <div
-                key={`users:loading:${virtualRow.index}`}
+                key={`search:loading:${virtualRow.index}`}
                 className="absolute left-0 top-0 w-full"
                 style={{
                   height: virtualRow.size,
@@ -127,7 +139,11 @@ export default function SearchUserList({
                   }px)`,
                 }}
               >
-                <SkeletonCardUser />
+                {searchType === 'tags' ? (
+                  <SkeletonCard />
+                ) : (
+                  <SkeletonCardUser />
+                )}
               </div>
             );
           }
@@ -138,7 +154,7 @@ export default function SearchUserList({
 
           return (
             <div
-              key={`users:${item.id}`}
+              key={`search:${item.id}`}
               className="absolute left-0 top-0 w-full"
               style={{
                 height: `${virtualRow.size}px`,
@@ -147,11 +163,15 @@ export default function SearchUserList({
                 }px)`,
               }}
             >
-              <UserItem item={item} />
+              {searchType === 'tags' ? (
+                <ThreadItem item={item as unknown as any} />
+              ) : (
+                <UserItem item={item as unknown as any} />
+              )}
               {isEnd && (
                 <div className="w-full py-8">
                   <p className="text-center text-slate-700 dark:text-slate-300">
-                    더 이상 유저가 없습니다! 👋
+                    검색 결과를 모두 읽었습니다! 👋
                   </p>
                 </div>
               )}

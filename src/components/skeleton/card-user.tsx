@@ -5,6 +5,14 @@ import { Skeleton } from '~/components/ui/skeleton';
 export default function SkeletonCardUser() {
   return (
     <div className="mx-3 my-2 flex items-center justify-between space-x-4">
+      <SkeletonCardUser.Content />
+    </div>
+  );
+}
+
+SkeletonCardUser.Content = function Item() {
+  return (
+    <>
       <div className="flex items-center space-x-4">
         <Skeleton className="size-12 rounded-full" />
         <div>
@@ -15,6 +23,6 @@ export default function SkeletonCardUser() {
       <Button variant="outline" className="ml-auto">
         팔로우
       </Button>
-    </div>
+    </>
   );
-}
+};
