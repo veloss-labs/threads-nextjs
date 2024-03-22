@@ -1,5 +1,5 @@
 'use client';
-import React, { useCallback, useState, useTransition } from 'react';
+import React, { useCallback, useState } from 'react';
 import Link from 'next/link';
 import {
   usePathname,
@@ -20,7 +20,7 @@ import {
 import { signOut } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import { api } from '~/services/trpc/react';
-import { useLayoutStore } from '~/services/store/useLayoutStore';
+import useNavigateThreanForm from '~/libs/hooks/useNavigateThreanForm';
 
 export default function MainNav() {
   return (
@@ -140,35 +140,12 @@ MainNav.Thread = function Item({ item }: ItemProps) {
   const pathname = usePathname();
   const href = item.href as string;
   const isActive = pathname === href ? true : false;
-  const [isPending, startTransition] = useTransition();
-  const router = useRouter();
-  const { popupOpen } = useLayoutStore();
+
+  const { handleHref, isPending } = useNavigateThreanForm();
 
   const onClick = useCallback(() => {
-    popupOpen('THREAD');
-
-    let type: string | undefined = undefined;
-    switch (pathname) {
-      case PAGE_ENDPOINTS.ROOT: {
-        type = 'recommendation';
-        break;
-      }
-      case PAGE_ENDPOINTS.FOLLOWING: {
-        type = 'following';
-        break;
-      }
-      default: {
-        type = undefined;
-        break;
-      }
-    }
-
-    const nextPath = type ? `${href}?type=${type}` : href;
-
-    startTransition(() => {
-      router.push(nextPath);
-    });
-  }, [router, popupOpen, href, pathname]);
+    handleHref();
+  }, [handleHref]);
 
   return (
     <button

@@ -4,7 +4,9 @@ import Avatars from '~/components/shared/avatars';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FieldErrors, FieldPath, get, useForm } from 'react-hook-form';
 import { Form, FormControl, FormField, FormItem } from '~/components/ui/form';
-import LexicalEditor from '~/components/editor/lexical-editor';
+import LexicalEditor, {
+  LexicalEditorProps,
+} from '~/components/editor/lexical-editor';
 import { Button } from '~/components/ui/button';
 import { Icons } from '~/components/icons';
 import { cn, getFindByLexicalNodeTypes } from '~/utils/utils';
@@ -23,18 +25,17 @@ import {
   type LexicalEditor as ReactLexicalEditor,
 } from 'lexical';
 import { isEmpty } from '~/utils/assertion';
-import type { ThreadListQuerySchema } from '~/services/threads/threads.query';
 
 interface ThreadsFormProps {
-  type?: ThreadListQuerySchema['type'];
   isDialog?: boolean;
   onSuccess?: () => void;
+  editorState?: LexicalEditorProps['editorState'];
 }
 
 export default function ThreadsForm({
   isDialog,
   onSuccess,
-  type,
+  editorState,
 }: ThreadsFormProps) {
   const { data: session } = api.auth.getRequireSession.useQuery();
   const utils = api.useUtils();
@@ -42,11 +43,7 @@ export default function ThreadsForm({
   const [, startTransition] = useTransition();
 
   const mutation = api.threads.create.useMutation({
-    async onSuccess() {
-      await Promise.all([
-        utils.threads.getFollows.invalidate(),
-        utils.threads.getRecommendations.invalidate(),
-      ]);
+    onSuccess() {
       onSuccess?.();
     },
   });
@@ -157,6 +154,7 @@ export default function ThreadsForm({
                       <FormControl>
                         <ClientOnly fallback={<LexicalEditor.Skeleton />}>
                           <LexicalEditor
+                            editorState={editorState}
                             editable={!field.disabled}
                             onChange={(editorState, editor) =>
                               onEditorUpdate(

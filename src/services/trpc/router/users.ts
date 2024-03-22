@@ -19,9 +19,10 @@ export const usersRouter = createTRPCRouter({
       const userId = ctx.session.user.id;
       return await userService.unfollow(userId, input.targetId);
     }),
-  byId: protectedProcedure.input(userIdSchema).query(async ({ input }) => {
+  byId: protectedProcedure.input(userIdSchema).query(async ({ input, ctx }) => {
     try {
-      return await userService.byId(input.userId);
+      const sessionUserId = ctx.session.user.id;
+      return await userService.byId(input.userId, sessionUserId);
     } catch (error) {
       console.log('error', error);
       return null;
