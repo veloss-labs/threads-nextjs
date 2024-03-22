@@ -1,19 +1,15 @@
 'use client';
-import React, { useTransition, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import Link from 'next/link';
-import {
-  usePathname,
-  useSelectedLayoutSegment,
-  useRouter,
-} from 'next/navigation';
+import { usePathname, useSelectedLayoutSegment } from 'next/navigation';
 import { cn } from '~/utils/utils';
 import { NAV_CONFIG, NavItem } from '~/constants/nav';
 import { PAGE_ENDPOINTS } from '~/constants/constants';
 import SkipRenderOnClient from '../shared/skip-render-on-client';
 import { useMediaQuery } from '~/libs/hooks/useMediaQuery';
 import { api } from '~/services/trpc/react';
-import { useLayoutStore } from '~/services/store/useLayoutStore';
 import { Icons } from '~/components/icons';
+import useNavigateThreanForm from '~/libs/hooks/useNavigateThreanForm';
 
 export default function MobileFooterNav() {
   const isMobile = useMediaQuery('(max-width: 768px)', false);
@@ -88,35 +84,12 @@ MobileFooterNav.Thread = function Item({ item }: ItemProps) {
   const pathname = usePathname();
   const href = item.href as string;
   const isActive = pathname === href ? true : false;
-  const [isPending, startTransition] = useTransition();
-  const router = useRouter();
-  const { popupOpen } = useLayoutStore();
+
+  const { handleHref, isPending } = useNavigateThreanForm();
 
   const onClick = useCallback(() => {
-    popupOpen('THREAD');
-
-    let type: string | undefined = undefined;
-    switch (pathname) {
-      case PAGE_ENDPOINTS.ROOT: {
-        type = 'recommendation';
-        break;
-      }
-      case PAGE_ENDPOINTS.FOLLOWING: {
-        type = 'following';
-        break;
-      }
-      default: {
-        type = undefined;
-        break;
-      }
-    }
-
-    const nextPath = type ? `${href}?type=${type}` : href;
-
-    startTransition(() => {
-      router.push(nextPath);
-    });
-  }, [router, popupOpen, href, pathname]);
+    handleHref();
+  }, [handleHref]);
 
   return (
     <button

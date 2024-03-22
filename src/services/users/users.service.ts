@@ -120,13 +120,14 @@ export class UserService {
   /**
    * @description 유저 아이디로 조회
    * @param {string} userId - 유저 ID
+   * @param {string?} sessionUserId - 조회하는 유저 ID
    */
-  byId(userId: string) {
+  byId(userId: string, sessionUserId?: string) {
     return db.user.findUnique({
       where: {
         id: userId,
       },
-      select: getUserSelector(),
+      select: getUserSelector(sessionUserId),
     });
   }
 

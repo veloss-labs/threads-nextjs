@@ -5,18 +5,21 @@ import {
   SheetHeader,
   SheetTitle,
 } from '~/components/ui/sheet';
-import ThreadsForm from './threads-form';
+import ThreadsForm from '~/components/write/threads-form';
+import { LexicalEditorProps } from '~/components/editor/lexical-editor';
 
 interface ThreadsSheetProps {
   open: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  editorState?: LexicalEditorProps['editorState'];
 }
 
 export default function ThreadsSheet({
   open,
   onClose,
   onSuccess,
+  editorState,
 }: ThreadsSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onClose}>
@@ -27,7 +30,7 @@ export default function ThreadsSheet({
         <SheetHeader className="text-left">
           <SheetTitle>새로운 스레드</SheetTitle>
         </SheetHeader>
-        <ThreadsForm isDialog onSuccess={onSuccess} />
+        <ThreadsForm isDialog onSuccess={onSuccess} editorState={editorState} />
       </SheetContent>
     </Sheet>
   );

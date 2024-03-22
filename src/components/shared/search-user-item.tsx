@@ -4,6 +4,8 @@ import { Button } from '~/components/ui/button';
 import { UserSelectSchema } from '~/services/db/selectors/users';
 import { api } from '~/services/trpc/react';
 import { Icons } from '~/components/icons';
+import Link from 'next/link';
+import { PAGE_ENDPOINTS } from '~/constants/constants';
 
 interface UserItemProps {
   item: UserSelectSchema;
@@ -64,7 +66,9 @@ SearchUserItem.Content = function Item({ item }: SearchUserItemProps) {
           fallback="T"
         />
         <div>
-          <p className="text-sm font-medium leading-none">{item?.username}</p>
+          <Link href={PAGE_ENDPOINTS.MY_PAGE.ID(item.id)}>
+            <p className="text-sm font-medium leading-none">{item?.username}</p>
+          </Link>
           <p className="text-sm text-muted-foreground">
             팔로우 {item?._count.followers ?? 0}명
           </p>

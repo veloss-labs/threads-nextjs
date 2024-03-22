@@ -18,8 +18,8 @@ interface Props {
 export async function generateMetadata({
   params,
 }: Pick<Props, 'params'>): Promise<Metadata> {
-  const data = await api.users.byId({ userId: params.userId });
-  const title = `${SITE_CONFIG.title}의 @${data?.username}님`;
+  const initialData = await api.users.byId({ userId: params.userId });
+  const title = `${SITE_CONFIG.title}의 @${initialData?.username}님`;
   return {
     title,
     openGraph: {
@@ -34,22 +34,23 @@ export default async function Layout({
   comments,
   reposts,
 }: Props) {
-  if (!params.userId) {
+  const initialData = await api.users.byId({ userId: params.userId });
+  if (!initialData) {
     notFound();
   }
 
-  const data = await api.users.byId({ userId: params.userId });
-  if (!data) {
-    notFound();
-  }
+  const session = await api.auth.getRequireSession();
+  const isMe = session.user.id === initialData.id;
 
   return (
     <>
-      <ProfileHeader
-        name={data.name}
-        username={data.username}
-        image={data.image}
-      />
+      <React.Suspense fallback={<></>}>
+        <ProfileHeader
+          userId={initialData.id}
+          isMe={isMe}
+          initialData={initialData}
+        />
+      </React.Suspense>
       <ProfileTabsList
         comments={comments}
         reposts={reposts}
