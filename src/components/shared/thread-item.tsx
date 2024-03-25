@@ -213,7 +213,7 @@ ThreadItem.ShareButton = function Item({
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem
-          onClick={() => copy(PAGE_ENDPOINTS.MY_PAGE.POST.ID(userId, itemId))}
+          onClick={() => copy(PAGE_ENDPOINTS.USER.POST.ID(userId, itemId))}
         >
           링크복사
         </DropdownMenuItem>
@@ -225,7 +225,7 @@ ThreadItem.ShareButton = function Item({
                   rows={10}
                   defaultValue={EMBED_CODE.POST.ID(
                     username ?? 'Empty',
-                    PAGE_ENDPOINTS.MY_PAGE.POST.ID(userId, itemId),
+                    PAGE_ENDPOINTS.USER.POST.ID(userId, itemId),
                   )}
                 />
               ),
@@ -238,7 +238,7 @@ ThreadItem.ShareButton = function Item({
                 copy(
                   EMBED_CODE.POST.ID(
                     username ?? 'Empty',
-                    PAGE_ENDPOINTS.MY_PAGE.POST.ID(userId, itemId),
+                    PAGE_ENDPOINTS.USER.POST.ID(userId, itemId),
                   ),
                 );
               },

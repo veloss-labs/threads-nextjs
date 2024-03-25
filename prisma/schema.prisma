@@ -28,7 +28,6 @@ model User {
   threadAssets  ThreadAsset[]
   threads       Thread[]
   threadLikes   ThreadLike[]
-  followTags    FollowTag[]
   threadMention ThreadMention[]
   following     UserFollow[]     @relation(name: "following_relation")
   followers     UserFollow[]     @relation(name: "follower_relation")
@@ -244,20 +243,6 @@ model Tag {
   createdAt  DateTime    @default(now()) @map(name: "created_at")
   updatedAt  DateTime    @updatedAt @map(name: "updated_at")
   threadTags ThreadTag[]
-  followTags FollowTag[]
 
   @@map(name: "tags")
-}
-
-model FollowTag {
-  id        String   @id @default(cuid())
-  userId    String   @map(name: "user_id")
-  tagId     String   @map(name: "tag_id")
-  score     Int?     @default(0)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  @@map("follow_tags")
 }

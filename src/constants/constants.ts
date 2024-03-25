@@ -12,12 +12,11 @@ export const ASSET_URL = {};
 
 export const PAGE_ENDPOINTS = {
   ROOT: '/',
-  FOLLOWING: '/following',
   AUTH: {
     SIGNIN: '/signin',
     SIGNUP: '/signup',
   },
-  MY_PAGE: {
+  USER: {
     POST: {
       ID: (userId: string, postId: string) => `/${userId}/post/${postId}`,
     },
@@ -25,11 +24,19 @@ export const PAGE_ENDPOINTS = {
   },
   THREADS: {
     ROOT: '/threads',
-    LIKES: '/threads/likes',
   },
   SAVED: '/saved',
   LIKED: '/liked',
   SEARCH: '/search',
+  FOLLOWING: '/following',
+  ACTIVITY: {
+    ROOT: '/activity',
+    FOLLOWS: '/activity/follows',
+    MENTIONS: '/activity/mentions',
+    REPLIES: '/activity/replies',
+    REPOSTS: '/activity/reposts',
+    VERIFIED: '/activity/verified',
+  },
 } as const;
 
 export const SITE_CONFIG = {

@@ -1,7 +1,7 @@
 'use client';
 import React, { useCallback } from 'react';
 import Link from 'next/link';
-import { usePathname, useSelectedLayoutSegment } from 'next/navigation';
+import { useSelectedLayoutSegment } from 'next/navigation';
 import { cn } from '~/utils/utils';
 import { NAV_CONFIG, NavItem } from '~/constants/nav';
 import { PAGE_ENDPOINTS } from '~/constants/constants';
@@ -10,6 +10,7 @@ import { useMediaQuery } from '~/libs/hooks/useMediaQuery';
 import { api } from '~/services/trpc/react';
 import { Icons } from '~/components/icons';
 import useNavigateThreanForm from '~/libs/hooks/useNavigateThreanForm';
+import useMainLinkActive from '~/libs/hooks/useMainLinkActive';
 
 export default function MobileFooterNav() {
   const isMobile = useMediaQuery('(max-width: 768px)', false);
@@ -55,16 +56,7 @@ interface ItemProps {
 }
 
 MobileFooterNav.Home = function Item({ item }: ItemProps) {
-  const pathname = usePathname();
-
-  const relationHrefs = item.relationHrefs ?? [];
-  const relationIcons = item.relationIcons ?? [];
-
-  const href =
-    relationHrefs.find((href) => href === pathname) ?? PAGE_ENDPOINTS.ROOT;
-  const Icon =
-    href === PAGE_ENDPOINTS.FOLLOWING ? relationIcons.at(1) : item.icon;
-  const isActive = relationHrefs.includes(pathname);
+  const { isActive, href, Icon } = useMainLinkActive({ item });
 
   return (
     <Link
@@ -81,9 +73,7 @@ MobileFooterNav.Home = function Item({ item }: ItemProps) {
 };
 
 MobileFooterNav.Thread = function Item({ item }: ItemProps) {
-  const pathname = usePathname();
-  const href = item.href as string;
-  const isActive = pathname === href ? true : false;
+  const { isActive, href } = useMainLinkActive({ item });
 
   const { handleHref, isPending } = useNavigateThreanForm();
 
@@ -113,9 +103,7 @@ MobileFooterNav.Thread = function Item({ item }: ItemProps) {
 };
 
 MobileFooterNav.Link = function Item({ item }: ItemProps) {
-  const pathname = usePathname();
-  const href = item.href as string;
-  const isActive = pathname === href ? true : false;
+  const { isActive, href } = useMainLinkActive({ item });
 
   return (
     <Link
@@ -135,7 +123,7 @@ MobileFooterNav.MyPage = function Item({ item }: ItemProps) {
   const segment = useSelectedLayoutSegment();
   const { data } = api.auth.getSession.useQuery();
 
-  const href = data ? PAGE_ENDPOINTS.MY_PAGE.ID(data.user.id) : '#';
+  const href = data ? PAGE_ENDPOINTS.USER.ID(data.user.id) : '#';
 
   const isActive = segment && href.startsWith(`/${segment}`) ? true : false;
 

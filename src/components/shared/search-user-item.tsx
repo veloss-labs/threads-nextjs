@@ -66,7 +66,7 @@ SearchUserItem.Content = function Item({ item }: SearchUserItemProps) {
           fallback="T"
         />
         <div>
-          <Link href={PAGE_ENDPOINTS.MY_PAGE.ID(item.id)}>
+          <Link href={PAGE_ENDPOINTS.USER.ID(item.id)}>
             <p className="text-sm font-medium leading-none">{item?.username}</p>
           </Link>
           <p className="text-sm text-muted-foreground">
