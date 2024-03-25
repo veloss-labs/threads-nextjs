@@ -3,6 +3,7 @@ import { threadsRouter } from './threads';
 import { usersRouter } from './users';
 import { tagsRouter } from './tags';
 import { searchRouter } from './search';
+import { commonRouter } from './common';
 import { createTRPCRouter } from '~/services/trpc/core/trpc';
 
 export const appRouter = createTRPCRouter({
@@ -11,6 +12,7 @@ export const appRouter = createTRPCRouter({
   users: usersRouter,
   tags: tagsRouter,
   search: searchRouter,
+  common: commonRouter,
 });
 
 // export type definition of API

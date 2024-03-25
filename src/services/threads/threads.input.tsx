@@ -37,3 +37,11 @@ export const updateInputSchema = z
   .extend(idInputSchema.shape);
 
 export type UpdateInputSchema = z.infer<typeof updateInputSchema>;
+
+export const detailInputSchema = z
+  .object({
+    userId: z.string(),
+  })
+  .extend(idInputSchema.shape);
+
+export type DetailInputSchema = z.infer<typeof detailInputSchema>;

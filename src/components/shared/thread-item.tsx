@@ -1,5 +1,5 @@
 'use client';
-import { Card } from '~/components/ui/card';
+import { Card, CardContent } from '~/components/ui/card';
 import Avatars from '~/components/shared/avatars';
 import {
   DropdownMenu,
@@ -18,12 +18,14 @@ import { api } from '~/services/trpc/react';
 import { useToast } from '~/components/ui/use-toast';
 import { ToastAction } from '~/components/ui/toast';
 import { useRouter } from 'next/navigation';
-import { PAGE_ENDPOINTS } from '~/constants/constants';
+import { EMBED_CODE, PAGE_ENDPOINTS } from '~/constants/constants';
 import ClientOnly from '~/components/shared/client-only';
 import { Skeleton } from '../ui/skeleton';
 import dynamic from 'next/dynamic';
 import { useLayoutStore } from '~/services/store/useLayoutStore';
 import Modal from '~/components/modal';
+import { useCopyToClipboard } from '~/libs/hooks/useCopyToClipboard';
+import { Textarea } from '~/components/ui/textarea';
 
 const WhoCanLeaveReplyDialog = dynamic(
   () => import('~/components/dialog/who-can-leave-reply-dialog'),
@@ -98,7 +100,7 @@ export default function ThreadItem({ item }: ThreadItemProps) {
                     <DropdownMenuContent>
                       <ThreadItem.SaveButton
                         itemId={item.id}
-                        isSaved={item?.bookmarks.length > 0}
+                        isSaved={(item?.bookmarks?.length ?? 0) > 0}
                       />
                       <DropdownMenuSeparator />
                       <React.Suspense
@@ -138,7 +140,6 @@ export default function ThreadItem({ item }: ThreadItemProps) {
                 initialHTMLValue={item.text}
                 hashtagsEventListener={(event) => {
                   const element = event.target as HTMLSpanElement;
-                  console.log('Hashtag clicked', element);
                   if (
                     element &&
                     element.getAttribute('data-type') === 'hashtag'
@@ -163,9 +164,13 @@ export default function ThreadItem({ item }: ThreadItemProps) {
               </Button>
               <ThreadItem.LikeButton
                 itemId={item.id}
-                isLiked={item?.likes.length > 0}
+                isLiked={(item?.likes?.length ?? 0) > 0}
               />
-              <ThreadItem.ShareButton itemId={item.id} />
+              <ThreadItem.ShareButton
+                itemId={item.id}
+                userId={item.user.id}
+                username={item.user.username}
+              />
             </div>
           </div>
         </div>
@@ -179,11 +184,71 @@ interface ItemProps {
   itemId: string;
 }
 
-ThreadItem.ShareButton = function Item({ itemId }: ItemProps) {
+interface ShareItemProps extends ItemProps {
+  userId: string;
+  username: string | null;
+}
+
+ThreadItem.ShareButton = function Item({
+  itemId,
+  userId,
+  username,
+}: ShareItemProps) {
+  const { toast } = useToast();
+
+  const { copy } = useCopyToClipboard({
+    onSuccess: () => {
+      toast({
+        description: '복사됨',
+      });
+    },
+  });
+
   return (
-    <Button size="sm" variant="link">
-      <Icons.share className="size-4" />
-    </Button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button size="sm" variant="link">
+          <Icons.share className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem
+          onClick={() => copy(PAGE_ENDPOINTS.USER.POST.ID(userId, itemId))}
+        >
+          링크복사
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => {
+            Modal.confirm({
+              content: (
+                <Textarea
+                  rows={10}
+                  defaultValue={EMBED_CODE.POST.ID(
+                    username ?? 'Empty',
+                    PAGE_ENDPOINTS.USER.POST.ID(userId, itemId),
+                  )}
+                />
+              ),
+              okCancel: false,
+              okText: 'Embed 코드 복사',
+              okButtonProps: {
+                className: 'w-full',
+              },
+              onOk: () => {
+                copy(
+                  EMBED_CODE.POST.ID(
+                    username ?? 'Empty',
+                    PAGE_ENDPOINTS.USER.POST.ID(userId, itemId),
+                  ),
+                );
+              },
+            });
+          }}
+        >
+          퍼가기 코드 받기
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 

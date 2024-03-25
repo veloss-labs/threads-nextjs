@@ -15,6 +15,8 @@ import {
   type LexicalEditor as ReactLexicalEditor,
   type LexicalNode,
   type HTMLConfig,
+  $getRoot,
+  $createParagraphNode,
 } from 'lexical';
 import React, { useCallback, useState } from 'react';
 import { Skeleton } from '~/components/ui/skeleton';
@@ -23,12 +25,15 @@ import HashTagsPlugin from '~/components/editor/plugins/hashtags-plugin';
 import LexicalAutoLinkPlugin from '~/components/editor/plugins/auto-link-plugin';
 import LinkPlugin from '~/components/editor/plugins/hashtags-plugin';
 import AutoLinkPlugin from '~/components/editor/plugins/auto-link-plugin';
-import MentionNode from '~/components/editor/nodes/mention-node';
+import MentionNode, {
+  $createMentionNode,
+} from '~/components/editor/nodes/mention-node';
 import HashTagNode from '~/components/editor/nodes/hashtag-node';
 import LexicalOnBlurPlugin from '~/components/editor/plugins/blur-plugin';
 import LexicalDefaultValuePlugin from '~/components/editor/plugins/defaultValue-plugin';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
 import HashtagsEventsPlugin from './plugins/hashtags-events-plugin';
+import { useMemoizedFn } from '~/libs/hooks/useMemoizedFn';
 
 function Placeholder() {
   return (
@@ -40,6 +45,27 @@ function Placeholder() {
   );
 }
 
+export function prepopulatedRichText(mention?: string) {
+  const editorState = () => {
+    if (mention) {
+      const root = $getRoot();
+
+      const paragraph = $createParagraphNode();
+      const mentionNode = $createMentionNode(mention);
+      paragraph.append(mentionNode);
+
+      root.append(paragraph);
+    }
+
+    return undefined;
+  };
+
+  return {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    handle: useMemoizedFn(editorState),
+  };
+}
+
 const EditorNodes: Array<Klass<LexicalNode>> = [
   MentionNode,
   HashTagNode,
@@ -47,7 +73,7 @@ const EditorNodes: Array<Klass<LexicalNode>> = [
   LinkNode,
 ];
 
-interface LexicalEditorProps {
+export interface LexicalEditorProps {
   editable?: boolean;
   html?: HTMLConfig;
   editorState?: InitialEditorStateType;
