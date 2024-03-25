@@ -130,11 +130,15 @@
     "tailwindcss": "^3.4.1",
     "tailwindcss-animate": "^1.0.7",
     "tsup": "^8.0.2",
+    "tsx": "^4.7.1",
     "typescript": "^5.4.3",
     "vite": "^5.2.6",
     "vitest": "^1.4.0"
   },
   "engines": {
     "node": ">=18.19.0"
+  },
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
   }
 }
