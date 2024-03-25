@@ -14,9 +14,25 @@ import {
   updateInputSchema,
   createInputSchema,
   idInputSchema,
+  detailInputSchema,
 } from '~/services/threads/threads.input';
 
 export const threadsRouter = createTRPCRouter({
+  byId: protectedProcedure
+    .input(detailInputSchema)
+    .query(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
+      try {
+        return await threadService.byIdWithSession(
+          userId,
+          input.userId,
+          input.threadId,
+        );
+      } catch (error) {
+        console.log('error', error);
+        return null;
+      }
+    }),
   like: protectedProcedure
     .input(idInputSchema)
     .mutation(async ({ input, ctx }) => {
@@ -59,7 +75,7 @@ export const threadsRouter = createTRPCRouter({
       const userId = ctx.session.user.id;
       try {
         const data = await threadService.update(userId, input);
-        const item = await threadService.byId(data.id);
+        const item = await threadService.byId(userId, data.id);
         return {
           ok: true,
           data: item,
@@ -79,7 +95,7 @@ export const threadsRouter = createTRPCRouter({
 
       try {
         const data = await threadService.create(userId, input);
-        const item = await threadService.byId(data.id);
+        const item = await threadService.byId(userId, data.id);
 
         return {
           ok: true,
