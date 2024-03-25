@@ -45,7 +45,7 @@
   "dependencies": {
     "@auth/core": "^0.28.0",
     "@auth/prisma-adapter": "^1.5.0",
-    "@builder.io/partytown": "^0.10.0",
+    "@builder.io/partytown": "^0.10.1",
     "@dicebear/collection": "^8.0.0",
     "@dicebear/core": "^8.0.0",
     "@epic-web/remember": "^1.0.2",
@@ -66,7 +66,7 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-tabs": "^1.0.4",
     "@radix-ui/react-toast": "^1.1.5",
-    "@sentry/nextjs": "^7.107.0",
+    "@sentry/nextjs": "^7.108.0",
     "@t3-oss/env-nextjs": "^0.9.2",
     "@tanstack/react-query": "^5.28.6",
     "@tanstack/react-query-devtools": "^5.28.6",
@@ -81,7 +81,7 @@
     "dayjs": "^1.11.10",
     "lexical": "^0.14.2",
     "lodash-es": "^4.17.21",
-    "lucide-react": "^0.359.0",
+    "lucide-react": "^0.363.0",
     "next": "14.1.4",
     "next-auth": "5.0.0-beta.15",
     "next-themes": "^0.3.0",
@@ -103,7 +103,7 @@
     "@testing-library/react": "^14.2.2",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^20.11.30",
-    "@types/react": "^18.2.67",
+    "@types/react": "^18.2.69",
     "@types/react-dom": "^18.2.22",
     "@typescript-eslint/eslint-plugin": "^7.3.1",
     "@vitejs/plugin-react-swc": "^3.6.0",
@@ -126,15 +126,19 @@
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.12",
     "prisma": "^5.11.0",
-    "sst": "^2.41.3",
+    "sst": "^2.41.4",
     "tailwindcss": "^3.4.1",
     "tailwindcss-animate": "^1.0.7",
     "tsup": "^8.0.2",
+    "tsx": "^4.7.1",
     "typescript": "^5.4.3",
-    "vite": "^5.2.2",
+    "vite": "^5.2.6",
     "vitest": "^1.4.0"
   },
   "engines": {
     "node": ">=18.19.0"
+  },
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
   }
 }

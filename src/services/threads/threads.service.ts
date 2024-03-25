@@ -373,14 +373,32 @@ export class ThreadService {
 
   /**
    * @description 스레드 상세 조회
-   * @param {string} id - 스레드 ID
+   * @param {string} userId - 사용자 ID
+   * @param {string} threadId - 스레드 ID
    */
-  byId(id: string) {
+  byId(userId: string, threadId: string) {
     return db.thread.findUnique({
       where: {
-        id,
+        id: threadId,
+        userId,
       },
-      select: getThreadsSelector(),
+      select: getThreadsSelector(userId),
+    });
+  }
+
+  /**
+   * @description 스레드 상세 조회
+   * @param {string} sessionUserId - 세션 사용자 ID
+   * @param {string} userId - 사용자 ID
+   * @param {string} threadId - 스레드 ID
+   */
+  byIdWithSession(sessionUserId: string, userId: string, threadId: string) {
+    return db.thread.findUnique({
+      where: {
+        id: threadId,
+        userId,
+      },
+      select: getThreadsSelector(sessionUserId),
     });
   }
 

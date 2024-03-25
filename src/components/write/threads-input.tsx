@@ -23,7 +23,7 @@ export default function ThreadsInput({ session }: ThreadsInputProps) {
     <div className="hidden w-full border-b py-8 md:block">
       <div className="flex items-center justify-between space-x-4">
         <div className="flex flex-auto items-center space-x-4">
-          <Link href={PAGE_ENDPOINTS.MY_PAGE.ID(session.user.id)}>
+          <Link href={PAGE_ENDPOINTS.USER.ID(session.user.id)}>
             <Avatars
               src={undefined}
               alt={`${session.user.username} profile picture`}

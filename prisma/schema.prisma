@@ -12,27 +12,30 @@ datasource db {
 }
 
 model User {
-  id            String           @id @default(cuid())
+  id            String    @id @default(cuid())
   name          String?
-  username      String?          @unique
+  username      String?   @unique
   password      String?
   salt          String?
-  email         String?          @unique
-  emailVerified DateTime?        @map(name: "email_verified")
+  email         String?   @unique
+  emailVerified DateTime? @map(name: "email_verified")
   image         String?
-  createdAt     DateTime         @default(now()) @map(name: "created_at")
-  updatedAt     DateTime         @updatedAt @map(name: "updated_at")
-  accounts      Account[]
-  sessions      Session[]
-  profile       UserProfile?
-  threadAssets  ThreadAsset[]
-  threads       Thread[]
-  threadLikes   ThreadLike[]
-  followTags    FollowTag[]
-  threadMention ThreadMention[]
-  following     UserFollow[]     @relation(name: "following_relation")
-  followers     UserFollow[]     @relation(name: "follower_relation")
-  bookmarks     ThreadBookmark[]
+  createdAt     DateTime  @default(now()) @map(name: "created_at")
+  updatedAt     DateTime  @updatedAt @map(name: "updated_at")
+
+  accounts            Account[]
+  sessions            Session[]
+  profile             UserProfile?
+  threadAssets        ThreadAsset[]
+  threads             Thread[]
+  threadLikes         ThreadLike[]
+  threadMention       ThreadMention[]
+  following           UserFollow[]     @relation(name: "following_relation")
+  followers           UserFollow[]     @relation(name: "follower_relation")
+  bookmarks           ThreadBookmark[]
+  requestUserBlockeds UserBlock[]      @relation(name: "request_user_blocked_relation")
+  userBlockeds        UserBlock[]      @relation(name: "user_blocked_relation")
+  reports             ThreadReport[]
 
   @@map(name: "users")
 }
@@ -41,7 +44,8 @@ model UserProfile {
   id     String  @id @default(cuid())
   bio    String?
   userId String  @unique @map(name: "user_id")
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_profiles")
 }
@@ -50,8 +54,9 @@ model UserFollow {
   id         String @id @default(cuid())
   userId     String @map(name: "user_id")
   followerId String @map(name: "follower_id")
-  user       User   @relation(name: "following_relation", fields: [userId], references: [id], onDelete: Cascade)
-  follower   User   @relation(name: "follower_relation", fields: [followerId], references: [id], onDelete: Cascade)
+
+  user     User @relation(name: "following_relation", fields: [userId], references: [id], onDelete: Cascade)
+  follower User @relation(name: "follower_relation", fields: [followerId], references: [id], onDelete: Cascade)
 
   @@unique([userId, followerId])
   @@map(name: "user_follows")
@@ -73,7 +78,8 @@ model Account {
   session_state            String?
   oauth_token_secret       String?
   oauth_token              String?
-  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
@@ -85,7 +91,8 @@ model Session {
   sessionToken String   @unique @map(name: "session_token")
   userId       String   @map(name: "user_id")
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map(name: "sessions")
@@ -101,43 +108,30 @@ model VerificationToken {
 }
 
 model Thread {
-  id                             String                 @id @default(cuid())
+  id                             String   @id @default(cuid())
   text                           String
-  jsonString                     String?                @map(name: "json_string")
-  level                          Int?                   @default(0)
-  deleted                        Boolean?               @default(false)
-  whoCanLeaveComments            String?                @default("everyone") @map(name: "who_can_leave_comments") // everyone, followers, mentiones, nobody
-  hiddenNumberOfLikesAndComments Boolean?               @default(false) @map(name: "hidden_number_of_likes_and_comments")
-  createdAt                      DateTime               @default(now()) @map(name: "created_at")
-  updatedAt                      DateTime               @updatedAt @map(name: "updated_at")
-  userId                         String                 @map(name: "user_id")
-  assets                         ThreadAsset[]
-  likes                          ThreadLike[]
-  bookmarks                      ThreadBookmark[]
-  threadRecommendationThreads    ThreadRecommendation[] @relation(name: "recommendation_thread_relation")
-  recommendations                ThreadRecommendation[]
-  user                           User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tags                           ThreadTag[]
-  mentions                       ThreadMention[]
-  stats                          ThreadStats?
+  jsonString                     String?  @map(name: "json_string")
+  level                          Int?     @default(0)
+  deleted                        Boolean? @default(false)
+  whoCanLeaveComments            String?  @default("everyone") @map(name: "who_can_leave_comments") // everyone, followers, mentiones, nobody
+  hiddenNumberOfLikesAndComments Boolean? @default(false) @map(name: "hidden_number_of_likes_and_comments")
+  createdAt                      DateTime @default(now()) @map(name: "created_at")
+  updatedAt                      DateTime @updatedAt @map(name: "updated_at")
+  userId                         String   @map(name: "user_id")
+
+  assets    ThreadAsset[]
+  likes     ThreadLike[]
+  bookmarks ThreadBookmark[]
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tags      ThreadTag[]
+  mentions  ThreadMention[]
+  stats     ThreadStats?
+  report    ThreadReport[]
 
   @@index([createdAt], map: "threads_created_at")
   @@index([deleted])
   @@index([userId, deleted], map: "threads_user_id_deleted")
   @@map(name: "threads")
-}
-
-model ThreadRecommendation {
-  id                  String @id @default(cuid())
-  threadId            String @map(name: "thread_id")
-  recommendedThreadId String @map(name: "recommended_thread_id")
-  similarity          Float
-
-  thread            Thread @relation(name: "recommendation_thread_relation", fields: [threadId], references: [id], onDelete: Cascade)
-  recommendedThread Thread @relation(fields: [recommendedThreadId], references: [id])
-
-  @@index([threadId], map: "thread_recommendations_thread_id")
-  @@map(name: "thread_recommendations")
 }
 
 model ThreadStats {
@@ -177,8 +171,9 @@ model ThreadLike {
   userId    String   @map(name: "user_id")
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
-  thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([threadId, userId])
   @@index(createdAt)
@@ -193,9 +188,10 @@ model ThreadAsset {
   fileId    String?  @map(name: "file_id")
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
-  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  thread    Thread?  @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  file      File?    @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread Thread? @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  file   File?   @relation(fields: [fileId], references: [id], onDelete: Cascade)
 
   @@map(name: "thread_assets")
 }
@@ -204,8 +200,9 @@ model ThreadTag {
   id       String @id @default(cuid())
   threadId String @map(name: "thread_id")
   tagId    String @map(name: "tag_id")
-  thread   Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  tag      Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@unique([threadId, tagId])
   @@map(name: "thread_tags")
@@ -217,47 +214,77 @@ model ThreadMention {
   userId    String   @map(name: "user_id")
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
-  thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([threadId, userId])
   @@map(name: "thread_mentions")
 }
 
+model ThreadReport {
+  id        String   @id @default(cuid())
+  threadId  String   @map(name: "thread_id")
+  userId    String   @map(name: "user_id")
+  reasonId  String   @map(name: "reason_id")
+  comment   String?
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  thread Thread       @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reason ReportReason @relation(fields: [reasonId], references: [id], onDelete: Cascade)
+
+  @@map(name: "thread_reports")
+}
+
 model File {
-  id         String        @id @default(cuid())
+  id         String   @id @default(cuid())
   filename   String
   filesize   Int
-  filetype   String        @map(name: "file_type")
-  publicUrl  String        @map(name: "public_url")
-  uploadType String        @map(name: "upload_type")
-  createdAt  DateTime      @default(now()) @map(name: "created_at")
-  updatedAt  DateTime      @updatedAt @map(name: "updated_at")
-  assets     ThreadAsset[]
+  filetype   String   @map(name: "file_type")
+  publicUrl  String   @map(name: "public_url")
+  uploadType String   @map(name: "upload_type")
+  createdAt  DateTime @default(now()) @map(name: "created_at")
+  updatedAt  DateTime @updatedAt @map(name: "updated_at")
+
+  assets ThreadAsset[]
 
   @@map(name: "files")
 }
 
 model Tag {
-  id         String      @id @default(cuid())
-  name       String      @unique
-  createdAt  DateTime    @default(now()) @map(name: "created_at")
-  updatedAt  DateTime    @updatedAt @map(name: "updated_at")
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
   threadTags ThreadTag[]
-  followTags FollowTag[]
 
   @@map(name: "tags")
 }
 
-model FollowTag {
+model UserBlock {
   id        String   @id @default(cuid())
   userId    String   @map(name: "user_id")
-  tagId     String   @map(name: "tag_id")
-  score     Int?     @default(0)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  blockedId String   @map(name: "blocked_id")
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  @@map("follow_tags")
+  user    User @relation(name: "request_user_blocked_relation", fields: [userId], references: [id], onDelete: Cascade)
+  blocked User @relation(name: "user_blocked_relation", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, blockedId])
+  @@map(name: "user_blocks")
+}
+
+model ReportReason {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  threads ThreadReport[]
+
+  @@map(name: "report_reasons")
 }

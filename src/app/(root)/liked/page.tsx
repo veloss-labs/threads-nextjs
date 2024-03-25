@@ -8,7 +8,7 @@ import { SITE_CONFIG } from '~/constants/constants';
 export const metadata: Metadata = {
   title: `내 좋아요 • ${SITE_CONFIG.title}`,
   openGraph: {
-    title: `저장됨 • ${SITE_CONFIG.title}`,
+    title: `내 좋아요 • ${SITE_CONFIG.title}`,
   },
 };
 

@@ -1,11 +1,7 @@
 'use client';
 import React, { useCallback, useState } from 'react';
 import Link from 'next/link';
-import {
-  usePathname,
-  useSelectedLayoutSegment,
-  useRouter,
-} from 'next/navigation';
+import { useSelectedLayoutSegment, useRouter } from 'next/navigation';
 import { Icons } from '~/components/icons';
 import { cn } from '~/utils/utils';
 import { NAV_CONFIG, NavItem } from '~/constants/nav';
@@ -21,6 +17,7 @@ import { signOut } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import { api } from '~/services/trpc/react';
 import useNavigateThreanForm from '~/libs/hooks/useNavigateThreanForm';
+import useMainLinkActive from '~/libs/hooks/useMainLinkActive';
 
 export default function MainNav() {
   return (
@@ -65,16 +62,7 @@ MainNav.Item = function Item({ item }: ItemProps) {
 };
 
 MainNav.Home = function Item({ item }: ItemProps) {
-  const pathname = usePathname();
-
-  const relationHrefs = item.relationHrefs ?? [];
-  const relationIcons = item.relationIcons ?? [];
-
-  const href =
-    relationHrefs.find((href) => href === pathname) ?? PAGE_ENDPOINTS.ROOT;
-  const Icon =
-    href === PAGE_ENDPOINTS.FOLLOWING ? relationIcons.at(1) : item.icon;
-  const isActive = relationHrefs.includes(pathname);
+  const { isActive, href, Icon } = useMainLinkActive({ item });
 
   return (
     <Link
@@ -93,10 +81,7 @@ MainNav.Home = function Item({ item }: ItemProps) {
 };
 
 MainNav.Link = function Item({ item }: ItemProps) {
-  const pathname = usePathname();
-  const href = item.href as string;
-
-  const isActive = pathname === href ? true : false;
+  const { isActive, href } = useMainLinkActive({ item });
 
   return (
     <Link
@@ -118,7 +103,7 @@ MainNav.MyPage = function Item({ item }: ItemProps) {
   const segment = useSelectedLayoutSegment();
   const { data } = api.auth.getSession.useQuery();
 
-  const href = data ? PAGE_ENDPOINTS.MY_PAGE.ID(data.user.id) : '#';
+  const href = data ? PAGE_ENDPOINTS.USER.ID(data.user.id) : '#';
 
   const isActive = segment && href.startsWith(`/${segment}`) ? true : false;
 
@@ -137,9 +122,7 @@ MainNav.MyPage = function Item({ item }: ItemProps) {
 };
 
 MainNav.Thread = function Item({ item }: ItemProps) {
-  const pathname = usePathname();
-  const href = item.href as string;
-  const isActive = pathname === href ? true : false;
+  const { isActive, href } = useMainLinkActive({ item });
 
   const { handleHref, isPending } = useNavigateThreanForm();
 
@@ -152,6 +135,7 @@ MainNav.Thread = function Item({ item }: ItemProps) {
       type="button"
       role="link"
       data-href={item.disabled ? '#' : href}
+      tabIndex={isActive ? 0 : -1}
       className={cn(
         'px-8 py-5 mx-[2px] my-1 flex items-center text-lg font-medium transition-colors hover:bg-foreground/5 hover:rounded-md sm:text-sm',
         isActive ? 'text-foreground' : 'text-foreground/60',
