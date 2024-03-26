@@ -26,6 +26,7 @@ import { useLayoutStore } from '~/services/store/useLayoutStore';
 import Modal from '~/components/modal';
 import { useCopyToClipboard } from '~/libs/hooks/useCopyToClipboard';
 import { Textarea } from '~/components/ui/textarea';
+import useNavigateThreanForm from '~/libs/hooks/useNavigateThreanForm';
 
 const WhoCanLeaveReplyDialog = dynamic(
   () => import('~/components/dialog/who-can-leave-reply-dialog'),
@@ -205,6 +206,8 @@ ThreadItem.RepostsButton = function Item({
 }: RepostItemProps) {
   const { toast } = useToast();
 
+  const { handleHref } = useNavigateThreanForm();
+
   const mutation = api.threads.repost.useMutation({
     async onSuccess(data) {
       const saved = data.data?.reposted ? 'REPOST' : 'UNREPOST';
@@ -214,11 +217,19 @@ ThreadItem.RepostsButton = function Item({
     },
   });
 
-  const onClick = useCallback(() => {
+  const onClickRepost = useCallback(() => {
     mutation.mutate({
       threadId: itemId,
     });
   }, [itemId, mutation]);
+
+  const onClickQuotation = useCallback(() => {
+    handleHref({
+      quotation: {
+        threadId: itemId,
+      },
+    });
+  }, [handleHref, itemId]);
 
   return (
     <DropdownMenu>
@@ -233,14 +244,14 @@ ThreadItem.RepostsButton = function Item({
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem
-          onClick={onClick}
+          onClick={onClickRepost}
           className={cn({
             'text-red-500': isReposted,
           })}
         >
           {isReposted ? '삭제' : '리포스트'}
         </DropdownMenuItem>
-        <DropdownMenuItem>인용하기</DropdownMenuItem>
+        <DropdownMenuItem onClick={onClickQuotation}>인용하기</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

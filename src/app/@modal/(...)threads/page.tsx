@@ -44,11 +44,14 @@ export default function Modal() {
     }, [popup.meta]),
   );
 
+  console.log('popup.meta', popup.meta);
+
   return (
     <Popup
       open={open}
       onClose={onClose}
       onSuccess={onSuccess}
+      quotation={popup.meta?.quotation}
       editorState={
         prepopulatedRichText(popup.meta?.intialValue?.username).handle
       }

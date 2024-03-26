@@ -9,6 +9,7 @@ import {
 export const getUserSimpleSelector = () => {
   return Prisma.validator<Prisma.UserSelect>()({
     id: true,
+    name: true,
     username: true,
   });
 };

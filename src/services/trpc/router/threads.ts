@@ -19,6 +19,16 @@ import {
 } from '~/services/threads/threads.input';
 
 export const threadsRouter = createTRPCRouter({
+  simpleById: protectedProcedure
+    .input(idInputSchema)
+    .query(async ({ input, ctx }) => {
+      try {
+        return await threadService.simpleById(input.threadId);
+      } catch (error) {
+        console.log('error', error);
+        return null;
+      }
+    }),
   byId: protectedProcedure
     .input(detailInputSchema)
     .query(async ({ input, ctx }) => {

@@ -12,6 +12,7 @@ interface ThreadsSheetProps {
   open: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  quotation?: Record<string, string> | undefined;
   editorState?: LexicalEditorProps['editorState'];
 }
 
@@ -20,6 +21,7 @@ export default function ThreadsSheet({
   onClose,
   onSuccess,
   editorState,
+  quotation,
 }: ThreadsSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onClose}>
@@ -30,7 +32,12 @@ export default function ThreadsSheet({
         <SheetHeader className="text-left">
           <SheetTitle>새로운 스레드</SheetTitle>
         </SheetHeader>
-        <ThreadsForm isDialog onSuccess={onSuccess} editorState={editorState} />
+        <ThreadsForm
+          isDialog
+          onSuccess={onSuccess}
+          editorState={editorState}
+          quotation={quotation}
+        />
       </SheetContent>
     </Sheet>
   );

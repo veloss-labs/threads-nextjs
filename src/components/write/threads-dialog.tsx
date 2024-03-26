@@ -12,6 +12,7 @@ interface ThreadsDialogProps {
   open: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  quotation?: Record<string, string> | undefined;
   editorState?: LexicalEditorProps['editorState'];
 }
 
@@ -20,6 +21,7 @@ export default function ThreadsDialog({
   onClose,
   onSuccess,
   editorState,
+  quotation,
 }: ThreadsDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -27,7 +29,12 @@ export default function ThreadsDialog({
         <DialogHeader className="text-left">
           <DialogTitle>새로운 스레드</DialogTitle>
         </DialogHeader>
-        <ThreadsForm isDialog onSuccess={onSuccess} editorState={editorState} />
+        <ThreadsForm
+          isDialog
+          onSuccess={onSuccess}
+          editorState={editorState}
+          quotation={quotation}
+        />
       </DialogContent>
     </Dialog>
   );

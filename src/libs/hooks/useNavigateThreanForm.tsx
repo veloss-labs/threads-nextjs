@@ -9,6 +9,7 @@ import {
 import { useMemoizedFn } from '~/libs/hooks/useMemoizedFn';
 
 type HrefOptions = {
+  quotation?: any;
   invalidateFunctions?: InvalidationFunction;
   intialValue?: MetaData;
   redirectUrl?: string;
@@ -22,15 +23,20 @@ export default function useNavigateThreanForm() {
 
   const handleHref = (opts?: HrefOptions) => {
     const meta: MetaData = {
+      quotation: undefined,
       invalidateFunctions: undefined,
       intialValue: undefined,
       redirectUrl: pathname,
     };
+
     if (opts?.invalidateFunctions) {
       meta.invalidateFunctions = opts.invalidateFunctions;
     }
     if (opts?.intialValue) {
       meta.intialValue = opts.intialValue;
+    }
+    if (opts?.quotation) {
+      meta.quotation = opts.quotation;
     }
     if (opts?.redirectUrl) {
       meta.redirectUrl = opts.redirectUrl;

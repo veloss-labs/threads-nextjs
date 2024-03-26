@@ -20,6 +20,7 @@ export const getStatsSelector = () =>
     id: true,
     threadId: true,
     likes: true,
+    reposts: true,
     score: true,
   });
 
@@ -71,6 +72,23 @@ export const getThreadsTagsSelector = () =>
     },
   });
 
+export const getSimpleThreadsSelector = () =>
+  Prisma.validator<Prisma.ThreadSelect>()({
+    id: true,
+    text: true,
+    createdAt: true,
+    deleted: true,
+    user: {
+      select: getUserSimpleSelector(),
+    },
+    _count: {
+      select: {
+        likes: true,
+        reposts: true,
+      },
+    },
+  });
+
 export const getThreadsSelector = (
   userId?: string,
   input?: ThreadListQuerySchema,
@@ -99,6 +117,7 @@ export const getThreadsSelector = (
     _count: {
       select: {
         likes: true,
+        reposts: true,
       },
     },
   });
@@ -118,6 +137,7 @@ export type ThreadSelectSchema = Pick<
   tags: { tag: Pick<Tag, 'name' | 'id'> }[];
   _count: {
     likes: number;
+    reposts: number;
   };
   reposts: ThreadReposts[];
   likes: ThreadLike[];

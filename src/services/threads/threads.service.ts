@@ -12,6 +12,7 @@ import type {
 } from '~/services/threads/threads.query';
 import {
   getThreadsSelector,
+  getSimpleThreadsSelector,
   getRecommendationsWithThreadSelector,
 } from '~/services/db/selectors/threads';
 import { remember } from '@epic-web/remember';
@@ -517,6 +518,19 @@ export class ThreadService {
         deleted: false,
       },
       select: getThreadsSelector(userId),
+    });
+  }
+
+  /**
+   * @description 스레드 상세 조회
+   * @param {string} threadId - 스레드 ID
+   */
+  simpleById(threadId: string) {
+    return db.thread.findUnique({
+      where: {
+        id: threadId,
+      },
+      select: getSimpleThreadsSelector(),
     });
   }
 
