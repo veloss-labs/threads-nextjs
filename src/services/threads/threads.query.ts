@@ -29,6 +29,14 @@ export const followListQuerySchema = cursorPaginationQuerySchema.optional();
 
 export type FollowListQuerySchema = z.infer<typeof followListQuerySchema>;
 
+export const repostListQuerySchema = z
+  .object({
+    userId: z.string(),
+  })
+  .merge(cursorPaginationQuerySchema);
+
+export type RepostListQuerySchema = z.infer<typeof repostListQuerySchema>;
+
 export const listQuerySchema = z
   .object({
     keyword: z.string().optional(),

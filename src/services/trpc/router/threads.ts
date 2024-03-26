@@ -8,6 +8,7 @@ import {
   bookmarkListQuerySchema,
   recommendationListQuerySchema,
   followListQuerySchema,
+  repostListQuerySchema,
 } from '~/services/threads/threads.query';
 import { threadService } from '~/services/threads/threads.service';
 import {
@@ -284,6 +285,37 @@ export const threadsRouter = createTRPCRouter({
         const endCursor = list.at(-1)?.id ?? null;
         const hasNextPage = endCursor
           ? (await threadService.hasBookmarkPage(userId, endCursor, input)) > 0
+          : false;
+
+        return {
+          totalCount,
+          list,
+          endCursor,
+          hasNextPage,
+        };
+      } catch (error) {
+        console.log('error', error);
+        return {
+          totalCount: 0,
+          list: [],
+          endCursor: null,
+          hasNextPage: false,
+        };
+      }
+    }),
+  getReposts: protectedProcedure
+    .input(repostListQuerySchema)
+    .query(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
+      try {
+        const [totalCount, list] = await Promise.all([
+          threadService.repostCount(userId, input),
+          threadService.getReposts(userId, input),
+        ]);
+
+        const endCursor = list.at(-1)?.id ?? null;
+        const hasNextPage = endCursor
+          ? (await threadService.hasRepostPage(userId, endCursor, input)) > 0
           : false;
 
         return {

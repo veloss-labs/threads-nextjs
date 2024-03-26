@@ -153,7 +153,7 @@ model ThreadReposts {
 model ThreadStats {
   id        String   @id @default(cuid())
   threadId  String   @unique @map(name: "thread_id")
-  score     Int      @default(0)
+  score     Float    @default(0)
   likes     Int      @default(0)
   reposts   Int      @default(0)
   comments  Int      @default(0)

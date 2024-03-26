@@ -273,6 +273,6 @@ export function getFindByLexicalNodeTypes(
 
 const G = 0.35;
 
-export function calculateRankingScore(likes: number, hourAge: number) {
-  return likes / Math.pow(hourAge + 2, G);
+export function calculateRankingScore(count: number, hourAge: number) {
+  return count / Math.pow(hourAge + 2, G);
 }

@@ -8,6 +8,7 @@ import type {
   RecommendationListQuerySchema,
   FollowListQuerySchema,
   BookmarkListQuerySchema,
+  RepostListQuerySchema,
 } from '~/services/threads/threads.query';
 import {
   getThreadsSelector,
@@ -237,7 +238,6 @@ export class ThreadService {
       this.countReposts(threadId),
     ]);
     const calculateCount = likes + reposts;
-
     const age =
       (Date.now() - new Date(item.createdAt).getTime()) / 1000 / 60 / 60;
     const score = calculateRankingScore(calculateCount, age);
@@ -709,6 +709,34 @@ export class ThreadService {
   }
 
   /**
+   * @description 리포스트한 스레드 목록 조회
+   * @param {string} userId
+   * @param {RepostListQuerySchema} input
+   */
+  getReposts(userId: string, input: RepostListQuerySchema) {
+    return db.thread.findMany({
+      where: {
+        deleted: false,
+        id: input?.cursor
+          ? {
+              lt: input.cursor,
+            }
+          : undefined,
+        reposts: {
+          some: {
+            userId,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: input?.limit ?? this.DEFAULT_LIMIT,
+      select: getThreadsSelector(userId, input),
+    });
+  }
+
+  /**
    * @description endCursor 이후에 다음 페이지가 있는지 확인
    * @param {string} endCursor - 스레드 ID
    * @param {ThreadListQuerySchema} input - 스레드 목록 조회 조건
@@ -868,6 +896,32 @@ export class ThreadService {
   }
 
   /**
+   * @description endCursor 이후에 다음 페이지가 있는지 확인
+   * @param {string} userId - 스레드 목록 조회 조건
+   * @param {string} endCursor - 스레드 ID
+   * @param {RepostListQuerySchema} input - 스레드 목록 조회 조건
+   */
+  hasRepostPage(
+    userId: string,
+    endCursor: string,
+    input: RepostListQuerySchema,
+  ) {
+    return db.thread.count({
+      where: {
+        id: {
+          lt: endCursor,
+        },
+        deleted: false,
+        reposts: {
+          some: {
+            userId,
+          },
+        },
+      },
+    });
+  }
+
+  /**
    * @description 특정 스레드의 좋아요 개수 조회
    * @param {string} threadId - 스레드 ID
    */
@@ -1011,6 +1065,24 @@ export class ThreadService {
             userId,
           },
         ],
+      },
+    });
+  }
+
+  /**
+   * @description 리포스트 스레드 목록 조회 총 개수
+   * @param {string} userId - 사용자 ID
+   * @param {RepostListQuerySchema} input - 스레드 목록 조회 조건
+   */
+  repostCount(userId: string, input: RepostListQuerySchema) {
+    return db.thread.count({
+      where: {
+        deleted: false,
+        reposts: {
+          some: {
+            userId,
+          },
+        },
       },
     });
   }
