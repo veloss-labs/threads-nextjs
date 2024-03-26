@@ -8,6 +8,7 @@ export type Invalidator = (() => any) | (() => Promise<any>);
 export type InvalidationFunction = Invalidator | Invalidator[];
 
 export type MetaData = {
+  quotation?: any;
   invalidateFunctions?: InvalidationFunction;
   intialValue?: {
     [key: string]: any;

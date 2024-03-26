@@ -30,12 +30,14 @@ model User {
   threads             Thread[]
   threadLikes         ThreadLike[]
   threadMention       ThreadMention[]
-  following           UserFollow[]     @relation(name: "following_relation")
-  followers           UserFollow[]     @relation(name: "follower_relation")
+  following           UserFollow[]      @relation(name: "following_relation")
+  followers           UserFollow[]      @relation(name: "follower_relation")
   bookmarks           ThreadBookmark[]
-  requestUserBlockeds UserBlock[]      @relation(name: "request_user_blocked_relation")
-  userBlockeds        UserBlock[]      @relation(name: "user_blocked_relation")
+  requestUserBlockeds UserBlock[]       @relation(name: "request_user_blocked_relation")
+  userBlockeds        UserBlock[]       @relation(name: "user_blocked_relation")
   reports             ThreadReport[]
+  reposts             ThreadReposts[]   @relation(name: "reposts_user_relation")
+  quotations          ThreadQuotation[] @relation(name: "quotation_user_relation")
 
   @@map(name: "users")
 }
@@ -119,14 +121,16 @@ model Thread {
   updatedAt                      DateTime @updatedAt @map(name: "updated_at")
   userId                         String   @map(name: "user_id")
 
-  assets    ThreadAsset[]
-  likes     ThreadLike[]
-  bookmarks ThreadBookmark[]
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tags      ThreadTag[]
-  mentions  ThreadMention[]
-  stats     ThreadStats?
-  report    ThreadReport[]
+  assets     ThreadAsset[]
+  likes      ThreadLike[]
+  bookmarks  ThreadBookmark[]
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tags       ThreadTag[]
+  mentions   ThreadMention[]
+  stats      ThreadStats?
+  report     ThreadReport[]
+  reposts    ThreadReposts[]   @relation(name: "reposts_thread_relation")
+  quotations ThreadQuotation[] @relation(name: "quotation_thread_relation")
 
   @@index([createdAt], map: "threads_created_at")
   @@index([deleted])
@@ -134,11 +138,41 @@ model Thread {
   @@map(name: "threads")
 }
 
+model ThreadQuotation {
+  id        String   @id @default(cuid())
+  threadId  String   @map(name: "thread_id")
+  userId    String   @map(name: "user_id")
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  thread Thread @relation(name: "quotation_thread_relation", fields: [threadId], references: [id], onDelete: Cascade)
+  user   User   @relation(name: "quotation_user_relation", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, userId])
+  @@map(name: "thread_quotations")
+}
+
+model ThreadReposts {
+  id        String   @id @default(cuid())
+  threadId  String   @map(name: "thread_id")
+  userId    String   @map(name: "user_id")
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  thread Thread @relation(name: "reposts_thread_relation", fields: [threadId], references: [id], onDelete: Cascade)
+  user   User   @relation(name: "reposts_user_relation", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, userId])
+  @@map(name: "thread_reposts")
+}
+
 model ThreadStats {
   id        String   @id @default(cuid())
   threadId  String   @unique @map(name: "thread_id")
-  score     Int      @default(0)
+  score     Float    @default(0)
   likes     Int      @default(0)
+  reposts   Int      @default(0)
+  comments  Int      @default(0)
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 

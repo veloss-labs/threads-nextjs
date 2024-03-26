@@ -1,5 +1,5 @@
 'use client';
-import React, { useCallback, useTransition } from 'react';
+import React, { Suspense, useCallback, useTransition } from 'react';
 import Avatars from '~/components/shared/avatars';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FieldErrors, FieldPath, get, useForm } from 'react-hook-form';
@@ -25,10 +25,13 @@ import {
   type LexicalEditor as ReactLexicalEditor,
 } from 'lexical';
 import { isEmpty } from '~/utils/assertion';
+import Quotation from '~/components/editor/quotation';
+import CardQuotation from '../skeleton/card-quotation';
 
 interface ThreadsFormProps {
   isDialog?: boolean;
   onSuccess?: () => void;
+  quotation?: Record<string, string> | undefined;
   editorState?: LexicalEditorProps['editorState'];
 }
 
@@ -36,6 +39,7 @@ export default function ThreadsForm({
   isDialog,
   onSuccess,
   editorState,
+  quotation,
 }: ThreadsFormProps) {
   const { data: session } = api.auth.getRequireSession.useQuery();
   const utils = api.useUtils();
@@ -167,6 +171,11 @@ export default function ThreadsForm({
                               onEditorUpdate(editorState, editor, field.onBlur)
                             }
                           />
+                          {quotation && quotation.threadId ? (
+                            <Suspense fallback={<CardQuotation />}>
+                              <Quotation id={quotation.threadId} />
+                            </Suspense>
+                          ) : null}
                         </ClientOnly>
                       </FormControl>
                       <ThreadsForm.EditorMessage

@@ -5,6 +5,7 @@ import {
   type Tag,
   type Thread,
   type ThreadBookmark,
+  type ThreadReposts,
 } from '@prisma/client';
 import {
   type UserSelectSchema,
@@ -14,23 +15,12 @@ import {
 import { getTagsSimpleSelector } from '~/services/db/selectors/tags';
 import { type ThreadListQuerySchema } from '~/services/threads/threads.query';
 
-export const getRecommendationsSelector = () =>
-  Prisma.validator<Prisma.ThreadRecommendationSelect>()({
-    id: true,
-    similarity: true,
-    thread: {
-      select: getThreadsSelector(),
-    },
-    recommendedThread: {
-      select: getThreadsSelector(),
-    },
-  });
-
 export const getStatsSelector = () =>
   Prisma.validator<Prisma.ThreadStatsSelect>()({
     id: true,
     threadId: true,
     likes: true,
+    reposts: true,
     score: true,
   });
 
@@ -58,9 +48,7 @@ export const getRecommendationsWithThreadSelector = (
     stats: {
       select: getStatsSelector(),
     },
-    threadRecommendationThreads: {
-      select: getRecommendationsSelector(),
-    },
+    reposts: userId ? { where: { userId } } : false,
     likes: userId ? { where: { userId } } : false,
     bookmarks: userId ? { where: { userId } } : false,
     _count: {
@@ -81,6 +69,23 @@ export const getThreadsTagsSelector = () =>
   Prisma.validator<Prisma.ThreadTagSelect>()({
     tag: {
       select: getTagsSimpleSelector(),
+    },
+  });
+
+export const getSimpleThreadsSelector = () =>
+  Prisma.validator<Prisma.ThreadSelect>()({
+    id: true,
+    text: true,
+    createdAt: true,
+    deleted: true,
+    user: {
+      select: getUserSimpleSelector(),
+    },
+    _count: {
+      select: {
+        likes: true,
+        reposts: true,
+      },
     },
   });
 
@@ -106,11 +111,13 @@ export const getThreadsSelector = (
     tags: {
       select: getThreadsTagsSelector(),
     },
+    reposts: userId ? { where: { userId } } : false,
     likes: userId ? { where: { userId } } : false,
     bookmarks: userId ? { where: { userId } } : false,
     _count: {
       select: {
         likes: true,
+        reposts: true,
       },
     },
   });
@@ -130,7 +137,9 @@ export type ThreadSelectSchema = Pick<
   tags: { tag: Pick<Tag, 'name' | 'id'> }[];
   _count: {
     likes: number;
+    reposts: number;
   };
+  reposts: ThreadReposts[];
   likes: ThreadLike[];
   bookmarks: ThreadBookmark[];
 };

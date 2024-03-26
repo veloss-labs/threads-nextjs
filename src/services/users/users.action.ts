@@ -9,7 +9,7 @@ import { userService } from '~/services/users/users.service';
 import { generatorName } from '~/utils/utils';
 import { signIn } from '~/services/auth';
 import { authFormSchema } from '~/services/users/users.input';
-import { ResultSchema, resultSchema } from '~/services/common/response.schema';
+import { ResultSchema, resultSchema } from '~/services/common/common.schema';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
