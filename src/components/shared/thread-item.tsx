@@ -1,5 +1,5 @@
 'use client';
-import { Card, CardContent } from '~/components/ui/card';
+import { Card } from '~/components/ui/card';
 import Avatars from '~/components/shared/avatars';
 import {
   DropdownMenu,
@@ -150,6 +150,16 @@ export default function ThreadItem({ item }: ThreadItemProps) {
                     }
                     return;
                   }
+
+                  if (
+                    element &&
+                    element.getAttribute('data-type') === 'mention'
+                  ) {
+                    const dataValue = element.getAttribute('data-value');
+                    if (dataValue) {
+                      console.log(dataValue);
+                    }
+                  }
                 }}
               />
             </ClientOnly>
@@ -159,9 +169,10 @@ export default function ThreadItem({ item }: ThreadItemProps) {
               <Button size="sm" variant="link">
                 <Icons.messageSquare className="size-4" />
               </Button>
-              <Button size="sm" variant="link">
-                <Icons.repeat className="size-4" />
-              </Button>
+              <ThreadItem.RepostsButton
+                itemId={item.id}
+                isReposted={(item?.reposts?.length ?? 0) > 0}
+              />
               <ThreadItem.LikeButton
                 itemId={item.id}
                 isLiked={(item?.likes?.length ?? 0) > 0}
@@ -183,6 +194,57 @@ export default function ThreadItem({ item }: ThreadItemProps) {
 interface ItemProps {
   itemId: string;
 }
+
+interface RepostItemProps extends ItemProps {
+  isReposted: boolean;
+}
+
+ThreadItem.RepostsButton = function Item({
+  itemId,
+  isReposted,
+}: RepostItemProps) {
+  const { toast } = useToast();
+
+  const mutation = api.threads.repost.useMutation({
+    async onSuccess(data) {
+      const saved = data.data?.reposted ? 'REPOST' : 'UNREPOST';
+      toast({
+        description: saved === 'REPOST' ? '리포스트됨' : '삭제됨',
+      });
+    },
+  });
+
+  const onClick = useCallback(() => {
+    mutation.mutate({
+      threadId: itemId,
+    });
+  }, [itemId, mutation]);
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button size="sm" variant="link">
+          {isReposted ? (
+            <Icons.repostCheck className="size-4" />
+          ) : (
+            <Icons.repeat className="size-4" />
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem
+          onClick={onClick}
+          className={cn({
+            'text-red-500': isReposted,
+          })}
+        >
+          {isReposted ? '삭제' : '리포스트'}
+        </DropdownMenuItem>
+        <DropdownMenuItem>인용하기</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
 
 interface ShareItemProps extends ItemProps {
   userId: string;
@@ -257,8 +319,6 @@ interface SaveItemProps extends ItemProps {
 }
 
 ThreadItem.SaveButton = function Item({ itemId, isSaved }: SaveItemProps) {
-  const utils = api.useUtils();
-
   const router = useRouter();
 
   const { toast } = useToast();
@@ -285,12 +345,6 @@ ThreadItem.SaveButton = function Item({ itemId, isSaved }: SaveItemProps) {
           </ToastAction>
         ),
       });
-
-      await Promise.all([
-        utils.threads.getFollows.invalidate(),
-        utils.threads.getRecommendations.invalidate(),
-        utils.threads.getBookmarks.invalidate(),
-      ]);
     },
   });
 
@@ -364,17 +418,7 @@ interface LikeItemProps extends ItemProps {
 }
 
 ThreadItem.LikeButton = function Item({ itemId, isLiked }: LikeItemProps) {
-  const utils = api.useUtils();
-
-  const mutation = api.threads.like.useMutation({
-    async onSuccess() {
-      await Promise.all([
-        utils.threads.getFollows.invalidate(),
-        utils.threads.getRecommendations.invalidate(),
-        utils.threads.getLikes.invalidate(),
-      ]);
-    },
-  });
+  const mutation = api.threads.like.useMutation();
 
   const onClick = useCallback(() => {
     mutation.mutate({
@@ -400,18 +444,7 @@ ThreadItem.LikeButton = function Item({ itemId, isLiked }: LikeItemProps) {
 };
 
 ThreadItem.DeleteButton = function Item({ itemId }: ItemProps) {
-  const utils = api.useUtils();
-
-  const mutation = api.threads.delete.useMutation({
-    async onSuccess() {
-      await Promise.all([
-        utils.threads.getFollows.invalidate(),
-        utils.threads.getRecommendations.invalidate(),
-        utils.threads.getLikes.invalidate(),
-        utils.threads.getBookmarks.invalidate(),
-      ]);
-    },
-  });
+  const mutation = api.threads.delete.useMutation();
 
   const onClick = useCallback(() => {
     Modal.confirm({
@@ -447,8 +480,6 @@ ThreadItem.HideNumberOfLikesAndSharesButton = function Item({
   itemId,
   isHidden,
 }: HideNumberOfLikesAndSharesItemProps) {
-  const utils = api.useUtils();
-
   const { toast } = useToast();
 
   const mutation = api.threads.update.useMutation({
@@ -462,13 +493,6 @@ ThreadItem.HideNumberOfLikesAndSharesButton = function Item({
             ? '좋아요 및 공유 숨김'
             : '좋아요 및 공유 숨기기 취소됨',
       });
-
-      await Promise.all([
-        utils.threads.getFollows.invalidate(),
-        utils.threads.getRecommendations.invalidate(),
-        utils.threads.getLikes.invalidate(),
-        utils.threads.getBookmarks.invalidate(),
-      ]);
     },
   });
 

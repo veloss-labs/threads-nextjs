@@ -36,6 +36,7 @@ model User {
   requestUserBlockeds UserBlock[]      @relation(name: "request_user_blocked_relation")
   userBlockeds        UserBlock[]      @relation(name: "user_blocked_relation")
   reports             ThreadReport[]
+  reposts             ThreadReposts[]  @relation(name: "reposts_user_relation")
 
   @@map(name: "users")
 }
@@ -127,6 +128,7 @@ model Thread {
   mentions  ThreadMention[]
   stats     ThreadStats?
   report    ThreadReport[]
+  reposts   ThreadReposts[]  @relation(name: "reposts_thread_relation")
 
   @@index([createdAt], map: "threads_created_at")
   @@index([deleted])
@@ -134,11 +136,27 @@ model Thread {
   @@map(name: "threads")
 }
 
+model ThreadReposts {
+  id        String   @id @default(cuid())
+  threadId  String   @map(name: "thread_id")
+  userId    String   @map(name: "user_id")
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  thread Thread @relation(name: "reposts_thread_relation", fields: [threadId], references: [id], onDelete: Cascade)
+  user   User   @relation(name: "reposts_user_relation", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, userId])
+  @@map(name: "thread_reposts")
+}
+
 model ThreadStats {
   id        String   @id @default(cuid())
   threadId  String   @unique @map(name: "thread_id")
   score     Int      @default(0)
   likes     Int      @default(0)
+  reposts   Int      @default(0)
+  comments  Int      @default(0)
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 

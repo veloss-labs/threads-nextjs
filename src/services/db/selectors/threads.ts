@@ -5,6 +5,7 @@ import {
   type Tag,
   type Thread,
   type ThreadBookmark,
+  type ThreadReposts,
 } from '@prisma/client';
 import {
   type UserSelectSchema,
@@ -13,18 +14,6 @@ import {
 } from '~/services/db/selectors/users';
 import { getTagsSimpleSelector } from '~/services/db/selectors/tags';
 import { type ThreadListQuerySchema } from '~/services/threads/threads.query';
-
-export const getRecommendationsSelector = () =>
-  Prisma.validator<Prisma.ThreadRecommendationSelect>()({
-    id: true,
-    similarity: true,
-    thread: {
-      select: getThreadsSelector(),
-    },
-    recommendedThread: {
-      select: getThreadsSelector(),
-    },
-  });
 
 export const getStatsSelector = () =>
   Prisma.validator<Prisma.ThreadStatsSelect>()({
@@ -58,9 +47,7 @@ export const getRecommendationsWithThreadSelector = (
     stats: {
       select: getStatsSelector(),
     },
-    threadRecommendationThreads: {
-      select: getRecommendationsSelector(),
-    },
+    reposts: userId ? { where: { userId } } : false,
     likes: userId ? { where: { userId } } : false,
     bookmarks: userId ? { where: { userId } } : false,
     _count: {
@@ -106,6 +93,7 @@ export const getThreadsSelector = (
     tags: {
       select: getThreadsTagsSelector(),
     },
+    reposts: userId ? { where: { userId } } : false,
     likes: userId ? { where: { userId } } : false,
     bookmarks: userId ? { where: { userId } } : false,
     _count: {
@@ -131,6 +119,7 @@ export type ThreadSelectSchema = Pick<
   _count: {
     likes: number;
   };
+  reposts: ThreadReposts[];
   likes: ThreadLike[];
   bookmarks: ThreadBookmark[];
 };

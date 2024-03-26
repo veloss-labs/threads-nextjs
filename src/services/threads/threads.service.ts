@@ -33,50 +33,128 @@ export class ThreadService {
   private readonly DEFAULT_RECOMMENDATION_SCORE = 0.001;
 
   /**
-   * @description 스레드의 인기도 추천 계산을 위한 로직
+   * @description 스레드 북마크, 북마크 취소
+   * @param {string} userId - 사용자 ID
    * @param {string} threadId - 스레드 ID
-   * @param {number} likesCount - 좋아요 개수
    */
-  async recalculateRanking(threadId: string, likesCount?: number) {
-    const item = await db.thread.findUnique({ where: { id: threadId } });
-    if (!item) return;
-    const likes = likesCount ?? (await this.countLikes(threadId));
-    const age =
-      (Date.now() - new Date(item.createdAt).getTime()) / 1000 / 60 / 60;
-    const score = calculateRankingScore(likes, age);
-    return await db.threadStats.upsert({
+  async save(userId: string, threadId: string) {
+    const item = await db.thread.findUnique({
       where: {
-        threadId,
+        id: threadId,
       },
-      update: {
-        score,
-      },
-      create: {
-        threadId,
-        score,
-        likes,
+      select: {
+        id: true,
+        userId: true,
+        deleted: true,
       },
     });
+
+    if (!item) {
+      throw new TRPCError({ code: 'BAD_REQUEST', message: 'item not found' });
+    }
+
+    if (item.deleted) {
+      throw new TRPCError({ code: 'BAD_REQUEST', message: 'item deleted' });
+    }
+
+    const alreadySaved = await db.threadBookmark.findUnique({
+      where: {
+        userId_threadId: {
+          userId,
+          threadId,
+        },
+      },
+    });
+
+    // 없으면 좋아요, 있으면 취소
+    if (!alreadySaved) {
+      await db.threadBookmark.create({
+        data: {
+          threadId,
+          userId,
+        },
+      });
+    } else {
+      await db.threadBookmark.delete({
+        where: {
+          userId_threadId: {
+            threadId,
+            userId,
+          },
+        },
+      });
+    }
+
+    const bookmarks = await this.countBookmarks(threadId);
+
+    return {
+      bookmarks,
+      saved: !alreadySaved,
+    };
   }
 
   /**
-   * @description 스레드 좋아요 개수 업데이트
-   * @param {string} threadId - 스레드 ID
-   * @param {number} likes - 좋아요 개수
+   * @description 스레드 리포스트, 리포스트 취소
+   * @param {string} userId - 사용자 ID
+   * @param {IdInputSchema} input - 리포스트할 스레드 데이터
    */
-  updateThreadLikes(threadId: string, likes: number) {
-    return db.threadStats.upsert({
+  async repost(userId: string, input: IdInputSchema) {
+    const item = await db.thread.findUnique({
       where: {
-        threadId,
+        id: input.threadId,
       },
-      create: {
-        threadId,
-        likes,
-      },
-      update: {
-        likes,
+      select: {
+        id: true,
+        userId: true,
+        deleted: true,
       },
     });
+
+    if (!item) {
+      throw new TRPCError({ code: 'BAD_REQUEST', message: 'item not found' });
+    }
+
+    if (item.deleted) {
+      throw new TRPCError({ code: 'BAD_REQUEST', message: 'item deleted' });
+    }
+
+    const alreadyReposted = await db.threadReposts.findUnique({
+      where: {
+        threadId_userId: {
+          userId,
+          threadId: item.id,
+        },
+      },
+    });
+
+    if (!alreadyReposted) {
+      await db.threadReposts.create({
+        data: {
+          threadId: item.id,
+          userId,
+        },
+      });
+    } else {
+      await db.threadReposts.delete({
+        where: {
+          threadId_userId: {
+            userId,
+            threadId: item.id,
+          },
+        },
+      });
+    }
+
+    const reposts = await this.countReposts(item.id);
+
+    taskRunner.registerTask(async () => {
+      await this.recalculateRanking(item.id).catch(console.error);
+    });
+
+    return {
+      reposts,
+      reposted: !alreadyReposted,
+    };
   }
 
   /**
@@ -85,10 +163,29 @@ export class ThreadService {
    * @param {IdInputSchema} input - 좋아요할 스레드 데이터
    */
   async like(userId: string, input: IdInputSchema) {
+    const item = await db.thread.findUnique({
+      where: {
+        id: input.threadId,
+      },
+      select: {
+        id: true,
+        userId: true,
+        deleted: true,
+      },
+    });
+
+    if (!item) {
+      throw new TRPCError({ code: 'BAD_REQUEST', message: 'item not found' });
+    }
+
+    if (item.deleted) {
+      throw new TRPCError({ code: 'BAD_REQUEST', message: 'item deleted' });
+    }
+
     const alreadyLiked = await db.threadLike.findUnique({
       where: {
         threadId_userId: {
-          threadId: input.threadId,
+          threadId: item.id,
           userId,
         },
       },
@@ -98,7 +195,7 @@ export class ThreadService {
     if (!alreadyLiked) {
       await db.threadLike.create({
         data: {
-          threadId: input.threadId,
+          threadId: item.id,
           userId,
         },
       });
@@ -106,26 +203,61 @@ export class ThreadService {
       await db.threadLike.delete({
         where: {
           threadId_userId: {
-            threadId: input.threadId,
+            threadId: item.id,
             userId,
           },
         },
       });
     }
 
-    const likes = await this.countLikes(input.threadId);
+    const likes = await this.countLikes(item.id);
 
     taskRunner.registerTask(async () => {
-      await this.updateThreadLikes(input.threadId, likes);
-      await this.recalculateRanking(input.threadId, likes).catch(console.error);
+      await this.recalculateRanking(item.id).catch(console.error);
     });
 
     return {
       likes,
       liked: !alreadyLiked,
     };
+  }
 
-    // TODO: 연산 필요
+  /**
+   * @description 스레드의 인기도 추천 계산을 위한 로직
+   * @param {string} threadId - 스레드 ID
+   */
+  async recalculateRanking(threadId: string) {
+    const item = await db.thread.findUnique({ where: { id: threadId } });
+    if (!item) {
+      return;
+    }
+
+    const [likes, reposts] = await Promise.all([
+      this.countLikes(threadId),
+      this.countReposts(threadId),
+    ]);
+    const calculateCount = likes + reposts;
+
+    const age =
+      (Date.now() - new Date(item.createdAt).getTime()) / 1000 / 60 / 60;
+    const score = calculateRankingScore(calculateCount, age);
+
+    return await db.threadStats.upsert({
+      where: {
+        threadId,
+      },
+      update: {
+        score,
+        likes,
+        reposts,
+      },
+      create: {
+        threadId,
+        score,
+        likes,
+        reposts,
+      },
+    });
   }
 
   /**
@@ -289,6 +421,7 @@ export class ThreadService {
       where: {
         id: threadId,
         userId,
+        deleted: false,
       },
       select: {
         id: true,
@@ -381,6 +514,7 @@ export class ThreadService {
       where: {
         id: threadId,
         userId,
+        deleted: false,
       },
       select: getThreadsSelector(userId),
     });
@@ -397,51 +531,10 @@ export class ThreadService {
       where: {
         id: threadId,
         userId,
+        deleted: false,
       },
       select: getThreadsSelector(sessionUserId),
     });
-  }
-
-  /**
-   * @description 스레드 북마크, 북마크 취소
-   * @param {string} userId - 사용자 ID
-   * @param {string} threadId - 스레드 ID
-   */
-  async save(userId: string, threadId: string) {
-    const alreadySaved = await db.threadBookmark.findUnique({
-      where: {
-        userId_threadId: {
-          userId,
-          threadId,
-        },
-      },
-    });
-
-    // 없으면 좋아요, 있으면 취소
-    if (!alreadySaved) {
-      await db.threadBookmark.create({
-        data: {
-          threadId,
-          userId,
-        },
-      });
-    } else {
-      await db.threadBookmark.delete({
-        where: {
-          userId_threadId: {
-            threadId,
-            userId,
-          },
-        },
-      });
-    }
-
-    const bookmarks = await this.countBookmarks(threadId);
-
-    return {
-      bookmarks,
-      saved: !alreadySaved,
-    };
   }
 
   /**
@@ -792,6 +885,18 @@ export class ThreadService {
    */
   countBookmarks(threadId: string) {
     return db.threadBookmark.count({
+      where: {
+        threadId,
+      },
+    });
+  }
+
+  /**
+   * @description 특정 스레드의 리포스트 개수 조회
+   * @param {string} threadId - 스레드 ID
+   */
+  countReposts(threadId: string) {
+    return db.threadReposts.count({
       where: {
         threadId,
       },

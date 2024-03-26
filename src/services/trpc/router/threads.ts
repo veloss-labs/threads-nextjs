@@ -51,6 +51,24 @@ export const threadsRouter = createTRPCRouter({
         };
       }
     }),
+  repost: protectedProcedure
+    .input(idInputSchema)
+    .mutation(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
+      try {
+        const item = await threadService.repost(userId, input);
+        return {
+          ok: true,
+          data: item,
+        };
+      } catch (error) {
+        console.error(error);
+        return {
+          ok: false,
+          data: null,
+        };
+      }
+    }),
   save: protectedProcedure
     .input(idInputSchema)
     .mutation(async ({ input, ctx }) => {
