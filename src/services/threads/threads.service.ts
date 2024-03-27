@@ -52,7 +52,7 @@ export class ThreadService {
     });
 
     if (!item) {
-      throw new TRPCError({ code: 'BAD_REQUEST', message: 'item not found' });
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'item not found' });
     }
 
     if (item.deleted) {
@@ -113,7 +113,7 @@ export class ThreadService {
     });
 
     if (!item) {
-      throw new TRPCError({ code: 'BAD_REQUEST', message: 'item not found' });
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'item not found' });
     }
 
     if (item.deleted) {
@@ -177,7 +177,7 @@ export class ThreadService {
     });
 
     if (!item) {
-      throw new TRPCError({ code: 'BAD_REQUEST', message: 'item not found' });
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'item not found' });
     }
 
     if (item.deleted) {

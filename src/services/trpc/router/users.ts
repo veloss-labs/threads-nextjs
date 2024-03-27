@@ -2,7 +2,11 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from '~/services/trpc/core/trpc';
-import { userIdSchema, followUserSchema } from '~/services/users/users.input';
+import {
+  userIdSchema,
+  followUserSchema,
+  updateProfileSchema,
+} from '~/services/users/users.input';
 import { searchQuerySchema } from '~/services/users/users.query';
 import { userService } from '~/services/users/users.service';
 
@@ -28,6 +32,17 @@ export const usersRouter = createTRPCRouter({
       return null;
     }
   }),
+  update: protectedProcedure
+    .input(updateProfileSchema)
+    .mutation(async ({ input, ctx }) => {
+      try {
+        const userId = ctx.session.user.id;
+        return await userService.update(userId, input);
+      } catch (error) {
+        console.log('error', error);
+        return null;
+      }
+    }),
   getMentionUsers: protectedProcedure
     .input(searchQuerySchema)
     .query(async ({ input, ctx }) => {
