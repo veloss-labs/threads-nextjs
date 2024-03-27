@@ -36,9 +36,11 @@ import {
   RotateCcw,
   Users,
   Share,
+  Lock,
 } from 'lucide-react';
 
 export const Icons = {
+  lock: Lock,
   logo: Command,
   close: X,
   spinner: Loader2,

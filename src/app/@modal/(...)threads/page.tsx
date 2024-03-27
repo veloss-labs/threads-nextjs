@@ -10,7 +10,7 @@ import ThreadsSheet from '~/components/write/threads-sheet';
 import { PAGE_ENDPOINTS } from '~/constants/constants';
 import { useMediaQuery } from '~/libs/hooks/useMediaQuery';
 import { prepopulatedRichText } from '~/components/editor/lexical-editor';
-import useBeforeUnload from '~/libs/hooks/useBeforeUnload';
+import { useBeforeUnload } from '~/libs/hooks/useBeforeUnload';
 
 export default function Modal() {
   const router = useRouter();

@@ -5,6 +5,7 @@ import { Button } from '~/components/ui/button';
 import { Icons } from '~/components/icons';
 import { api } from '~/services/trpc/react';
 import useNavigateThreanForm from '~/libs/hooks/useNavigateThreanForm';
+import { PAGE_ENDPOINTS } from '~/constants/constants';
 
 interface ProfileHeaderProps {
   userId: string;
@@ -28,6 +29,12 @@ export default function ProfileHeader({
 
   const followCount = data?._count.followers ?? 0;
   const isFollowing = (data?.followers?.length ?? 0) > 0;
+
+  const router = useRouter();
+
+  const onClickMoveToEdit = useCallback(() => {
+    router.push(PAGE_ENDPOINTS.PROFILE.EDIT);
+  }, [router]);
 
   return (
     <div className="py-4">
@@ -67,7 +74,7 @@ export default function ProfileHeader({
           </p>
         </div>
       </div>
-      {!isMe && (
+      {!isMe ? (
         <div className="mt-4 flex w-full space-x-2">
           <ProfileHeader.FollowButton
             userId={userId}
@@ -79,6 +86,14 @@ export default function ProfileHeader({
             name={data?.name}
           />
         </div>
+      ) : (
+        <Button
+          className="my-3 w-full"
+          variant="outline"
+          onClick={onClickMoveToEdit}
+        >
+          프로필 편집
+        </Button>
       )}
     </div>
   );

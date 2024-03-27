@@ -16,7 +16,7 @@ import {
   createInputSchema,
 } from '~/services/threads/threads.input';
 import ClientOnly from '~/components/shared/client-only';
-import useBeforeUnload from '~/libs/hooks/useBeforeUnload';
+import { useBeforeUnload } from '~/libs/hooks/useBeforeUnload';
 import { $generateHtmlFromNodes } from '@lexical/html';
 import {
   type SerializedEditorState,
