@@ -8,6 +8,7 @@ import {
   bookmarkListQuerySchema,
   recommendationListQuerySchema,
   followListQuerySchema,
+  repostListQuerySchema,
 } from '~/services/threads/threads.query';
 import { threadService } from '~/services/threads/threads.service';
 import {
@@ -18,6 +19,16 @@ import {
 } from '~/services/threads/threads.input';
 
 export const threadsRouter = createTRPCRouter({
+  simpleById: protectedProcedure
+    .input(idInputSchema)
+    .query(async ({ input, ctx }) => {
+      try {
+        return await threadService.simpleById(input.threadId);
+      } catch (error) {
+        console.log('error', error);
+        return null;
+      }
+    }),
   byId: protectedProcedure
     .input(detailInputSchema)
     .query(async ({ input, ctx }) => {
@@ -39,6 +50,24 @@ export const threadsRouter = createTRPCRouter({
       const userId = ctx.session.user.id;
       try {
         const item = await threadService.like(userId, input);
+        return {
+          ok: true,
+          data: item,
+        };
+      } catch (error) {
+        console.error(error);
+        return {
+          ok: false,
+          data: null,
+        };
+      }
+    }),
+  repost: protectedProcedure
+    .input(idInputSchema)
+    .mutation(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
+      try {
+        const item = await threadService.repost(userId, input);
         return {
           ok: true,
           data: item,
@@ -266,6 +295,37 @@ export const threadsRouter = createTRPCRouter({
         const endCursor = list.at(-1)?.id ?? null;
         const hasNextPage = endCursor
           ? (await threadService.hasBookmarkPage(userId, endCursor, input)) > 0
+          : false;
+
+        return {
+          totalCount,
+          list,
+          endCursor,
+          hasNextPage,
+        };
+      } catch (error) {
+        console.log('error', error);
+        return {
+          totalCount: 0,
+          list: [],
+          endCursor: null,
+          hasNextPage: false,
+        };
+      }
+    }),
+  getReposts: protectedProcedure
+    .input(repostListQuerySchema)
+    .query(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
+      try {
+        const [totalCount, list] = await Promise.all([
+          threadService.repostCount(userId, input),
+          threadService.getReposts(userId, input),
+        ]);
+
+        const endCursor = list.at(-1)?.id ?? null;
+        const hasNextPage = endCursor
+          ? (await threadService.hasRepostPage(userId, endCursor, input)) > 0
           : false;
 
         return {

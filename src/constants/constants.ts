@@ -25,6 +25,9 @@ export const PAGE_ENDPOINTS = {
   THREADS: {
     ROOT: '/threads',
   },
+  PROFILE: {
+    EDIT: '/profile/edit',
+  },
   SAVED: '/saved',
   LIKED: '/liked',
   SEARCH: '/search',

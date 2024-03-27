@@ -31,13 +31,16 @@ import {
   AlignLeft,
   MoreHorizontal,
   Repeat,
+  Repeat1,
   MessageSquare,
   RotateCcw,
   Users,
   Share,
+  Lock,
 } from 'lucide-react';
 
 export const Icons = {
+  lock: Lock,
   logo: Command,
   close: X,
   spinner: Loader2,
@@ -67,6 +70,7 @@ export const Icons = {
   alignLeft: AlignLeft,
   moreHorizontal: MoreHorizontal,
   repeat: Repeat,
+  repeat1: Repeat1,
   messageSquare: MessageSquare,
   rotateCcw: RotateCcw,
   users: Users,

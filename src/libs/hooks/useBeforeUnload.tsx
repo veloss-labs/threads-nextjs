@@ -7,7 +7,7 @@ import React from 'react';
  * Note: The `callback` argument should be a function created with
  * `React.useCallback()`.
  */
-export default function useBeforeUnload(
+export function useBeforeUnload(
   callback: (event: BeforeUnloadEvent) => any,
   options?: { capture?: boolean },
 ): void {

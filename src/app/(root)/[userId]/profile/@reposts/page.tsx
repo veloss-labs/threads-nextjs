@@ -1,5 +1,5 @@
 import React from 'react';
-import ThreadList from '~/components/shared/thread-list';
+import ThreadRepostList from '~/components/shared/thread-repost-list';
 import SkeletonCardList from '~/components/skeleton/card-thread-list';
 import { api } from '~/services/trpc/server';
 
@@ -10,19 +10,14 @@ interface Props {
 }
 
 export default async function Pages({ params }: Props) {
-  const initialData = await api.threads.getItems({
-    userId: params.userId,
-    type: 'repost',
+  const initialData = await api.threads.getReposts({
     limit: 10,
+    userId: params.userId,
   });
 
   return (
     <React.Suspense fallback={<SkeletonCardList />}>
-      <ThreadList
-        userId={params.userId}
-        initialData={initialData}
-        type="repost"
-      />
+      <ThreadRepostList initialData={initialData} userId={params.userId} />
     </React.Suspense>
   );
 }

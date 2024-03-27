@@ -5,7 +5,10 @@ import { db } from '~/services/db/prisma';
 import { getUserSelector } from '~/services/db/selectors/users';
 import { getAuthCredentialsSelector } from '~/services/db/selectors/auth';
 import { Prisma } from '@prisma/client';
-import type { AuthFormData } from '~/services/users/users.input';
+import type {
+  AuthFormData,
+  UpdateProfileInputSchema,
+} from '~/services/users/users.input';
 import { remember } from '@epic-web/remember';
 import { env } from '~/app/env';
 import { TRPCError } from '@trpc/server';
@@ -114,6 +117,42 @@ export class UserService {
   ) {
     return db.user.create({
       data: input,
+    });
+  }
+
+  /**
+   * @description 프로필 업데이트
+   * @param {string} userId - 유저 ID
+   * @param {UpdateProfileInputSchema} input - 프로필 업데이트 정보
+   */
+  async update(userId: string, input: UpdateProfileInputSchema) {
+    const item = await db.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        id: true,
+        name: true,
+        profile: true,
+      },
+    });
+
+    if (!item) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'item not found' });
+    }
+
+    return db.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        name: input.name,
+        profile: {
+          update: {
+            bio: input.bio,
+          },
+        },
+      },
     });
   }
 

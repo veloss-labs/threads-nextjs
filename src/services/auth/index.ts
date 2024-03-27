@@ -20,7 +20,7 @@ declare module 'next-auth' {
     user: {
       id: string;
       username: string | null;
-      profile: Omit<UserProfileSchema, 'bio'> | null;
+      profile: Pick<UserProfileSchema, 'bio'> | null;
     } & Omit<User, 'id'>;
   }
 }
@@ -30,7 +30,7 @@ declare module 'next-auth/jwt' {
   interface JWT extends DefaultJWT {
     sub: string;
     user: Pick<UserSchema, 'id' | 'username' | 'name' | 'image' | 'email'> & {
-      profile?: Omit<UserProfileSchema, 'bio'>;
+      profile?: Pick<UserProfileSchema, 'bio'>;
     };
   }
 }

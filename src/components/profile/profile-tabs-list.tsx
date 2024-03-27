@@ -2,7 +2,7 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useTransition } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
-import { useCreateQueryString } from '~/libs/hooks/useCreateQueryString';
+import { useCustomSearchParams } from '~/libs/hooks/useCustomSearchParams';
 import { cn } from '~/utils/utils';
 
 interface ProfileTabsListProps {
@@ -19,7 +19,7 @@ export default function ProfileTabsList({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const { createQueryString } = useCreateQueryString();
+  const { createQueryString } = useCustomSearchParams();
   const [isPending, startTransition] = useTransition();
 
   const value = searchParams.get('tab') || 'threads';
@@ -27,11 +27,11 @@ export default function ProfileTabsList({
   const onValueChange = useCallback(
     (value: string) => {
       startTransition(() => {
-        const path = `${pathname}?${createQueryString('tab', value, 'add')}`;
+        const path = `${pathname}?${createQueryString(searchParams, 'tab', value, 'set')}`;
         router.replace(path);
       });
     },
-    [router, pathname, createQueryString],
+    [pathname, createQueryString, searchParams, router],
   );
 
   return (

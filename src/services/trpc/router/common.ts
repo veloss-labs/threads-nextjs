@@ -4,6 +4,7 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from '~/services/trpc/core/trpc';
+import { commonService } from '~/services/common/common.service';
 
 export const commonRouter = createTRPCRouter({
   revalidatePath: protectedProcedure
@@ -20,4 +21,7 @@ export const commonRouter = createTRPCRouter({
         now: Date.now(),
       };
     }),
+  getReasons: protectedProcedure.query(async ({ input }) => {
+    return await commonService.getReportReasons();
+  }),
 });
