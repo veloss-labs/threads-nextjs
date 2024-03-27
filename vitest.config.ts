@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: 'jsdom',
-    // globals: true,
-    exclude: [...configDefaults.exclude, '**/playwright/**'],
+    globals: true,
+    exclude: [...configDefaults.exclude, '**/playwright/**', '**/__test__/**'],
     alias: {
       '~/': fileURLToPath(new URL('./src/', import.meta.url)),
     },
