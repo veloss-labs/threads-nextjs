@@ -17,7 +17,7 @@ import { signOut } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import { api } from '~/services/trpc/react';
 import useNavigateThreanForm from '~/libs/hooks/useNavigateThreanForm';
-import useMainLinkActive from '~/libs/hooks/useMainLinkActive';
+import { useMainLinkActive } from '~/libs/hooks/useMainLinkActive';
 
 export default function MainNav() {
   return (

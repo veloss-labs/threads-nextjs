@@ -10,7 +10,7 @@ import { useMediaQuery } from '~/libs/hooks/useMediaQuery';
 import { api } from '~/services/trpc/react';
 import { Icons } from '~/components/icons';
 import useNavigateThreanForm from '~/libs/hooks/useNavigateThreanForm';
-import useMainLinkActive from '~/libs/hooks/useMainLinkActive';
+import { useMainLinkActive } from '~/libs/hooks/useMainLinkActive';
 
 export default function MobileFooterNav() {
   const isMobile = useMediaQuery('(max-width: 768px)', false);

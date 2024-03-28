@@ -19,8 +19,6 @@ import {
 } from '~/services/users/users.input';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { useRouter } from 'next/navigation';
-import { PAGE_ENDPOINTS } from '~/constants/constants';
 import { InputPassword } from '~/components/ui/input-password';
 import {
   signUpAction,
@@ -29,8 +27,6 @@ import {
 import { isBoolean, isUndefined } from '~/utils/assertion';
 
 export default function SignupForm() {
-  const router = useRouter();
-
   const [isPending, startTransition] = useTransition();
 
   const [state, formAction] = useFormState<PreviousState, SignUpInputSchema>(
@@ -54,6 +50,7 @@ export default function SignupForm() {
       <Form {...form}>
         <form
           id="signup-form"
+          data-testid="signup-form"
           onSubmit={form.handleSubmit((input) => {
             startTransition(() => {
               formAction(input);
@@ -69,6 +66,7 @@ export default function SignupForm() {
                   <FormLabel>아이디</FormLabel>
                   <FormControl>
                     <Input
+                      data-testid="username"
                       placeholder="아이디"
                       autoCapitalize="none"
                       autoComplete="username"
@@ -89,6 +87,7 @@ export default function SignupForm() {
                   <FormLabel>비밀번호</FormLabel>
                   <FormControl>
                     <InputPassword
+                      data-testid="password"
                       placeholder="비밀번호"
                       autoComplete="current-password"
                       dir="ltr"
@@ -107,6 +106,7 @@ export default function SignupForm() {
                   <FormLabel>비밀번호 확인</FormLabel>
                   <FormControl>
                     <InputPassword
+                      data-testid="confirm-password"
                       placeholder="비밀번호 확인"
                       autoComplete="current-password"
                       dir="ltr"
@@ -121,6 +121,7 @@ export default function SignupForm() {
               type="submit"
               disabled={isPending}
               aria-disabled={isPending}
+              data-testid="signup-button"
             >
               {isPending && (
                 <Icons.spinner className="mr-2 size-4 animate-spin" />
