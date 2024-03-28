@@ -1,129 +1,140 @@
 'use server';
+import { PAGE_ENDPOINTS } from '~/constants/constants';
 import {
-  API_ENDPOINTS,
-  PAGE_ENDPOINTS,
-  STATUS_CODE,
-} from '~/constants/constants';
-import { generateHash, generateSalt } from '~/utils/password';
-import { userService } from '~/services/users/users.service';
-import { generatorName } from '~/utils/utils';
-import { signIn } from '~/services/auth';
-import { authFormSchema } from '~/services/users/users.input';
-import { ResultSchema, resultSchema } from '~/services/common/common.schema';
+  type SignInInputSchema,
+  type SignUpInputSchema,
+} from '~/services/users/users.input';
 import { revalidatePath } from 'next/cache';
+import { signIn } from '~/services/auth';
+import { TRPCError } from '@trpc/server';
+import { FieldErrors } from 'react-hook-form';
+import { CallbackRouteError } from '@auth/core/errors';
 import { redirect } from 'next/navigation';
+import { userService } from '~/services/users/users.service';
 
-export async function signupAction(_: ResultSchema | null, formData: FormData) {
-  const bindInput = {
-    username: formData.get('username'),
-    password: formData.get('password'),
-  };
+export type PreviousState =
+  | FieldErrors<SignInInputSchema>
+  | undefined
+  | boolean;
 
-  const validatedFields = authFormSchema.safeParse(bindInput);
-
-  if (!validatedFields.success) {
-    return resultSchema.parse({
-      ok: false,
-      resultCode: STATUS_CODE.BAD_REQUEST,
-      resultMessage: 'Invalid input',
-      data: null,
-      errors: validatedFields.error.flatten(),
-    });
-  }
-
-  const input = validatedFields.data;
-
-  const salt = generateSalt();
-  const hash = generateHash(input.password, salt);
-
-  const searchParams = new URLSearchParams();
-  searchParams.append('seed', input.username);
-  const defaultImage = API_ENDPOINTS.avatar(searchParams);
-
-  const name = generatorName(input.username);
-
-  try {
-    await userService.create({
-      name,
-      username: input.username,
-      password: hash,
-      salt,
-      image: defaultImage,
-      profile: {
-        create: {
-          bio: undefined,
-        },
-      },
-    });
-  } catch (error) {
-    console.error(error);
-    return resultSchema.parse({
-      ok: false,
-      resultCode: STATUS_CODE.SERVER_ERROR,
-      resultMessage: 'User creation failed',
-      data: null,
-      errors: null,
-    });
-  }
-
+export async function signInAction(
+  previousState: PreviousState,
+  input: SignInInputSchema,
+) {
+  let redirectFlag = false;
   try {
     await signIn('credentials', {
-      username: input.username,
-      password: input.password,
+      ...input,
       redirect: false,
     });
-  } catch (error) {
-    console.error(error);
-    return resultSchema.parse({
-      ok: false,
-      resultCode: STATUS_CODE.UNAUTHORIZED,
-      resultMessage: 'Sign in failed',
-      data: null,
-      errors: null,
-    });
-  }
 
-  revalidatePath(PAGE_ENDPOINTS.AUTH.SIGNUP);
-  redirect(PAGE_ENDPOINTS.ROOT);
+    redirectFlag = true;
+    return true;
+  } catch (error) {
+    redirectFlag = false;
+    if (error instanceof CallbackRouteError) {
+      const trpcError = error.cause?.err;
+      if (trpcError instanceof TRPCError) {
+        if (trpcError.code === 'UNAUTHORIZED') {
+          return {
+            password: {
+              message: trpcError.message,
+            },
+          } as FieldErrors<SignInInputSchema>;
+        }
+
+        if (trpcError.code === 'NOT_FOUND') {
+          return {
+            username: {
+              message: trpcError.message,
+            },
+          } as FieldErrors<SignInInputSchema>;
+        }
+
+        if (trpcError.code === 'BAD_REQUEST') {
+          const data = JSON.stringify(trpcError.message ?? '{}') as unknown as {
+            name: keyof SignInInputSchema;
+            message: string;
+          };
+          return {
+            [data.name]: {
+              message: [data.message],
+            },
+          } as FieldErrors<SignInInputSchema>;
+        }
+      }
+    }
+  } finally {
+    revalidatePath(PAGE_ENDPOINTS.ROOT);
+    if (redirectFlag) {
+      redirect(PAGE_ENDPOINTS.ROOT);
+    }
+  }
 }
 
-export async function signinAction(_: ResultSchema | null, formData: FormData) {
-  const bindInput = {
-    username: formData.get('username'),
-    password: formData.get('password'),
-  };
-
-  const validatedFields = authFormSchema.safeParse(bindInput);
-
-  if (!validatedFields.success) {
-    return resultSchema.parse({
-      ok: false,
-      resultCode: STATUS_CODE.BAD_REQUEST,
-      resultMessage: 'Invalid input',
-      data: null,
-      errors: validatedFields.error.flatten(),
-    });
-  }
-
-  const input = validatedFields.data;
-
+export async function signUpAction(
+  previousState: PreviousState,
+  input: SignUpInputSchema,
+) {
+  let redirectFlag = false;
   try {
+    await userService.signup(input);
+
     await signIn('credentials', {
-      username: input.username,
-      password: input.password,
+      ...input,
       redirect: false,
     });
-  } catch (error) {
-    console.error(error);
-    return resultSchema.parse({
-      ok: false,
-      resultCode: STATUS_CODE.UNAUTHORIZED,
-      resultMessage: 'Sign in failed',
-      data: null,
-      errors: null,
-    });
-  }
 
-  revalidatePath(PAGE_ENDPOINTS.AUTH.SIGNIN);
-  redirect(PAGE_ENDPOINTS.ROOT);
+    redirectFlag = true;
+    return true;
+  } catch (error) {
+    redirectFlag = false;
+    if (error instanceof TRPCError) {
+      if (error.code === 'BAD_REQUEST') {
+        return {
+          username: {
+            message: error.message,
+          },
+        } as FieldErrors<SignUpInputSchema>;
+      }
+    }
+
+    if (error instanceof CallbackRouteError) {
+      const trpcError = error.cause?.err;
+      if (trpcError instanceof TRPCError) {
+        if (trpcError.code === 'UNAUTHORIZED') {
+          return {
+            password: {
+              message: trpcError.message,
+            },
+          } as FieldErrors<SignUpInputSchema>;
+        }
+
+        if (trpcError.code === 'NOT_FOUND') {
+          return {
+            username: {
+              message: trpcError.message,
+            },
+          } as FieldErrors<SignUpInputSchema>;
+        }
+
+        if (trpcError.code === 'BAD_REQUEST') {
+          const data = JSON.stringify(trpcError.message ?? '{}') as unknown as {
+            name: keyof SignUpInputSchema;
+            message: string;
+          };
+          return {
+            [data.name]: {
+              message: [data.message],
+            },
+          } as FieldErrors<SignUpInputSchema>;
+        }
+      }
+    }
+  } finally {
+    revalidatePath(PAGE_ENDPOINTS.ROOT);
+    if (redirectFlag) {
+      redirect(PAGE_ENDPOINTS.ROOT);
+    }
+  }
 }

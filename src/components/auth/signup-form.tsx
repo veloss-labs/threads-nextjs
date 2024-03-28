@@ -1,64 +1,135 @@
 'use client';
-import React, { useCallback, useRef, useEffect } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import React, { useTransition } from 'react';
+import { useFormState } from 'react-dom';
 import { Input } from '~/components/ui/input';
 import { Button } from '~/components/ui/button';
 import { Icons } from '~/components/icons';
 import { cn } from '~/utils/utils';
-import { getTargetElement } from '~/libs/browser/dom';
-import { signupAction } from '~/services/users/users.action';
-import { STATUS_CODE } from '~/constants/constants';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '~/components/ui/form';
+import {
+  signUpSchema,
+  type SignUpInputSchema,
+} from '~/services/users/users.input';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
+import { PAGE_ENDPOINTS } from '~/constants/constants';
+import { InputPassword } from '~/components/ui/input-password';
+import {
+  signUpAction,
+  type PreviousState,
+} from '~/services/users/users.action';
+import { isBoolean, isUndefined } from '~/utils/assertion';
 
 export default function SignupForm() {
-  const [state, formAction] = useFormState(signupAction, null);
+  const router = useRouter();
+
+  const [isPending, startTransition] = useTransition();
+
+  const [state, formAction] = useFormState<PreviousState, SignUpInputSchema>(
+    signUpAction,
+    undefined,
+  );
+
+  const form = useForm<SignUpInputSchema>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      username: '',
+      password: '',
+      confirmPassword: '',
+    },
+    errors: isUndefined(state) || isBoolean(state) ? undefined : state,
+    reValidateMode: 'onBlur',
+  });
 
   return (
     <div className="grid gap-6">
-      <form action={formAction}>
-        <div className="grid gap-5">
-          <div className="space-y-2">
-            <Input
-              type="text"
+      <Form {...form}>
+        <form
+          id="signup-form"
+          onSubmit={form.handleSubmit((input) => {
+            startTransition(() => {
+              formAction(input);
+            });
+          })}
+        >
+          <div className="grid gap-5">
+            <FormField
+              control={form.control}
               name="username"
-              placeholder="사용자 이름"
-              autoCapitalize="none"
-              autoComplete="username"
-              autoCorrect="off"
-              dir="ltr"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>아이디</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="아이디"
+                      autoCapitalize="none"
+                      autoComplete="username"
+                      autoCorrect="off"
+                      dir="ltr"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {state?.errors?.fieldErrors?.username && (
-              <p className="text-sm font-medium text-red-500 dark:text-red-900">
-                {state?.errors?.fieldErrors?.username?.at(0)}
-              </p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Input
-              type="password"
+            <FormField
+              control={form.control}
               name="password"
-              placeholder="비밀번호"
-              autoComplete="current-password"
-              dir="ltr"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>비밀번호</FormLabel>
+                  <FormControl>
+                    <InputPassword
+                      placeholder="비밀번호"
+                      autoComplete="current-password"
+                      dir="ltr"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {state?.errors?.fieldErrors?.password && (
-              <p className="text-sm font-medium text-red-500 dark:text-red-900">
-                {state?.errors?.fieldErrors?.password?.at(0)}
-              </p>
-            )}
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>비밀번호 확인</FormLabel>
+                  <FormControl>
+                    <InputPassword
+                      placeholder="비밀번호 확인"
+                      autoComplete="current-password"
+                      dir="ltr"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              type="submit"
+              disabled={isPending}
+              aria-disabled={isPending}
+            >
+              {isPending && (
+                <Icons.spinner className="mr-2 size-4 animate-spin" />
+              )}
+              회원가입
+            </Button>
           </div>
-          {state?.resultCode === STATUS_CODE.SERVER_ERROR ? (
-            <p className="text-sm font-medium text-red-500 dark:text-red-900">
-              회원가입에 실패했습니다. 다시 시도해주세요.
-            </p>
-          ) : null}
-          {state?.resultCode === STATUS_CODE.UNAUTHORIZED ? (
-            <p className="text-sm font-medium text-red-500 dark:text-red-900">
-              인증에 실패했습니다. 다시 시도해주세요.
-            </p>
-          ) : null}
-          <SubmitButton />
-        </div>
-      </form>
+        </form>
+      </Form>
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t" />
@@ -70,37 +141,5 @@ export default function SignupForm() {
         </div>
       </div>
     </div>
-  );
-}
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-
-  const $div = useRef<HTMLDivElement>(null);
-
-  const onClick = useCallback(() => {
-    const $ele = getTargetElement($div);
-    if (!$ele) {
-      return;
-    }
-
-    const $form = $ele.closest('form');
-    if (!$form) {
-      return;
-    }
-
-    $form.requestSubmit();
-  }, []);
-
-  return (
-    <Button
-      type="submit"
-      onClick={onClick}
-      disabled={pending}
-      aria-disabled={pending}
-    >
-      {pending && <Icons.spinner className="mr-2 size-4 animate-spin" />}
-      회원가입
-    </Button>
   );
 }

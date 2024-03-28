@@ -5,7 +5,6 @@ import GitHub from 'next-auth/providers/github';
 import Credentials from 'next-auth/providers/credentials';
 import { env } from '~/app/env';
 import { userService } from '~/services/users/users.service';
-import { authFormSchema } from '~/services/users/users.input';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import {
   Prisma,
@@ -19,8 +18,8 @@ declare module 'next-auth' {
   interface Session {
     user: {
       id: string;
-      username: string | null;
-      profile: Pick<UserProfileSchema, 'bio'> | null;
+      username: string;
+      profile: Pick<UserProfileSchema, 'bio' | 'website'> | null;
     } & Omit<User, 'id'>;
   }
 }
@@ -30,7 +29,7 @@ declare module 'next-auth/jwt' {
   interface JWT extends DefaultJWT {
     sub: string;
     user: Pick<UserSchema, 'id' | 'username' | 'name' | 'image' | 'email'> & {
-      profile?: Pick<UserProfileSchema, 'bio'>;
+      profile?: Pick<UserProfileSchema, 'bio' | 'website'>;
     };
   }
 }
@@ -56,17 +55,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       id: 'credentials',
       name: 'Credentials',
       async authorize(credentials) {
-        const input = authFormSchema.safeParse(credentials);
-        if (!input.success) {
-          return null;
-        }
-
-        try {
-          return await userService.getAuthCredentials(input.data);
-        } catch (error) {
-          console.error(error);
-          return null;
-        }
+        return await userService.authorize(credentials);
       },
       credentials: {
         username: {
@@ -124,7 +113,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return NextResponse.redirect(new URL(PAGE_ENDPOINTS.ROOT, url));
       }
 
-      return isLoggedIn;
+      return true;
     },
   },
 });

@@ -1,5 +1,5 @@
 'use client';
-import React, { useTransition } from 'react';
+import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import {
@@ -21,19 +21,20 @@ import {
 } from '~/services/users/users.input';
 import { InputLock } from '~/components/ui/input-lock';
 
-interface ProfileEditFormProps {}
+interface ProfileEditFormProps {
+  username: string;
+  initialData?: any;
+}
 
-export default function ProfileEditForm({}: ProfileEditFormProps) {
-  const { data: session } = api.auth.getRequireSession.useQuery();
+export default function ProfileEditForm({
+  initialData,
+  username,
+}: ProfileEditFormProps) {
   const mutation = api.users.update.useMutation();
 
   const form = useForm<UpdateProfileInputSchema>({
     resolver: zodResolver(updateProfileSchema),
-    defaultValues: {
-      name: session?.user.name ?? '',
-      bio: session?.user.profile?.bio ?? '',
-      website: '',
-    },
+    defaultValues: initialData,
   });
 
   const onSubmit = (values: UpdateProfileInputSchema) => {
@@ -48,10 +49,7 @@ export default function ProfileEditForm({}: ProfileEditFormProps) {
             <div className="grid gap-5">
               <FormItem>
                 <FormLabel>아이디</FormLabel>
-                <InputLock
-                  disabled
-                  defaultValue={session?.user.username ?? undefined}
-                />
+                <InputLock disabled defaultValue={username} />
               </FormItem>
               <FormField
                 control={form.control}

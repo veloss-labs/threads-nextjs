@@ -37,9 +37,13 @@ import {
   Users,
   Share,
   Lock,
+  EyeOff,
+  Eye,
 } from 'lucide-react';
 
 export const Icons = {
+  eye: Eye,
+  eyeOff: EyeOff,
   lock: Lock,
   logo: Command,
   close: X,

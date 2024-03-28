@@ -1,20 +1,90 @@
 'server-only';
 import omit from 'lodash-es/omit';
-import { generateHash, secureCompare } from '~/utils/password';
+import { generateHash, generateSalt, secureCompare } from '~/utils/password';
 import { db } from '~/services/db/prisma';
 import { getUserSelector } from '~/services/db/selectors/users';
 import { getAuthCredentialsSelector } from '~/services/db/selectors/auth';
 import { Prisma } from '@prisma/client';
-import type {
-  AuthFormData,
-  UpdateProfileInputSchema,
+import {
+  signInSchema,
+  type SignInInputSchema,
+  type SignUpInputSchema,
+  type UpdateProfileInputSchema,
 } from '~/services/users/users.input';
 import { remember } from '@epic-web/remember';
 import { env } from '~/app/env';
 import { TRPCError } from '@trpc/server';
+import { API_ENDPOINTS } from '~/constants/constants';
+import { generatorName } from '~/utils/utils';
 
 export class UserService {
-  private readonly DEFAULT_LIMIT = 30;
+  /**
+   * @description next-auth credentials authorize
+   * @param {Partial<Record<'username' | 'password', unknown>>} credentials - 인증 정보
+   * @param {Request?} _ - 요청 객체
+   */
+  async authorize(
+    credentials: Partial<Record<'username' | 'password', unknown>>,
+    _?: Request,
+  ) {
+    const input = signInSchema.safeParse(credentials);
+    if (!input.success) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: JSON.stringify({
+          name: input.error.name,
+          message: input.error.message,
+        }),
+      });
+    }
+
+    return await userService.getAuthCredentials(input.data);
+  }
+
+  /**
+   * @description 회원가입
+   * @param {SignUpInputSchema} input - 회원가입 정보
+   */
+  async signup(input: SignUpInputSchema) {
+    const user = await db.user.findFirst({
+      where: {
+        username: input.username,
+      },
+    });
+
+    if (user) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: '이미 사용 중인 아이디입니다.',
+      });
+    }
+
+    const salt = generateSalt();
+    const hash = generateHash(input.password, salt);
+
+    const searchParams = new URLSearchParams();
+    searchParams.append('seed', input.username);
+    const defaultImage = API_ENDPOINTS.avatar(searchParams);
+    const name = generatorName(input.username);
+
+    const data = await db.user.create({
+      data: {
+        name,
+        username: input.username,
+        password: hash,
+        salt,
+        image: defaultImage,
+        profile: {
+          create: {
+            bio: undefined,
+            website: undefined,
+          },
+        },
+      },
+    });
+
+    return data;
+  }
 
   /**
    * @description 유저 팔로우
@@ -150,6 +220,7 @@ export class UserService {
         profile: {
           update: {
             bio: input.bio,
+            website: input.website,
           },
         },
       },
@@ -185,9 +256,9 @@ export class UserService {
 
   /**
    * @description 인증된 유저 정보 조회
-   * @param {AuthFormData} credentials - 아이디, 비밀번호 인증 정보
+   * @param {SignInInputSchema} credentials - 아이디, 비밀번호 인증 정보
    */
-  async getAuthCredentials(credentials: AuthFormData) {
+  async getAuthCredentials(credentials: SignInInputSchema) {
     const user = await db.user.findUnique({
       where: {
         username: credentials.username,
@@ -196,7 +267,10 @@ export class UserService {
     });
 
     if (!user) {
-      return null;
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: '존재하지 않는 아이디입니다.',
+      });
     }
 
     if (user.password && user.salt) {
@@ -206,7 +280,10 @@ export class UserService {
           generateHash(credentials.password, user.salt),
         )
       ) {
-        return null;
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: '비밀번호가 일치하지 않습니다.',
+        });
       }
     }
 
