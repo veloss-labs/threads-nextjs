@@ -120,7 +120,7 @@ export class ThreadService {
       throw new TRPCError({ code: 'BAD_REQUEST', message: 'item deleted' });
     }
 
-    const alreadyReposted = await db.threadReposts.findUnique({
+    const alreadyReposted = await db.threadRepost.findUnique({
       where: {
         threadId_userId: {
           userId,
@@ -130,14 +130,14 @@ export class ThreadService {
     });
 
     if (!alreadyReposted) {
-      await db.threadReposts.create({
+      await db.threadRepost.create({
         data: {
           threadId: item.id,
           userId,
         },
       });
     } else {
-      await db.threadReposts.delete({
+      await db.threadRepost.delete({
         where: {
           threadId_userId: {
             userId,
@@ -964,7 +964,7 @@ export class ThreadService {
    * @param {string} threadId - 스레드 ID
    */
   countReposts(threadId: string) {
-    return db.threadReposts.count({
+    return db.threadRepost.count({
       where: {
         threadId,
       },

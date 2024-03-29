@@ -9,6 +9,7 @@ import UserItem from '~/components/shared/search-user-item';
 import SkeletonCardUser from '~/components/skeleton/card-user';
 import SkeletonCard from '~/components/skeleton/card-thread';
 import ThreadItem from '~/components/shared/thread-item';
+import ThreadEndCard from './item-end-card';
 
 interface SearchUserListProps {
   initialData?: any;
@@ -169,11 +170,7 @@ export default function SearchList({
                 <UserItem item={item as unknown as any} />
               )}
               {isEnd && (
-                <div className="w-full py-8">
-                  <p className="text-center text-slate-700 dark:text-slate-300">
-                    검색 결과를 모두 읽었습니다! 👋
-                  </p>
-                </div>
+                <ThreadEndCard>검색 결과를 모두 읽었습니다! 👋</ThreadEndCard>
               )}
             </div>
           );

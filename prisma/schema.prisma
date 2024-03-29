@@ -13,8 +13,8 @@ datasource db {
 
 model User {
   id            String    @id @default(cuid())
-  name          String?
-  username      String?   @unique
+  name          String
+  username      String    @unique
   password      String?
   salt          String?
   email         String?   @unique
@@ -36,15 +36,16 @@ model User {
   requestUserBlockeds UserBlock[]      @relation(name: "request_user_blocked_relation")
   userBlockeds        UserBlock[]      @relation(name: "user_blocked_relation")
   reports             ThreadReport[]
-  reposts             ThreadReposts[]  @relation(name: "reposts_user_relation")
+  reposts             ThreadRepost[]   @relation(name: "reposts_user_relation")
 
   @@map(name: "users")
 }
 
 model UserProfile {
-  id     String  @id @default(cuid())
-  bio    String?
-  userId String  @unique @map(name: "user_id")
+  id      String  @id @default(cuid())
+  bio     String?
+  website String?
+  userId  String  @unique @map(name: "user_id")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -128,7 +129,7 @@ model Thread {
   mentions  ThreadMention[]
   stats     ThreadStats?
   report    ThreadReport[]
-  reposts   ThreadReposts[]  @relation(name: "reposts_thread_relation")
+  reposts   ThreadRepost[]   @relation(name: "reposts_thread_relation")
 
   @@index([createdAt], map: "threads_created_at")
   @@index([deleted])
@@ -136,7 +137,7 @@ model Thread {
   @@map(name: "threads")
 }
 
-model ThreadReposts {
+model ThreadRepost {
   id        String   @id @default(cuid())
   threadId  String   @map(name: "thread_id")
   userId    String   @map(name: "user_id")
