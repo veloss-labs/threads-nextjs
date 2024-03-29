@@ -1,18 +1,35 @@
-import { afterAll, describe, expect, test, vi } from 'vitest';
+import { afterEach, describe, beforeEach, expect, test, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useMainLinkActive } from '../useMainLinkActive';
+import {
+  useMainLinkActive,
+  useScrollNavLinkActive,
+} from '../useMainLinkActive';
 import { NAV_CONFIG } from '~/constants/nav';
-import { Icons } from '~/components/icons';
+
+const mockUsePathname = vi.fn();
+
+function setupNextNavigationMock() {
+  vi.mock('next/navigation', async (importOriginal) => {
+    return {
+      ...(await importOriginal<typeof import('next/navigation')>()),
+      usePathname: () => mockUsePathname(),
+    };
+  });
+}
 
 describe('useMainLinkActive', () => {
-  afterAll(() => {
-    vi.unstubAllGlobals();
+  beforeEach(() => {
+    setupNextNavigationMock();
   });
 
-  describe('useMainLinkActive navigation 렌더링', () => {
-    test('mainNav - Home', () => {
-      const item = NAV_CONFIG.mainNav.at(0)!;
+  afterEach(() => {
+    vi.unstubAllGlobals();
 
+    vi.clearAllMocks();
+  });
+
+  test('useMainLinkActive - init', () => {
+    for (const item of NAV_CONFIG.mainNav) {
       const { result } = renderHook(() =>
         useMainLinkActive({
           item,
@@ -20,14 +37,16 @@ describe('useMainLinkActive', () => {
       );
 
       expect(result.current).toMatchObject({
+        href: item.href ? item.href : '#',
+        Icon: item.icon,
         isActive: false,
-        href: '/',
-        Icon: Icons.home,
       });
-    });
+    }
+  });
 
-    test('mainNav - search', () => {
-      const item = NAV_CONFIG.mainNav.at(1)!;
+  test('useMainLinkActive - href', () => {
+    for (const item of NAV_CONFIG.mainNav) {
+      mockUsePathname.mockImplementation(() => item.href);
 
       const { result } = renderHook(() =>
         useMainLinkActive({
@@ -35,59 +54,127 @@ describe('useMainLinkActive', () => {
         }),
       );
 
-      expect(result.current).toMatchObject({
-        isActive: false,
-        href: '/',
-        Icon: Icons.search,
-      });
+      expect(result.current.href).toBe(item.href ?? '#');
+    }
+  });
+
+  describe('useMainLinkActive - isActive', () => {
+    test('useMainLinkActive navigation 렌더링 - isActive (href)', () => {
+      for (const item of NAV_CONFIG.mainNav) {
+        mockUsePathname.mockImplementation(() => item.href);
+
+        const { result } = renderHook(() =>
+          useMainLinkActive({
+            item,
+          }),
+        );
+
+        if (item.type === 'myPage') {
+          expect(result.current.isActive).toBeFalsy();
+        } else {
+          expect(result.current.isActive).toBeTruthy();
+        }
+      }
     });
 
-    test('mainNav - thread', () => {
-      const item = NAV_CONFIG.mainNav.at(2)!;
+    test('useMainLinkActive navigation 렌더링 - isActive (relationHrefs)', () => {
+      for (const item of NAV_CONFIG.mainNav) {
+        const relationHrefs = item.relationHrefs ?? [];
+        for (const relationHref of relationHrefs) {
+          mockUsePathname.mockImplementation(() => relationHref);
 
+          const { result } = renderHook(() =>
+            useMainLinkActive({
+              item,
+            }),
+          );
+
+          expect(result.current.isActive).toBeTruthy();
+        }
+      }
+    });
+  });
+
+  describe('useMainLinkActive - icon', () => {
+    test('useMainLinkActive navigation 렌더링 - icon (icon)', () => {
+      for (const item of NAV_CONFIG.mainNav) {
+        mockUsePathname.mockImplementation(() => item.href);
+
+        const { result } = renderHook(() =>
+          useMainLinkActive({
+            item,
+          }),
+        );
+
+        expect(result.current.Icon).toMatchObject(item.icon);
+      }
+    });
+
+    test('useMainLinkActive navigation 렌더링 - icon (relationIcons)', () => {
+      for (const item of NAV_CONFIG.mainNav) {
+        if (!item.relationIcons) {
+          continue;
+        }
+
+        const relationHrefs = item.relationHrefs ?? [];
+        for (const relationHref of relationHrefs) {
+          mockUsePathname.mockImplementation(() => relationHref);
+
+          const { result } = renderHook(() =>
+            useMainLinkActive({
+              item,
+            }),
+          );
+
+          const icon = item.relationIcons?.[relationHref];
+
+          if (!icon) {
+            throw new Error('icon is not defined');
+          }
+
+          expect(result.current.Icon).toMatchObject(icon);
+        }
+      }
+    });
+  });
+});
+
+describe('useScrollNavLinkActive', () => {
+  beforeEach(() => {
+    setupNextNavigationMock();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+
+    vi.clearAllMocks();
+  });
+
+  test('useScrollNavLinkActive - init', () => {
+    for (const item of NAV_CONFIG.scrollNav) {
       const { result } = renderHook(() =>
-        useMainLinkActive({
+        useScrollNavLinkActive({
           item,
         }),
       );
 
       expect(result.current).toMatchObject({
         isActive: false,
-        href: '/',
-        Icon: Icons.pen,
       });
-    });
+    }
+  });
 
-    test('mainNav - activity', () => {
-      const item = NAV_CONFIG.mainNav.at(3)!;
+  test('useScrollNavLinkActive - isActive', () => {
+    for (const item of NAV_CONFIG.scrollNav) {
+      mockUsePathname.mockImplementation(() => item.href);
 
       const { result } = renderHook(() =>
-        useMainLinkActive({
+        useScrollNavLinkActive({
           item,
         }),
       );
 
-      expect(result.current).toMatchObject({
-        isActive: false,
-        href: '/',
-        Icon: Icons.heart,
-      });
-    });
-
-    test('mainNav - myPage', () => {
-      const item = NAV_CONFIG.mainNav.at(4)!;
-
-      const { result } = renderHook(() =>
-        useMainLinkActive({
-          item,
-        }),
-      );
-
-      expect(result.current).toMatchObject({
-        isActive: false,
-        href: '/',
-        Icon: Icons.user,
-      });
-    });
+      expect(result.current.isActive).toBeTruthy();
+    }
   });
 });

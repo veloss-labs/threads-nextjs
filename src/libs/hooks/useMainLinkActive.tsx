@@ -11,9 +11,11 @@ export function useMainLinkActive({ item }: UseMainLinkActiveOptions) {
 
   const rootHref = item.href;
   const relationHrefs = new Set<string>();
+
   if (rootHref) {
     relationHrefs.add(rootHref);
   }
+
   if (item.relationHrefs) {
     item.relationHrefs.forEach((href) => relationHrefs.add(href));
   }
