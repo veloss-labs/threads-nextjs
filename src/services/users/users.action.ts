@@ -5,7 +5,7 @@ import {
   type SignUpInputSchema,
 } from '~/services/users/users.input';
 import { revalidatePath } from 'next/cache';
-import { signIn } from '~/services/auth';
+import { auth, signIn, signOut } from '~/services/auth';
 import { TRPCError } from '@trpc/server';
 import { FieldErrors } from 'react-hook-form';
 import { CallbackRouteError } from '@auth/core/errors';
@@ -136,5 +136,24 @@ export async function signUpAction(
     if (redirectFlag) {
       redirect(PAGE_ENDPOINTS.ROOT);
     }
+  }
+}
+
+export async function signOutAction(previousState: PreviousState) {
+  try {
+    const session = await auth();
+    if (!session) {
+      return false;
+    }
+
+    await signOut({
+      redirect: true,
+      redirectTo: PAGE_ENDPOINTS.AUTH.SIGNIN,
+    });
+
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
   }
 }

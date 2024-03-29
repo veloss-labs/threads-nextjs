@@ -1,8 +1,8 @@
 import React from 'react';
 import { api } from '~/services/trpc/server';
 import ThreadsInput from '~/components/write/threads-input';
-import FloatingLink from '~/components/main/floating-link';
-import MainTabs from '~/components/main/main-tabs';
+import FloatingLink from '~/components/layout/floating-link';
+import MainTabs from '~/components/layout/main-tabs';
 import PageLoading from '~/components/layout/page-loading';
 import ClientOnly from '~/components/shared/client-only';
 

@@ -113,7 +113,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return NextResponse.redirect(new URL(PAGE_ENDPOINTS.ROOT, url));
       }
 
-      return true;
+      return isLoggedIn;
     },
   },
 });

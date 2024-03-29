@@ -6,6 +6,7 @@ import { getTargetElement } from '~/libs/browser/dom';
 import { api } from '~/services/trpc/react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import SkeletonCard from '../skeleton/card-thread';
+import ThreadEndCard from './item-end-card';
 
 interface ThreadBookmarkListProps {
   initialData?: any;
@@ -145,11 +146,9 @@ export default function ThreadBookmarkList({
             >
               <ThreadItem item={item} />
               {isEnd && (
-                <div className="w-full py-8">
-                  <p className="text-center text-slate-700 dark:text-slate-300">
-                    저장한 게시물을 모두 읽었습니다! 👋
-                  </p>
-                </div>
+                <ThreadEndCard>
+                  저장한 게시물을 모두 읽었습니다! 👋
+                </ThreadEndCard>
               )}
             </div>
           );
