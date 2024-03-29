@@ -13,4 +13,5 @@
     "next/dist/client/router.d.ts"
   ],
   "typescript.tsdk": "node_modules/typescript/lib",
+  "vitest.commandLine": "npx vitest"
 }

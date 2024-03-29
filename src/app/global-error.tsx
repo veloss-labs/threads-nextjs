@@ -1,12 +1,11 @@
 'use client';
 
-export default function GlobalError({
-  error,
-  reset,
-}: {
+interface Props {
   error: Error & { digest?: string };
   reset: () => void;
-}) {
+}
+
+export default function GlobalError({ error, reset }: Props) {
   console.log('errors ====>', error);
   return (
     <html>

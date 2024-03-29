@@ -6,14 +6,16 @@ interface UseMainLinkActiveOptions {
   item: NavItem;
 }
 
-export default function useMainLinkActive({ item }: UseMainLinkActiveOptions) {
+export function useMainLinkActive({ item }: UseMainLinkActiveOptions) {
   const pathname = usePathname();
 
   const rootHref = item.href;
   const relationHrefs = new Set<string>();
+
   if (rootHref) {
     relationHrefs.add(rootHref);
   }
+
   if (item.relationHrefs) {
     item.relationHrefs.forEach((href) => relationHrefs.add(href));
   }

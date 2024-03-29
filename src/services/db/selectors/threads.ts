@@ -5,7 +5,7 @@ import {
   type Tag,
   type Thread,
   type ThreadBookmark,
-  type ThreadReposts,
+  type ThreadRepost,
 } from '@prisma/client';
 import {
   type UserSelectSchema,
@@ -54,6 +54,7 @@ export const getRecommendationsWithThreadSelector = (
     _count: {
       select: {
         likes: true,
+        reposts: true,
       },
     },
   });
@@ -139,7 +140,7 @@ export type ThreadSelectSchema = Pick<
     likes: number;
     reposts: number;
   };
-  reposts: ThreadReposts[];
+  reposts: ThreadRepost[];
   likes: ThreadLike[];
   bookmarks: ThreadBookmark[];
 };

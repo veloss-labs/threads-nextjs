@@ -1,8 +1,6 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import React from 'react';
 import { SITE_CONFIG } from '~/constants/constants';
-import { api } from '~/services/trpc/server';
 
 interface Props {
   children: React.ReactNode;
@@ -20,12 +18,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function Layout({ children }: Props) {
-  const session = await api.auth.getSession();
-
-  if (!session) {
-    notFound();
-  }
-
+export default function Layout({ children }: Props) {
   return <>{children}</>;
 }
