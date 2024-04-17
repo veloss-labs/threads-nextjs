@@ -1,12 +1,15 @@
+import { renderHook } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
-import { act, renderHook } from '@testing-library/react';
+
 import { useUnmount } from '../useUnmount';
 
 describe('useUnmount', () => {
   test('useUnmount 초기상태', () => {
     const callback = vi.fn();
 
-    const { result } = renderHook(() => useUnmount(callback));
+    const { result } = renderHook(() => {
+      useUnmount(callback);
+    });
 
     expect(result.current).toBeUndefined();
   });
@@ -14,7 +17,9 @@ describe('useUnmount', () => {
   test('"useUnmount"에서 컴포넌트가 unmount되었을 때 callback이 정상적으로 실행되는지 테스트', () => {
     const callback = vi.fn();
 
-    const { unmount } = renderHook(() => useUnmount(callback));
+    const { unmount } = renderHook(() => {
+      useUnmount(callback);
+    });
 
     expect(callback).not.toHaveBeenCalled();
 

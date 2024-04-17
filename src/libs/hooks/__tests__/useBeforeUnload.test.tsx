@@ -1,5 +1,6 @@
-import { afterAll, describe, expect, test, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
+import { afterAll, describe, expect, test, vi } from 'vitest';
+
 import { useBeforeUnload } from '../useBeforeUnload';
 
 describe('useBeforeUnload', () => {
@@ -10,7 +11,9 @@ describe('useBeforeUnload', () => {
   test('useBeforeUnload 초기상태', () => {
     const callback = vi.fn();
 
-    const { result } = renderHook(() => useBeforeUnload(callback));
+    const { result } = renderHook(() => {
+      useBeforeUnload(callback);
+    });
 
     expect(result.current).toBeUndefined();
   });
@@ -18,7 +21,9 @@ describe('useBeforeUnload', () => {
   test('"useBeforeUnload"에서 window.beforeunload가 정상적으로 실행되는지 테스트', () => {
     const callback = vi.fn();
 
-    renderHook(() => useBeforeUnload(callback));
+    renderHook(() => {
+      useBeforeUnload(callback);
+    });
 
     expect(callback).not.toHaveBeenCalled();
 
@@ -32,7 +37,9 @@ describe('useBeforeUnload', () => {
   test('"useBeforeUnload"에서 window.beforeunload가 등록되고 unmount시 정상적으로 cleanup 되는지 테스트', () => {
     const callback = vi.fn();
 
-    const { unmount } = renderHook(() => useBeforeUnload(callback));
+    const { unmount } = renderHook(() => {
+      useBeforeUnload(callback);
+    });
 
     expect(callback).not.toHaveBeenCalled();
 

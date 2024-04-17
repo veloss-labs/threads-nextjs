@@ -40,7 +40,7 @@ export default function manifest(): MetadataRoute.Manifest {
       },
       {
         purpose: 'any',
-        src: '/icons/con.svg',
+        src: '/icons/icon.svg',
         sizes: '192x192',
         type: 'image/svg+xml',
       },

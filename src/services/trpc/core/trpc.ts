@@ -7,11 +7,12 @@
  * The pieces you will need to use are documented accordingly near the end
  */
 import { initTRPC, TRPCError } from '@trpc/server';
+import { type Session } from 'next-auth';
 import superjson from 'superjson';
 import { ZodError } from 'zod';
+
 import { auth } from '~/services/auth';
 import { db } from '~/services/db/prisma';
-import { type Session } from 'next-auth';
 
 /**
  * 1. CONTEXT

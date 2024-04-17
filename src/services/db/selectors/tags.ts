@@ -1,5 +1,8 @@
 'server-only';
-import { Prisma, type Tag } from '@prisma/client';
+
+import { Prisma } from '@prisma/client';
+
+import type { Tag } from '@prisma/client';
 
 export const getTagsSimpleSelector = () => {
   return Prisma.validator<Prisma.UserSelect>()({

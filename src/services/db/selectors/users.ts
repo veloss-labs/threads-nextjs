@@ -1,10 +1,8 @@
 'server-only';
-import {
-  Prisma,
-  type UserFollow,
-  type User,
-  type UserProfile,
-} from '@prisma/client';
+
+import { Prisma } from '@prisma/client';
+
+import type { User, UserFollow, UserProfile } from '@prisma/client';
 
 export const getUserSimpleSelector = () => {
   return Prisma.validator<Prisma.UserSelect>()({
@@ -34,7 +32,7 @@ export const getUserSelector = (userId?: string) => {
     followers: userId
       ? {
           where: {
-            userId: userId,
+            userId,
           },
         }
       : false,

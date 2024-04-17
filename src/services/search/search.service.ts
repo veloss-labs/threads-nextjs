@@ -1,13 +1,16 @@
 'server-only';
+
 import { remember } from '@epic-web/remember';
-import { env } from '~/app/env';
+
 import type {
   SearchQuerySchema,
   SearchUsersQuerySchema,
 } from '~/services/search/search.query';
+
+import { env } from '~/app/env';
 import { db } from '~/services/db/prisma';
-import { getUserSelector } from '~/services/db/selectors/users';
 import { getThreadsSelector } from '~/services/db/selectors/threads';
+import { getUserSelector } from '~/services/db/selectors/users';
 
 export class SearchService {
   private readonly DEFAULT_LIMIT = 30;
@@ -46,7 +49,7 @@ export class SearchService {
             input.userId && {
               threadMention: {
                 some: {
-                  userId: input?.userId,
+                  userId: input.userId,
                 },
               },
             }),
@@ -66,7 +69,7 @@ export class SearchService {
             input.userId && {
               threadMention: {
                 some: {
-                  userId: input?.userId,
+                  userId: input.userId,
                 },
               },
             }),
@@ -93,7 +96,7 @@ export class SearchService {
               input.userId && {
                 threadMention: {
                   some: {
-                    userId: input?.userId,
+                    userId: input.userId,
                   },
                 },
               }),
@@ -123,11 +126,11 @@ export class SearchService {
             input.tagId && {
               tags: {
                 some: {
-                  tagId: input?.tagId,
+                  tagId: input.tagId,
                 },
               },
               text: {
-                contains: input?.keyword,
+                contains: input.keyword,
               },
             }),
         },
@@ -143,11 +146,11 @@ export class SearchService {
             input.tagId && {
               tags: {
                 some: {
-                  tagId: input?.tagId,
+                  tagId: input.tagId,
                 },
               },
               text: {
-                contains: input?.keyword,
+                contains: input.keyword,
               },
             }),
         },
@@ -170,11 +173,11 @@ export class SearchService {
               input.tagId && {
                 tags: {
                   some: {
-                    tagId: input?.tagId,
+                    tagId: input.tagId,
                   },
                 },
                 text: {
-                  contains: input?.keyword,
+                  contains: input.keyword,
                 },
               }),
           },

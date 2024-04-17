@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-import React, { useReducer, useMemo } from 'react';
+import React, { useMemo, useReducer } from 'react';
+
 import { createContext } from '~/libs/react/context';
 
 enum Action {
@@ -37,7 +37,6 @@ const [Provider, useRenderContext] = createContext<RenderContext>({
   defaultValue: initialState,
 });
 
-// eslint-disable-next-line @typescript-eslint/default-param-last
 function reducer(state = initialState, action: ActionType) {
   switch (action.type) {
     case Action.INITIALIZE:

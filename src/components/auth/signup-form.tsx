@@ -1,10 +1,15 @@
 'use client';
+
 import React, { useTransition } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useFormState } from 'react-dom';
-import { Input } from '~/components/ui/input';
-import { Button } from '~/components/ui/button';
+import { useForm } from 'react-hook-form';
+
+import type { PreviousState } from '~/services/users/users.action';
+import type { SignUpInputSchema } from '~/services/users/users.input';
+
 import { Icons } from '~/components/icons';
-import { cn } from '~/utils/utils';
+import { Button } from '~/components/ui/button';
 import {
   Form,
   FormControl,
@@ -13,18 +18,12 @@ import {
   FormLabel,
   FormMessage,
 } from '~/components/ui/form';
-import {
-  signUpSchema,
-  type SignUpInputSchema,
-} from '~/services/users/users.input';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { Input } from '~/components/ui/input';
 import { InputPassword } from '~/components/ui/input-password';
-import {
-  signUpAction,
-  type PreviousState,
-} from '~/services/users/users.action';
+import { signUpAction } from '~/services/users/users.action';
+import { signUpSchema } from '~/services/users/users.input';
 import { isBoolean, isUndefined } from '~/utils/assertion';
+import { cn } from '~/utils/utils';
 
 export default function SignupForm() {
   const [isPending, startTransition] = useTransition();
@@ -123,9 +122,9 @@ export default function SignupForm() {
               aria-disabled={isPending}
               data-testid="signup-button"
             >
-              {isPending && (
+              {isPending ? (
                 <Icons.spinner className="mr-2 size-4 animate-spin" />
-              )}
+              ) : null}
               회원가입
             </Button>
           </div>

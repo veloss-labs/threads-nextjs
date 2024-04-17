@@ -1,5 +1,6 @@
-import { describe, expect, test, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
+import { describe, expect, test } from 'vitest';
+
 import { useCustomSearchParams } from '../useCustomSearchParams';
 
 describe('useCustomSearchParams', () => {
@@ -31,8 +32,6 @@ describe('useCustomSearchParams', () => {
     const initParams = new URLSearchParams('tab=threads');
 
     const path = createQueryString(initParams, 'tab', 'comments', 'set');
-
-    console.log(path);
 
     expect(path).toBe('tab=comments');
   });
