@@ -13,6 +13,9 @@ type HrefOptions = {
   invalidateFunctions?: InvalidationFunction;
   intialValue?: MetaData;
   redirectUrl?: string;
+  navigateOptions?: {
+    scroll?: boolean;
+  };
 };
 
 export default function useNavigateThreanForm() {
@@ -45,7 +48,7 @@ export default function useNavigateThreanForm() {
     popupOpen('THREAD', meta);
 
     startTransition(() => {
-      router.push(PAGE_ENDPOINTS.THREADS.ROOT);
+      router.push(PAGE_ENDPOINTS.THREADS.ROOT, opts?.navigateOptions);
     });
   };
 
