@@ -1,12 +1,18 @@
 {
-  "name": "sst-next-app",
+  "name": "threads-nextjs",
   "version": "0.0.1-beta.0",
   "private": true,
-  "description": "nextjs sst template project",
+  "description": "Instagram의 새로운 텍스트 앱, Threads에서 더 많은 대화를 나누어보세요",
   "keywords": [
+    "threads",
+    "instagram",
+    "clone",
     "nextjs",
-    "sst",
-    "template"
+    "prisma",
+    "trpc",
+    "tailwindcss",
+    "typescript",
+    "authjs"
   ],
   "license": "ISC",
   "author": "",
