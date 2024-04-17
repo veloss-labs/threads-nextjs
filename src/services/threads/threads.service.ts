@@ -591,24 +591,13 @@ export class ThreadService {
               lt: input.cursor,
             }
           : undefined,
-        userId,
+        userId: {
+          not: userId,
+        },
         stats: {
-          AND: [
-            {
-              score: {
-                gte: this.DEFAULT_RECOMMENDATION_SCORE,
-              },
-            },
-            {
-              thread: {
-                user: {
-                  id: {
-                    not: userId,
-                  },
-                },
-              },
-            },
-          ],
+          score: {
+            gte: this.DEFAULT_RECOMMENDATION_SCORE,
+          },
         },
       },
       orderBy: [
@@ -839,24 +828,13 @@ export class ThreadService {
           lt: endCursor,
         },
         deleted: false,
-        userId,
+        userId: {
+          not: userId,
+        },
         stats: {
-          AND: [
-            {
-              score: {
-                gte: this.DEFAULT_RECOMMENDATION_SCORE,
-              },
-            },
-            {
-              thread: {
-                user: {
-                  id: {
-                    not: userId,
-                  },
-                },
-              },
-            },
-          ],
+          score: {
+            gte: this.DEFAULT_RECOMMENDATION_SCORE,
+          },
         },
       },
       orderBy: [
@@ -1033,24 +1011,13 @@ export class ThreadService {
     return db.thread.count({
       where: {
         deleted: false,
-        userId,
+        userId: {
+          not: userId,
+        },
         stats: {
-          AND: [
-            {
-              score: {
-                gte: this.DEFAULT_RECOMMENDATION_SCORE,
-              },
-            },
-            {
-              thread: {
-                user: {
-                  id: {
-                    not: userId,
-                  },
-                },
-              },
-            },
-          ],
+          score: {
+            gte: this.DEFAULT_RECOMMENDATION_SCORE,
+          },
         },
       },
     });
