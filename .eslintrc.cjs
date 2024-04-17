@@ -21,6 +21,7 @@ module.exports = {
     'no-console': 'off',
     'import/order': 'off',
     'import/no-anonymous-default-export': 'off',
+    'import/named': 'off',
     'import/no-default-export': 'off',
     'react/no-unknown-property': 'off',
     'react/react-in-jsx-scope': 'off',
@@ -30,6 +31,7 @@ module.exports = {
     '@typescript-eslint/no-empty-interface': 'off',
     '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/no-misused-promises': 'off',
   },
   globals: {
     React: true,
