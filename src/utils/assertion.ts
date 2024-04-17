@@ -16,7 +16,7 @@ export function isNumeric(value: any) {
 }
 
 // Array assertions
-export function isArray<T>(value: any): value is Array<T> {
+export function isArray<T>(value: any): value is T[] {
   return Array.isArray(value);
 }
 
@@ -86,7 +86,7 @@ export function isRefObject(val: any): val is { current: any } {
 export function isElement(el: any): el is Element {
   return (
     el != null &&
-    typeof el == 'object' &&
+    typeof el === 'object' &&
     'nodeType' in el &&
     el.nodeType === Node.ELEMENT_NODE
   );
@@ -118,5 +118,5 @@ export const isInvalidDate = (date?: Date | null) => {
 };
 
 export function isThenable(thing?: PromiseLike<any>): boolean {
-  return !!(thing && !!thing.then);
+  return Boolean(thing && Boolean(thing.then));
 }

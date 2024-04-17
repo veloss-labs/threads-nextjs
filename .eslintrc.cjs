@@ -18,6 +18,7 @@ module.exports = {
     project,
   },
   rules: {
+    'unicorn/filename-case': 'off',
     'no-console': 'off',
     'import/order': 'off',
     'import/no-anonymous-default-export': 'off',
@@ -32,6 +33,7 @@ module.exports = {
     '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-misused-promises': 'off',
+    '@typescript-eslint/consistent-type-imports': 'off',
   },
   globals: {
     React: true,

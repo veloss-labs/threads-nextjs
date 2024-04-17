@@ -1,33 +1,36 @@
 'server-only';
+
+import { remember } from '@epic-web/remember';
+import { Prisma } from '@prisma/client';
+import { TRPCError } from '@trpc/server';
 import difference from 'lodash-es/difference';
 import isEqual from 'lodash-es/isEqual';
-import { db } from '~/services/db/prisma';
-import type {
-  LikeListQuerySchema,
-  ThreadListQuerySchema,
-  RecommendationListQuerySchema,
-  FollowListQuerySchema,
-  BookmarkListQuerySchema,
-  RepostListQuerySchema,
-} from '~/services/threads/threads.query';
-import {
-  getThreadsSelector,
-  getSimpleThreadsSelector,
-  getRecommendationsWithThreadSelector,
-} from '~/services/db/selectors/threads';
-import { remember } from '@epic-web/remember';
+
 import type {
   CreateInputSchema,
   IdInputSchema,
   UpdateInputSchema,
 } from '~/services/threads/threads.input';
+import type {
+  BookmarkListQuerySchema,
+  FollowListQuerySchema,
+  LikeListQuerySchema,
+  RecommendationListQuerySchema,
+  RepostListQuerySchema,
+  ThreadListQuerySchema,
+} from '~/services/threads/threads.query';
+
+import { env } from '~/app/env';
+import { db } from '~/services/db/prisma';
+import {
+  getRecommendationsWithThreadSelector,
+  getSimpleThreadsSelector,
+  getThreadsSelector,
+} from '~/services/db/selectors/threads';
 import { tagService } from '~/services/tags/tags.service';
+import { taskRunner } from '~/services/task/task';
 import { userService } from '~/services/users/users.service';
 import { calculateRankingScore } from '~/utils/utils';
-import { taskRunner } from '~/services/task/task';
-import { TRPCError } from '@trpc/server';
-import { Prisma } from '@prisma/client';
-import { env } from '~/app/env';
 
 export class ThreadService {
   private readonly DEFAULT_LIMIT = 30;
@@ -560,10 +563,10 @@ export class ThreadService {
     return db.thread.findMany({
       where: {
         deleted: false,
-        ...(input?.userId && {
+        ...(input.userId && {
           userId: input.userId,
         }),
-        id: input?.cursor
+        id: input.cursor
           ? {
               lt: input.cursor,
             }
@@ -572,7 +575,7 @@ export class ThreadService {
       orderBy: {
         createdAt: 'desc',
       },
-      take: input?.limit ?? this.DEFAULT_LIMIT,
+      take: input.limit ?? this.DEFAULT_LIMIT,
       select: getThreadsSelector(userId, input),
     });
   }
@@ -720,7 +723,7 @@ export class ThreadService {
     return db.thread.findMany({
       where: {
         deleted: false,
-        id: input?.cursor
+        id: input.cursor
           ? {
               lt: input.cursor,
             }
@@ -734,7 +737,7 @@ export class ThreadService {
       orderBy: {
         createdAt: 'desc',
       },
-      take: input?.limit ?? this.DEFAULT_LIMIT,
+      take: input.limit ?? this.DEFAULT_LIMIT,
       select: getThreadsSelector(userId, input),
     });
   }
@@ -751,7 +754,7 @@ export class ThreadService {
           lt: endCursor,
         },
         deleted: false,
-        ...(input?.userId && {
+        ...(input.userId && {
           userId: input.userId,
         }),
       },
@@ -958,7 +961,7 @@ export class ThreadService {
     return db.thread.count({
       where: {
         deleted: false,
-        ...(input?.userId && {
+        ...(input.userId && {
           userId: input.userId,
         }),
       },

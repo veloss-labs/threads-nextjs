@@ -1,15 +1,17 @@
 'use server';
+
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+import { CallbackRouteError } from '@auth/core/errors';
+import { TRPCError } from '@trpc/server';
+import { FieldErrors } from 'react-hook-form';
+
 import { PAGE_ENDPOINTS } from '~/constants/constants';
+import { auth, signIn, signOut } from '~/services/auth';
 import {
   type SignInInputSchema,
   type SignUpInputSchema,
 } from '~/services/users/users.input';
-import { revalidatePath } from 'next/cache';
-import { auth, signIn, signOut } from '~/services/auth';
-import { TRPCError } from '@trpc/server';
-import { FieldErrors } from 'react-hook-form';
-import { CallbackRouteError } from '@auth/core/errors';
-import { redirect } from 'next/navigation';
 import { userService } from '~/services/users/users.service';
 
 export type PreviousState =

@@ -1,12 +1,12 @@
 import {
-  createTRPCRouter,
-  protectedProcedure,
-} from '~/services/trpc/core/trpc';
-import {
   searchQuerySchema,
   searchUsersQuerySchema,
 } from '~/services/search/search.query';
 import { searchService } from '~/services/search/search.service';
+import {
+  createTRPCRouter,
+  protectedProcedure,
+} from '~/services/trpc/core/trpc';
 
 export const searchRouter = createTRPCRouter({
   getSearch: protectedProcedure

@@ -1,4 +1,5 @@
-import React from 'react';
+import { useEffect } from 'react';
+
 /**
  * Setup a callback to be fired on the window's `beforeunload` event. This is
  * useful for saving some data to `window.localStorage` just before the page
@@ -11,9 +12,9 @@ export function useBeforeUnload(
   callback: (event: BeforeUnloadEvent) => any,
   options?: { capture?: boolean },
 ): void {
-  let { capture } = options || {};
-  React.useEffect(() => {
-    let opts = capture != null ? { capture } : undefined;
+  const { capture } = options ?? {};
+  useEffect(() => {
+    const opts = capture ? { capture } : undefined;
     window.addEventListener('beforeunload', callback, opts);
     return () => {
       window.removeEventListener('beforeunload', callback, opts);

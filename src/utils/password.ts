@@ -1,5 +1,6 @@
 'server-only';
-import { createHmac, randomBytes, timingSafeEqual } from 'crypto';
+
+import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 
 export function generateSalt(): string {
   return randomBytes(16).toString('hex');

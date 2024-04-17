@@ -1,7 +1,10 @@
-import { describe, expect, test, beforeEach, vi, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+
 import SignupForm from '../signup-form';
+
 import '@testing-library/jest-dom';
+
 import { Suspense } from 'react';
 
 describe('SignupForm', () => {

@@ -1,5 +1,6 @@
+import { act, renderHook } from '@testing-library/react';
 import { afterAll, describe, expect, test, vi } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+
 import { useCopyToClipboard } from '../useCopyToClipboard';
 
 describe('useCopyToClipboard', () => {
@@ -60,12 +61,11 @@ describe('useCopyToClipboard', () => {
 
     const { result } = renderHook(() => useCopyToClipboard());
 
-    await expect(
-      async () =>
-        await act(async () => {
-          await result.current.copy(COPY_TEXT);
-        }),
-    ).rejects.toThrow(ERROR);
+    await expect(async () => {
+      await act(async () => {
+        await result.current.copy(COPY_TEXT);
+      });
+    }).rejects.toThrow(ERROR);
 
     expect(result.current.copiedText).toBeUndefined();
   });
@@ -89,12 +89,11 @@ describe('useCopyToClipboard', () => {
 
     const { result } = renderHook(() => useCopyToClipboard({ onError }));
 
-    await expect(
-      async () =>
-        await act(async () => {
-          await result.current.copy(COPY_TEXT);
-        }),
-    ).rejects.toThrow(ERROR);
+    await expect(async () => {
+      await act(async () => {
+        await result.current.copy(COPY_TEXT);
+      });
+    }).rejects.toThrow(ERROR);
 
     expect(onError).toHaveBeenCalled();
   });

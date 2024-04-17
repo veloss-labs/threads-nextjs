@@ -3,9 +3,9 @@ import {
   protectedProcedure,
 } from '~/services/trpc/core/trpc';
 import {
-  userIdSchema,
   followUserSchema,
   updateProfileSchema,
+  userIdSchema,
 } from '~/services/users/users.input';
 import { searchQuerySchema } from '~/services/users/users.query';
 import { userService } from '~/services/users/users.service';

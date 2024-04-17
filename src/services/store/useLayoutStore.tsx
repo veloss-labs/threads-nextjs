@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 type PopupType = 'NOOP' | 'THREAD' | 'WHO_CAN_LEAVE_REPLY' | 'SEARCH_PAGE';
 
@@ -7,15 +7,13 @@ export type Invalidator = (() => any) | (() => Promise<any>);
 
 export type InvalidationFunction = Invalidator | Invalidator[];
 
-export type MetaData = {
+export interface MetaData {
   quotation?: any;
   invalidateFunctions?: InvalidationFunction;
-  intialValue?: {
-    [key: string]: any;
-  };
+  intialValue?: Record<string, any>;
   redirectUrl?: string;
   [key: string]: any;
-};
+}
 
 interface PopupState {
   type: PopupType;
@@ -26,7 +24,7 @@ interface PopupState {
 interface LayoutStore {
   popup: PopupState;
   cleanUp: () => void;
-  popupOpen(popupType: PopupType, meta?: MetaData): void;
+  popupOpen: (popupType: PopupType, meta?: MetaData) => void;
   popupClose: () => void;
   getPopupMetaData: () => MetaData | undefined;
 }

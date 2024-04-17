@@ -1,10 +1,11 @@
-import z from 'zod';
 import { revalidatePath } from 'next/cache';
+import z from 'zod';
+
+import { commonService } from '~/services/common/common.service';
 import {
   createTRPCRouter,
   protectedProcedure,
 } from '~/services/trpc/core/trpc';
-import { commonService } from '~/services/common/common.service';
 
 export const commonRouter = createTRPCRouter({
   revalidatePath: protectedProcedure

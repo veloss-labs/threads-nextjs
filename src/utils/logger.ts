@@ -65,7 +65,6 @@ class Logger {
     } else {
       console.log(`[${label}]:${message}`, extra);
     }
-    return;
 
     // if (sentryDSN) {
     //   Sentry.withScope(function (scope) {

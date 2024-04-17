@@ -1,16 +1,19 @@
-import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-import {
-  uniqueUsernameGenerator,
-  nouns,
-  adjectives,
-  type Config,
-} from 'unique-username-generator';
-import { isEmpty, isNull, isUndefined } from '~/utils/assertion';
+import { clsx } from 'clsx';
 import {
   type SerializedEditorState,
   type SerializedLexicalNode,
 } from 'lexical';
+import { twMerge } from 'tailwind-merge';
+import {
+  adjectives,
+  nouns,
+  uniqueUsernameGenerator,
+} from 'unique-username-generator';
+
+import type { ClassValue } from 'clsx';
+import type { Config } from 'unique-username-generator';
+
+import { isEmpty, isNull, isUndefined } from '~/utils/assertion';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -115,19 +118,19 @@ export const getDateFormatted = (date: Date | string) => {
 // 간단한 TF-IDF 계산
 export function computeTFIDF(documents: string[]): Map<string, number>[] {
   let tfidf: Map<string, number>[] = documents.map((doc) => new Map());
-  let idf: Map<string, number> = new Map();
+  let idf = new Map<string, number>();
 
   for (let i = 0; i < documents.length; i++) {
     const target = documents[i];
     if (isUndefined(target)) {
       continue;
     }
-    let words = target.split(' ');
-    let wordCount = words.length;
-    let wordSet = new Set(words);
+    const words = target.split(' ');
+    const wordCount = words.length;
+    const wordSet = new Set(words);
 
     wordSet.forEach((word) => {
-      let tf = words.filter((w) => w === word).length / wordCount;
+      const tf = words.filter((w) => w === word).length / wordCount;
       tfidf[i]?.set(word, tf);
 
       if (idf.has(word)) {
@@ -158,27 +161,27 @@ export function computeTFIDF(documents: string[]): Map<string, number>[] {
   return tfidf;
 }
 
-type Document = {
+interface Document {
   id: string;
   text: string;
-};
+}
 
 // 간단한 TF-IDF 계산을 하는데 id로 그룹화해서 계산하고 값을 반환 할 때 id를 key로 가지는 Map을 반환
 export function computeTFIDFById(documents: Document[]) {
-  let tfidf: Map<string, Map<string, number>> = new Map();
-  let idf: Map<string, number> = new Map();
+  let tfidf = new Map<string, Map<string, number>>();
+  let idf = new Map<string, number>();
 
   for (let i = 0; i < documents.length; i++) {
     const target = documents[i];
     if (isUndefined(target)) {
       continue;
     }
-    let words = target.text.split(' ');
-    let wordCount = words.length;
-    let wordSet = new Set(words);
+    const words = target.text.split(' ');
+    const wordCount = words.length;
+    const wordSet = new Set(words);
 
     wordSet.forEach((word) => {
-      let tf = words.filter((w) => w === word).length / wordCount;
+      const tf = words.filter((w) => w === word).length / wordCount;
 
       if (tfidf.has(target.id)) {
         tfidf.get(target.id)?.set(word, tf);
@@ -237,26 +240,24 @@ export function cosineSimilarity(
   return dotProduct / (Math.sqrt(aMagnitude) * Math.sqrt(bMagnitude));
 }
 
-type LexicalNode = SerializedLexicalNode & {
-  [key: string]: any;
-};
+type LexicalNode = SerializedLexicalNode & Record<string, any>;
 
 type FindKeys = string;
 
-type Result = {
+interface Result {
   type: FindKeys;
   node: LexicalNode;
   [key: string]: any;
-};
+}
 
 function depthFristSearchNode(node: LexicalNode, keys: FindKeys[]) {
   let result: Result[] = [];
 
-  if ('type' in node && keys.includes(node.type as FindKeys)) {
-    result.push({ type: node.type as FindKeys, node });
+  if ('type' in node && keys.includes(node.type)) {
+    result.push({ type: node.type, node });
   }
 
-  for (let child of node.children || []) {
+  for (const child of node.children || []) {
     result = result.concat(depthFristSearchNode(child, keys));
   }
 

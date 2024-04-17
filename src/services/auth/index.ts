@@ -1,18 +1,22 @@
 'server-only';
-import NextAuth, { type User } from 'next-auth';
-import { type DefaultJWT } from 'next-auth/jwt';
-import GitHub from 'next-auth/providers/github';
-import Credentials from 'next-auth/providers/credentials';
-import { env } from '~/app/env';
-import { userService } from '~/services/users/users.service';
-import { PrismaAdapter } from '@auth/prisma-adapter';
-import {
-  Prisma,
-  type User as UserSchema,
-  type UserProfile as UserProfileSchema,
-} from '@prisma/client';
-import { PAGE_ENDPOINTS } from '~/constants/constants';
+
 import { NextResponse } from 'next/server';
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import { Prisma } from '@prisma/client';
+import NextAuth from 'next-auth';
+import { type DefaultJWT } from 'next-auth/jwt';
+import Credentials from 'next-auth/providers/credentials';
+import GitHub from 'next-auth/providers/github';
+
+import type {
+  UserProfile as UserProfileSchema,
+  User as UserSchema,
+} from '@prisma/client';
+import type { User } from 'next-auth';
+
+import { env } from '~/app/env';
+import { PAGE_ENDPOINTS } from '~/constants/constants';
+import { userService } from '~/services/users/users.service';
 
 declare module 'next-auth' {
   interface Session {
@@ -87,15 +91,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user = {
         ...session.user,
         id: token.sub,
-        username: token?.user?.username,
-        profile: token?.user?.profile ?? null,
+        username: token.user.username,
+        profile: token.user.profile ?? null,
       };
       return session;
     },
     authorized({ auth, request }) {
       const url = request.nextUrl;
 
-      const isLoggedIn = !!auth?.user;
+      const isLoggedIn = Boolean(auth?.user);
 
       const authPath: string[] = [
         PAGE_ENDPOINTS.AUTH.SIGNIN,

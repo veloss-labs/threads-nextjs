@@ -1,14 +1,16 @@
-import { usePathname, useRouter } from 'next/navigation';
 import React, { useTransition } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+
+import type { MetaData } from '~/services/store/useLayoutStore';
+
 import { PAGE_ENDPOINTS } from '~/constants/constants';
+import { useMemoizedFn } from '~/libs/hooks/useMemoizedFn';
 import {
-  type MetaData,
   InvalidationFunction,
   useLayoutStore,
 } from '~/services/store/useLayoutStore';
-import { useMemoizedFn } from '~/libs/hooks/useMemoizedFn';
 
-type HrefOptions = {
+interface HrefOptions {
   quotation?: any;
   invalidateFunctions?: InvalidationFunction;
   intialValue?: MetaData;
@@ -16,7 +18,7 @@ type HrefOptions = {
   navigateOptions?: {
     scroll?: boolean;
   };
-};
+}
 
 export default function useNavigateThreanForm() {
   const router = useRouter();

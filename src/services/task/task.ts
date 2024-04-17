@@ -1,22 +1,23 @@
 import { remember } from '@epic-web/remember';
+
 import { env } from '~/app/env';
 
-type Task = {
+interface Task {
   fn: () => Promise<void>;
   priority: number;
   id: number;
   status: 'pending' | 'running' | 'completed' | 'failed';
   attempts: number;
-};
+}
 
 export class BackgroundTaskManager {
-  private tasks: Map<number, Task> = new Map();
+  private tasks = new Map<number, Task>();
   private isRunning = false;
   private taskId = 0;
 
-  private retries: Map<number, ReturnType<typeof setTimeout>> = new Map();
-  private intervals: Map<number, ReturnType<typeof setInterval>> = new Map();
-  private timeouts: Map<number, ReturnType<typeof setTimeout>> = new Map();
+  private retries = new Map<number, ReturnType<typeof setTimeout>>();
+  private intervals = new Map<number, ReturnType<typeof setInterval>>();
+  private timeouts = new Map<number, ReturnType<typeof setTimeout>>();
 
   registerTask(fn: () => Promise<void>, priority = 0) {
     const task = {
@@ -34,19 +35,17 @@ export class BackgroundTaskManager {
   scheduleTask(fn: () => Promise<void>, priority = 0, interval = 3600000) {
     // interval is in milliseconds
     this.registerTask(fn, priority);
-    const taskInterval = setInterval(
-      () => this.registerTask(fn, priority),
-      interval,
-    );
+    const taskInterval = setInterval(() => {
+      this.registerTask(fn, priority);
+    }, interval);
     this.intervals.set(this.taskId, taskInterval);
   }
 
   delayTask(fn: () => Promise<void>, priority = 0, delay = 1000) {
     // delay is in milliseconds
-    const taskTimeout = setTimeout(
-      () => this.registerTask(fn, priority),
-      delay,
-    );
+    const taskTimeout = setTimeout(() => {
+      this.registerTask(fn, priority);
+    }, delay);
     this.timeouts.set(this.taskId, taskTimeout);
   }
 
