@@ -1,19 +1,19 @@
 'server-only';
 import omit from 'lodash-es/omit';
+import { type Prisma } from '@prisma/client';
+import { remember } from '@epic-web/remember';
+import { TRPCError } from '@trpc/server';
 import { generateHash, generateSalt, secureCompare } from '~/utils/password';
 import { db } from '~/services/db/prisma';
 import { getUserSelector } from '~/services/db/selectors/users';
 import { getAuthCredentialsSelector } from '~/services/db/selectors/auth';
-import { Prisma } from '@prisma/client';
 import {
   signInSchema,
   type SignInInputSchema,
   type SignUpInputSchema,
   type UpdateProfileInputSchema,
 } from '~/services/users/users.input';
-import { remember } from '@epic-web/remember';
 import { env } from '~/app/env';
-import { TRPCError } from '@trpc/server';
 import { API_ENDPOINTS } from '~/constants/constants';
 import { generatorName } from '~/utils/utils';
 

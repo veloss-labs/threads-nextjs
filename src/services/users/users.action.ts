@@ -157,7 +157,6 @@ export async function signOutAction(previousState: PreviousState) {
     console.error(error);
     return false;
   } finally {
-    console.log('signOutAction');
     revalidatePath(PAGE_ENDPOINTS.ROOT);
     if (redirectFlag) {
       redirect(PAGE_ENDPOINTS.AUTH.SIGNIN);

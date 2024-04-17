@@ -1,8 +1,15 @@
 {
   "name": "sst-next-app",
   "version": "0.0.1-beta.0",
-  "description": "nextjs sst template project",
   "private": true,
+  "description": "nextjs sst template project",
+  "keywords": [
+    "nextjs",
+    "sst",
+    "template"
+  ],
+  "license": "ISC",
+  "author": "",
   "type": "module",
   "scripts": {
     "dev": "run-s dev:*",
@@ -32,13 +39,6 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio"
   },
-  "keywords": [
-    "nextjs",
-    "sst",
-    "template"
-  ],
-  "author": "",
-  "license": "ISC",
   "browserslist": [
     "extends @anansi/browserslist-config"
   ],
@@ -97,6 +97,7 @@
   },
   "devDependencies": {
     "@anansi/browserslist-config": "^1.5.0",
+    "@ianvs/prettier-plugin-sort-imports": "^4.2.1",
     "@playwright/test": "^1.43.1",
     "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/typography": "^0.5.12",
@@ -108,6 +109,7 @@
     "@types/react": "^18.2.79",
     "@types/react-dom": "^18.2.25",
     "@typescript-eslint/eslint-plugin": "^7.7.0",
+    "@vercel/style-guide": "^6.0.0",
     "@vitejs/plugin-react-swc": "^3.6.0",
     "autoprefixer": "^10.4.19",
     "aws-cdk-lib": "2.137.0",
@@ -118,15 +120,13 @@
     "dotenv-cli": "^7.4.1",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.1",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-prettier": "^5.1.3",
     "eslint-plugin-tailwindcss": "^3.15.1",
     "jiti": "^1.21.0",
     "jsdom": "^24.0.0",
     "npm-run-all": "^4.1.5",
     "postcss": "^8.4.38",
     "prettier": "^3.2.5",
+    "prettier-plugin-packagejson": "^2.5.0",
     "prettier-plugin-tailwindcss": "^0.5.14",
     "prisma": "^5.12.1",
     "sst": "^2.41.4",
