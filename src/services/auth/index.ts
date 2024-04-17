@@ -73,6 +73,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: '/signin',
     newUser: '/signup',
     error: '/signin', // Error code passed in query string as ?error=
+    signOut: '/signin',
   },
   session: { strategy: 'jwt' },
   callbacks: {
