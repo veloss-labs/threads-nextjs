@@ -13,7 +13,7 @@ export const tagsRouter = createTRPCRouter({
       try {
         const userId = ctx.session.user.id;
         const exists = await tagService.byName(input.name);
-        if (!!exists) {
+        if (exists) {
           return exists;
         }
 

@@ -1,18 +1,21 @@
 'server-only';
-import {
-  Prisma,
-  type ThreadLike,
-  type Tag,
-  type Thread,
-  type ThreadBookmark,
-  type ThreadRepost,
+
+import { Prisma } from '@prisma/client';
+
+import type {
+  Tag,
+  Thread,
+  ThreadBookmark,
+  ThreadLike,
+  ThreadRepost,
 } from '@prisma/client';
+import type { UserSelectSchema } from '~/services/db/selectors/users';
+
+import { getTagsSimpleSelector } from '~/services/db/selectors/tags';
 import {
-  type UserSelectSchema,
   getUserSelector,
   getUserSimpleSelector,
 } from '~/services/db/selectors/users';
-import { getTagsSimpleSelector } from '~/services/db/selectors/tags';
 import { type ThreadListQuerySchema } from '~/services/threads/threads.query';
 
 export const getStatsSelector = () =>

@@ -1,10 +1,14 @@
 'use client';
+
 import React, { useCallback } from 'react';
-import { ScrollArea } from '~/components/ui/scroll-area';
-import { Button } from '~/components/ui/button';
-import { NAV_CONFIG, type ScrollNavItem } from '~/constants/nav';
-import { useScrollNavLinkActive } from '~/libs/hooks/useMainLinkActive';
 import { useRouter } from 'next/navigation';
+
+import type { ScrollNavItem } from '~/constants/nav';
+
+import { Button } from '~/components/ui/button';
+import { ScrollArea } from '~/components/ui/scroll-area';
+import { NAV_CONFIG } from '~/constants/nav';
+import { useScrollNavLinkActive } from '~/libs/hooks/useMainLinkActive';
 
 export default function ScrollNav() {
   return (

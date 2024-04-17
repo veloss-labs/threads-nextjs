@@ -1,6 +1,15 @@
 'use client';
+
 import React, { useTransition } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useFormState } from 'react-dom';
+import { useForm } from 'react-hook-form';
+
+import type { PreviousState } from '~/services/users/users.action';
+import type { SignInInputSchema } from '~/services/users/users.input';
+
+import { Icons } from '~/components/icons';
+import { Button } from '~/components/ui/button';
 import {
   Form,
   FormControl,
@@ -10,21 +19,11 @@ import {
   FormMessage,
 } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
-import { cn } from '~/utils/utils';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
 import { InputPassword } from '~/components/ui/input-password';
-import {
-  signInSchema,
-  type SignInInputSchema,
-} from '~/services/users/users.input';
-import {
-  signInAction,
-  type PreviousState,
-} from '~/services/users/users.action';
+import { signInAction } from '~/services/users/users.action';
+import { signInSchema } from '~/services/users/users.input';
 import { isBoolean, isUndefined } from '~/utils/assertion';
-import { Button } from '~/components/ui/button';
-import { Icons } from '~/components/icons';
+import { cn } from '~/utils/utils';
 
 export default function SignInForm() {
   const [isPending, startTransition] = useTransition();
@@ -100,9 +99,9 @@ export default function SignInForm() {
               disabled={isPending}
               aria-disabled={isPending}
             >
-              {isPending && (
+              {isPending ? (
                 <Icons.spinner className="mr-2 size-4 animate-spin" />
-              )}
+              ) : null}
               로그인
             </Button>
           </div>

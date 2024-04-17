@@ -1,4 +1,5 @@
 'server-only';
+
 import { remember } from '@epic-web/remember';
 import { PrismaClient } from '@prisma/client';
 
@@ -7,8 +8,7 @@ function getClient() {
   // that this only runs once per server restart and won't automatically be
   // re-run per request like everything else is.
   const client = new PrismaClient({
-    // log: ['error', 'warn', 'query'],
-    log: ['error', 'warn'],
+    log: ['error', 'warn', 'query'],
   });
 
   return client;

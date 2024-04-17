@@ -1,22 +1,22 @@
 import {
-  createTRPCRouter,
-  protectedProcedure,
-} from '~/services/trpc/core/trpc';
+  createInputSchema,
+  detailInputSchema,
+  idInputSchema,
+  updateInputSchema,
+} from '~/services/threads/threads.input';
 import {
+  bookmarkListQuerySchema,
+  followListQuerySchema,
   likeListQuerySchema,
   listQuerySchema,
-  bookmarkListQuerySchema,
   recommendationListQuerySchema,
-  followListQuerySchema,
   repostListQuerySchema,
 } from '~/services/threads/threads.query';
 import { threadService } from '~/services/threads/threads.service';
 import {
-  updateInputSchema,
-  createInputSchema,
-  idInputSchema,
-  detailInputSchema,
-} from '~/services/threads/threads.input';
+  createTRPCRouter,
+  protectedProcedure,
+} from '~/services/trpc/core/trpc';
 
 export const threadsRouter = createTRPCRouter({
   simpleById: protectedProcedure

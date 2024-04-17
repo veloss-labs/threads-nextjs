@@ -1,9 +1,11 @@
 'use client';
+
 import type { LucideIcon } from 'lucide-react';
+
 import { Icons } from '~/components/icons';
 import { PAGE_ENDPOINTS } from './constants';
 
-export type NavItem = {
+export interface NavItem {
   id:
     | 'home'
     | 'search'
@@ -22,7 +24,7 @@ export type NavItem = {
   disabled?: boolean;
   icon: LucideIcon;
   relationIcons?: Record<string, LucideIcon>;
-};
+}
 
 export type ScrollNavItem = Pick<NavItem, 'id' | 'type' | 'title'> & {
   href: string;

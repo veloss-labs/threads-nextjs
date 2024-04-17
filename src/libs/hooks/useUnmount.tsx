@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+
 import { useLatest } from './useLatest';
 
 export const useUnmount = (fn: () => void) => {
@@ -8,7 +9,6 @@ export const useUnmount = (fn: () => void) => {
     () => () => {
       fnRef.current();
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 };

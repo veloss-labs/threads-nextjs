@@ -1,10 +1,10 @@
 import { isElement } from '~/utils/assertion';
 
 export function canUseDOM(): boolean {
-  return !!(
+  return Boolean(
     typeof window !== 'undefined' &&
-    window.document &&
-    window.document.createElement
+      window.document &&
+      window.document.createElement,
   );
 }
 
@@ -12,12 +12,12 @@ export const isBrowser = canUseDOM();
 
 export function getOwnerWindow(node?: Element | null): typeof globalThis {
   return isElement(node)
-    ? getOwnerDocument(node)?.defaultView ?? window
+    ? getOwnerDocument(node).defaultView ?? window
     : window;
 }
 
 export function getOwnerDocument(node?: Element | null): Document {
-  return isElement(node) ? node?.ownerDocument ?? document : document;
+  return isElement(node) ? node.ownerDocument ?? document : document;
 }
 
 type TargetValue<T> = T | undefined | null;

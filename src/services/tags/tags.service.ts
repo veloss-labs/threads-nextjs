@@ -1,9 +1,12 @@
 'server-only';
+
+import { remember } from '@epic-web/remember';
+
+import type { CreateInputSchema } from '~/services/tags/tags.input';
+
+import { env } from '~/app/env';
 import { db } from '~/services/db/prisma';
 import { getTagsSelector } from '~/services/db/selectors/tags';
-import { remember } from '@epic-web/remember';
-import type { CreateInputSchema } from '~/services/tags/tags.input';
-import { env } from '~/app/env';
 
 export class TagService {
   private readonly DEFAULT_LIMIT = 30;
@@ -64,33 +67,6 @@ export class TagService {
     const data = await db.threadTag.create({
       data: {
         threadId,
-        tagId,
-      },
-    });
-
-    return data;
-  }
-
-  /**
-   * @description 태그 스키마와 팔로우 태그 스키마를 연결
-   * @param {string} userId - 유저 ID
-   * @param {string} tagId - 태그 ID
-   */
-  async connectOrCreateFollowTag(userId: string, tagId: string) {
-    const exists = await db.followTag.findFirst({
-      where: {
-        userId,
-        tagId,
-      },
-    });
-
-    if (exists) {
-      return exists;
-    }
-
-    const data = await db.followTag.create({
-      data: {
-        userId,
         tagId,
       },
     });

@@ -49,7 +49,6 @@ class Resource {
     } else if (!isNullOrUndefined(this._error)) {
       throw this._error;
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-throw-literal
       throw this._promise;
     }
   }

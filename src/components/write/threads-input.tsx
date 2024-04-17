@@ -16,7 +16,11 @@ export default function ThreadsInput({ session }: ThreadsInputProps) {
   const { isPending, handleHref } = useNavigateThreanForm();
 
   const onClick = useCallback(() => {
-    handleHref();
+    handleHref({
+      navigateOptions: {
+        scroll: false,
+      },
+    });
   }, [handleHref]);
 
   return (

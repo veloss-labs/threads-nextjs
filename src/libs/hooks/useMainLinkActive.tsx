@@ -1,5 +1,7 @@
 'use client';
+
 import { usePathname } from 'next/navigation';
+
 import { type NavItem, type ScrollNavItem } from '~/constants/nav';
 
 interface UseMainLinkActiveOptions {

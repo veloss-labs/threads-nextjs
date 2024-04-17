@@ -44,8 +44,6 @@ export default function Modal() {
     }, [popup.meta]),
   );
 
-  console.log('popup.meta', popup.meta);
-
   return (
     <Popup
       open={open}

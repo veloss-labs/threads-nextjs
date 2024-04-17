@@ -1,5 +1,7 @@
 'use client';
+
 import { useState } from 'react';
+
 import { useMemoizedFn } from './useMemoizedFn';
 
 interface CopyToClipboardOptions {

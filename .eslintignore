@@ -1,47 +1,77 @@
-# nodejs
-node_modules
 
-# nextjs
-out
-.next
-public
 
-# vscode
-.vscode
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# playwright
+/playwright-report
 
 # partytown
 /public/~partytown/
 
-# pc
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
 .DS_Store
+*.pem
 
-#config
-next.config.js
-next.config.mjs
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
-sst.config.js
+# local env files
+.env*.local
 
-playwright.config.js
+# vercel
+.vercel
 
-sentry.server.config.js
-sentry.client.config.js
-sentry.edge.config.js
+# typescript
+*.tsbuildinfo
+next-env.d.ts
 
-tailwind.config.js
-postcss.config.js
+# env
+.env
+scripts/env/.env.development
+scripts/env/.env.production
+
+# cli
+dist/
+
+# .serverless
+.serverless
+.serverless_nextjs
 
 # sst
 .open-next
 .sst
 
-# scripts
-dist/**/*
+# Sentry
+.sentryclirc
+sentry.properties
 
-# env
-src/env/**/*
+# serivce worker
+/public/sw.js
+/public/sw.js.map
+/public/workbox-*.js
+/public/workbox-*.js.map
+/public/fallback-*.js
 
-# docker
+# db
 data/**/*
-
-# infra
-infra-local/**/*
+prisma/migrations/**/*
+*.db
+*.db-journal

@@ -1,10 +1,10 @@
+import { createTRPCRouter } from '~/services/trpc/core/trpc';
 import { authRouter } from './auth';
+import { commonRouter } from './common';
+import { searchRouter } from './search';
+import { tagsRouter } from './tags';
 import { threadsRouter } from './threads';
 import { usersRouter } from './users';
-import { tagsRouter } from './tags';
-import { searchRouter } from './search';
-import { commonRouter } from './common';
-import { createTRPCRouter } from '~/services/trpc/core/trpc';
 
 export const appRouter = createTRPCRouter({
   auth: authRouter,

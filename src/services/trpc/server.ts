@@ -1,8 +1,8 @@
 import { cache } from 'react';
 import { headers } from 'next/headers';
 
-import { createCaller, createTRPCContext } from '~/services/trpc/core';
 import { auth } from '~/services/auth';
+import { createCaller, createTRPCContext } from '~/services/trpc/core';
 
 /**
  * This wraps the `createTRPCContext` helper and provides the required context for the tRPC API when

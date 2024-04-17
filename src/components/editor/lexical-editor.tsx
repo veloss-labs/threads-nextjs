@@ -34,7 +34,6 @@ import LexicalDefaultValuePlugin from '~/components/editor/plugins/defaultValue-
 import { AutoLinkNode, LinkNode } from '@lexical/link';
 import HashtagsEventsPlugin from './plugins/hashtags-events-plugin';
 import { useMemoizedFn } from '~/libs/hooks/useMemoizedFn';
-import { cn } from '~/utils/utils';
 
 function Placeholder() {
   return (

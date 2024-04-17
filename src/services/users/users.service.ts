@@ -1,20 +1,23 @@
 'server-only';
-import omit from 'lodash-es/omit';
-import { generateHash, generateSalt, secureCompare } from '~/utils/password';
-import { db } from '~/services/db/prisma';
-import { getUserSelector } from '~/services/db/selectors/users';
-import { getAuthCredentialsSelector } from '~/services/db/selectors/auth';
-import { Prisma } from '@prisma/client';
-import {
-  signInSchema,
-  type SignInInputSchema,
-  type SignUpInputSchema,
-  type UpdateProfileInputSchema,
-} from '~/services/users/users.input';
+
 import { remember } from '@epic-web/remember';
-import { env } from '~/app/env';
+import { type Prisma } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
+import omit from 'lodash-es/omit';
+
+import type {
+  SignInInputSchema,
+  SignUpInputSchema,
+  UpdateProfileInputSchema,
+} from '~/services/users/users.input';
+
+import { env } from '~/app/env';
 import { API_ENDPOINTS } from '~/constants/constants';
+import { db } from '~/services/db/prisma';
+import { getAuthCredentialsSelector } from '~/services/db/selectors/auth';
+import { getUserSelector } from '~/services/db/selectors/users';
+import { signInSchema } from '~/services/users/users.input';
+import { generateHash, generateSalt, secureCompare } from '~/utils/password';
 import { generatorName } from '~/utils/utils';
 
 export class UserService {

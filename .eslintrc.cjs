@@ -1,31 +1,64 @@
+const { resolve } = require('node:path');
+
+const project = resolve(process.cwd(), 'tsconfig.json');
+
+/** @type {import("eslint").Linter.Config} */
 module.exports = {
   extends: [
-    'next/core-web-vitals',
-    'next',
-    'plugin:prettier/recommended',
-    'plugin:tailwindcss/recommended',
-  ],
+    '@vercel/style-guide/eslint/node',
+    '@vercel/style-guide/eslint/typescript',
+    '@vercel/style-guide/eslint/browser',
+    '@vercel/style-guide/eslint/react',
+    '@vercel/style-guide/eslint/next',
+  ]
+    .map(require.resolve)
+    .concat('plugin:tailwindcss/recommended'),
+  root: true,
   parserOptions: {
-    project: './tsconfig.json',
-    tsconfigRootDir: __dirname,
-    ecmaVersion: 2018, // Allows for the parsing of modern ECMAScript features
-    sourceType: 'module', // Allows for the use of imports
+    project,
   },
-  plugins: ['@typescript-eslint'],
   rules: {
+    'unicorn/filename-case': 'off',
     'no-console': 'off',
+    'import/order': 'off',
     'import/no-anonymous-default-export': 'off',
+    'import/named': 'off',
+    'import/no-default-export': 'off',
     'react/no-unknown-property': 'off',
+    'react/react-in-jsx-scope': 'off',
+    'react/jsx-pascal-case': 'off',
     '@next/next/no-img-element': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-empty-interface': 'off',
     '@typescript-eslint/ban-ts-comment': 'off',
-    'react/react-in-jsx-scope': 'off',
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/no-misused-promises': 'off',
+    '@typescript-eslint/consistent-type-imports': 'off',
   },
+  globals: {
+    React: true,
+    JSX: true,
+  },
+  ignorePatterns: [
+    '**/.eslintrc.*',
+    '**/tailwind.config.*',
+    '**/postcss.config.*',
+    '**/.prettier.*',
+    '.next',
+    '.sst',
+    'dist',
+    'build',
+    'pnpm-lock.yaml',
+    'node_modules',
+  ],
   settings: {
-    react: {
-      version: 'detect',
+    'import/resolver': {
+      typescript: {
+        project,
+      },
+      node: {
+        extensions: ['.mjs', '.js', '.jsx', '.ts', '.tsx'],
+      },
     },
   },
-  root: true,
 };

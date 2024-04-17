@@ -1,10 +1,11 @@
-import { afterEach, describe, beforeEach, expect, test, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+
+import { NAV_CONFIG } from '~/constants/nav';
 import {
   useMainLinkActive,
   useScrollNavLinkActive,
 } from '../useMainLinkActive';
-import { NAV_CONFIG } from '~/constants/nav';
 
 const mockUsePathname = vi.fn();
 
@@ -126,7 +127,7 @@ describe('useMainLinkActive', () => {
             }),
           );
 
-          const icon = item.relationIcons?.[relationHref];
+          const icon = item.relationIcons[relationHref];
 
           if (!icon) {
             throw new Error('icon is not defined');
